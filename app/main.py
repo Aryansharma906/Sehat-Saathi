@@ -1,7 +1,8 @@
 """
 Sehat Saathi (सेहत साथी) — Main Streamlit Application
 AI-assisted prescription reader, medication companion, and rural healthcare assistant.
-Designed for rural India and older adults with accessible, multi-lingual UI/UX.
+Designed for rural India and older adults with multi-lingual UI/UX, Google Sign-In,
+and Clinical Relational Database for Doctors, Nurses, and Healthcare Staff.
 """
 
 import os
@@ -18,7 +19,9 @@ os.environ.setdefault("STREAMLIT_BROWSER_GATHER_USAGE_STATS", "false")
 os.environ.setdefault("STREAMLIT_CONFIG_DIR", "/tmp/.streamlit")
 
 import io
+import json
 import urllib.parse
+from datetime import datetime
 from dotenv import load_dotenv
 from PIL import Image
 import streamlit as st
@@ -48,6 +51,8 @@ from services.complication_prediction_service import ComplicationPredictionServi
 from models.complication_prediction import ComplicationPredictionInput, RiskTier
 from storage.persistence import LocalStorageAdapter
 from services.i18n import t
+from services.auth_service import AuthService, User
+from services.clinical_db_service import ClinicalDatabaseService
 
 # Instantiate core services
 language_service = SimpleHindiLanguageService()
@@ -56,6 +61,104 @@ device_service = DeviceDataService()
 issue_service = HealthIssueService()
 tracker_service = ProgressTrackerService()
 mental_service = MentalHealthService()
+clinical_db = ClinicalDatabaseService()
+
+
+def seed_initial_clinical_data_if_empty(db: ClinicalDatabaseService):
+    """Populates realistic initial patients so doctors and staff can test the portal immediately."""
+    patients = db.list_all_patients()
+    if not patients:
+        # Patient 1: Ramesh Kumar
+        u1 = db.upsert_user({
+            "id": "user_ramesh",
+            "name": "रमेश कुमार (Ramesh Kumar)",
+            "email": "ramesh.kumar1965@gmail.com",
+            "role": "patient",
+            "phone": "9123456789",
+            "abha_id": "91-1234-5678-9012"
+        })
+        p1 = db.upsert_patient({
+            "id": "pat_ramesh",
+            "user_id": u1,
+            "name": "रमेश कुमार (Ramesh Kumar)",
+            "age": 58,
+            "gender": "पुरुष (Male)",
+            "blood_group": "B+",
+            "emergency_contact": "9876500000",
+            "consent_shared_treatment": 1
+        })
+        db.save_prescription(
+            patient_id=p1,
+            doctor_name="डॉ. अदिति शर्मा (Dr. Aditi Sharma, MD)",
+            clinic_name="नीमराना सामुदायिक स्वास्थ्य केंद्र (CHC)",
+            prescription_date="2026-10-24",
+            raw_text="Tab Amlodipine 5mg OD pc, Tab Metformin 500mg BD pc",
+            verified_medicines=[
+                {"candidate_medicine_name": "Amlodipine 5mg", "dose_instruction_raw": "1 गोली", "frequency_raw": "सुबह 1 बार", "timing_raw": "खाने के बाद"},
+                {"candidate_medicine_name": "Metformin 500mg", "dose_instruction_raw": "1 गोली", "frequency_raw": "दिन में 2 बार", "timing_raw": "खाने के बाद"}
+            ]
+        )
+        db.save_vital(p1, "डिजिटल बीपी मॉनिटर", "रक्तचाप (Blood Pressure)", "136/86", "mmHg", "उच्च रक्तचाप (High BP Warning)")
+        db.save_vital(p1, "पल्स ऑक्सीमीटर", "ऑक्सीजन (SpO2)", "98", "%", "सामान्य (Normal)")
+        db.save_vital(p1, "डिजिटल ग्लूकोमीटर", "रक्त शर्करा (Blood Sugar)", "138", "mg/dL", "सामान्य (Normal)")
+        db.record_adherence(p1, "Amlodipine 5mg", "1 गोली", "सुबह", "08:00", taken_status=True)
+        db.record_adherence(p1, "Metformin 500mg", "1 गोली", "दोपहर", "13:30", taken_status=True)
+        db.save_complication_prediction(
+            patient_id=p1,
+            risk_score=26.4,
+            risk_tier="सामान्य जोखिम (Low Risk)",
+            systolic_bp=136.0,
+            diastolic_bp=86.0,
+            blood_sugar=138.0,
+            spo2=98.0,
+            adherence_pct=92.0,
+            trajectory="स्थिर (Stable)",
+            model_name="EnsembleClinicalClassifier"
+        )
+        db.add_staff_clinical_note(
+            patient_id=p1,
+            staff_id="doc_aiims_001",
+            staff_name="डॉ. अदिति शर्मा (Dr. Aditi Sharma, MD)",
+            staff_role="Physician / Doctor",
+            observation_notes="मरीज का रक्तचाप हल्का बढ़ा हुआ है। दवा नियमित लेने की सलाह दी गई। 15 दिन बाद फॉलो-अप आवश्यक।",
+            triage_status="सामान्य फॉलो-अप (Follow-up Required)",
+            recommended_action="कम नमक और नियमित सुबह की सैर।"
+        )
+
+        # Patient 2: Geeta Devi (High BP crisis sample for triage demonstration)
+        u2 = db.upsert_user({
+            "id": "user_geeta",
+            "name": "गीता देवी (Geeta Devi)",
+            "email": "geeta.devi@example.com",
+            "role": "patient",
+            "phone": "9876543210",
+            "abha_id": "91-8899-7766-5544"
+        })
+        p2 = db.upsert_patient({
+            "id": "pat_geeta",
+            "user_id": u2,
+            "name": "गीता देवी (Geeta Devi)",
+            "age": 63,
+            "gender": "महिला (Female)",
+            "blood_group": "O+",
+            "emergency_contact": "108",
+            "consent_shared_treatment": 1
+        })
+        db.save_vital(p2, "डिजिटल बीपी मॉनिटर", "रक्तचाप (Blood Pressure)", "162/98", "mmHg", "अत्यधिक उच्च रक्तचाप (Crisis Warning)")
+        db.save_complication_prediction(
+            patient_id=p2,
+            risk_score=78.5,
+            risk_tier="उच्च जोखिम (High Risk)",
+            systolic_bp=162.0,
+            diastolic_bp=98.0,
+            blood_sugar=210.0,
+            spo2=94.0,
+            adherence_pct=60.0,
+            trajectory="तेजी से बढ़ता (Worsening)",
+            model_name="EnsembleClinicalClassifier"
+        )
+
+seed_initial_clinical_data_if_empty(clinical_db)
 
 
 # Streamlit Page Configuration
@@ -69,6 +172,9 @@ st.set_page_config(
 # Initialize Session State
 if "app_lang" not in st.session_state:
     st.session_state.app_lang = "hi"
+if "current_user" not in st.session_state:
+    # Default patient profile
+    st.session_state.current_user = AuthService.create_google_demo_user(role="patient")
 if "prescription" not in st.session_state:
     st.session_state.prescription = None
 if "image_bytes" not in st.session_state:
@@ -79,6 +185,24 @@ if "demo_mode" not in st.session_state:
     st.session_state.demo_mode = True
 if "large_font_mode" not in st.session_state:
     st.session_state.large_font_mode = False
+
+# Ensure active patient profile exists in database
+curr_u = st.session_state.current_user
+clinical_db.upsert_user(curr_u.model_dump())
+if curr_u.role == "patient":
+    curr_pat_id = f"pat_{curr_u.id}"
+    if not clinical_db.get_patient(curr_pat_id):
+        clinical_db.upsert_patient({
+            "id": curr_pat_id,
+            "user_id": curr_u.id,
+            "name": curr_u.name,
+            "age": 58,
+            "gender": "पुरुष (Male)",
+            "blood_group": "B+",
+            "emergency_contact": curr_u.phone or "108",
+            "consent_shared_treatment": 1
+        })
+
 
 # Custom CSS & PWA Meta for Cross-Platform Compatibility (iOS, Android & Desktop Web)
 st.markdown("""
@@ -145,9 +269,9 @@ st.markdown("""
         background-color: transparent;
         border-radius: 12px;
         color: #475569;
-        font-size: 0.96rem;
+        font-size: 0.94rem;
         font-weight: 600;
-        padding: 6px 14px;
+        padding: 6px 12px;
         transition: all 0.15s ease-in-out;
     }
     .stTabs [aria-selected="true"] {
@@ -234,10 +358,11 @@ st.markdown("""
 
 
 # -------------------------------------------------------------
-# TOP NAVBAR: Brand Header + Language Selection + Accessibility
+# TOP NAVBAR: Brand Header + User Identity + Language Selection
 # -------------------------------------------------------------
-st.markdown("""
-<div style="background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%); padding: 18px 20px; border-radius: 20px; color: white; margin-bottom: 14px; box-shadow: 0 8px 20px -4px rgba(6, 78, 59, 0.25);">
+u_role_badge = "👨‍⚕️ डॉक्टर" if curr_u.role == "doctor" else ("🏥 स्टाफ" if curr_u.role == "staff" else "👤 मरीज")
+st.markdown(f"""
+<div style="background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%); padding: 18px 20px; border-radius: 20px; color: white; margin-bottom: 12px; box-shadow: 0 8px 20px -4px rgba(6, 78, 59, 0.25);">
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="background: rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
@@ -248,20 +373,63 @@ st.markdown("""
                 <p style="margin: 2px 0 0 0; font-size: 0.88rem; opacity: 0.92; color: #d1fae5;">AI Prescription Reader & Health Companion for Rural India</p>
             </div>
         </div>
-        <div style="display: flex; gap: 6px;">
-            <span style="background: rgba(255,255,255,0.18); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; color: #ffffff;">
-                🟢 Offline Ready
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <span style="background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; color: #ffffff;">
+                {u_role_badge}: {curr_u.name.split('(')[0].strip()}
             </span>
             <span style="background: rgba(255,255,255,0.18); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; color: #ffffff;">
-                🔒 Zero Storage
+                🟢 DB Synced
             </span>
         </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Language Selector & Accessibility Row
-col_lang, col_a11y = st.columns([3, 2])
+# User Authentication, Language Selector & Accessibility Bar
+col_user_bar, col_lang, col_a11y = st.columns([3, 2, 2])
+
+with col_user_bar:
+    with st.popover("🔑 लॉगिन / साइन इन (Account)", help="Google Sign-In, ABHA ID or Switch Profile"):
+        st.markdown("#### 🔐 उपयोगकर्ता पहचान (User Sign-In)")
+        st.caption("डॉक्टर, अस्पताल स्टाफ और मरीज अपने इलाज रिकॉर्ड सुरक्षित रखने के लिए साइन-इन करें:")
+        
+        # Google Sign-in button
+        google_auth_url = AuthService.get_google_auth_url(redirect_uri="http://localhost:8501")
+        st.markdown(f"""
+        <a href="{google_auth_url}" target="_blank" style="text-decoration:none;">
+            <div style="background-color:#ffffff; border:1.5px solid #dadce0; border-radius:12px; padding:10px 14px; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" />
+                <span style="color:#3c4043; font-weight:600; font-size:0.95rem;">Google खाते से साइन इन करें (Google Sign-In)</span>
+            </div>
+        </a>
+        """, unsafe_allow_html=True)
+
+        st.markdown("**तुरंत भूमिका चुनें (1-Click Test Role):**")
+        col_r1, col_r2, col_r3 = st.columns(3)
+        with col_r1:
+            if st.button("👤 मरीज (Patient)", key="btn_role_pat"):
+                st.session_state.current_user = AuthService.create_google_demo_user("patient")
+                st.rerun()
+        with col_r2:
+            if st.button("👨‍⚕️ डॉक्टर (Doctor)", key="btn_role_doc"):
+                st.session_state.current_user = AuthService.create_google_demo_user("doctor")
+                st.rerun()
+        with col_r3:
+            if st.button("🏥 स्टाफ (Staff)", key="btn_role_staff"):
+                st.session_state.current_user = AuthService.create_google_demo_user("staff")
+                st.rerun()
+
+        st.markdown("---")
+        st.markdown("**मोबाइल नंबर या आभा (ABHA) आईडी से लॉगिन:**")
+        c_name = st.text_input("मरीज का नाम:", value=curr_u.name, key="inp_login_name")
+        c_phone = st.text_input("मोबाइल नंबर (वैकल्पिक):", value=curr_u.phone or "", key="inp_login_phone")
+        c_abha = st.text_input("ABHA ID (वैकल्पिक):", value=curr_u.abha_id or "", placeholder="उदा. 91-1234-5678-9012", key="inp_login_abha")
+        if st.button("💾 प्रोफ़ाइल अपडेट करें (Save Profile)", key="btn_save_user_prof"):
+            new_u = AuthService.create_custom_user(c_name, curr_u.email, c_phone, c_abha, role=curr_u.role)
+            st.session_state.current_user = new_u
+            clinical_db.upsert_user(new_u.model_dump())
+            st.success("प्रोफ़ाइल सफलतापूर्वक सहेजी गई!")
+            st.rerun()
 
 with col_lang:
     LANG_DISPLAY = ["🇮🇳 हिन्दी", "🇬🇧 English", "🌾 Hinglish"]
@@ -287,7 +455,7 @@ with col_lang:
 lang = st.session_state.app_lang
 
 with col_a11y:
-    st.write("") # alignment spacer
+    st.write("")
     st.session_state.large_font_mode = st.toggle(
         t("btn_large_text", lang),
         value=st.session_state.large_font_mode,
@@ -363,14 +531,15 @@ with st.expander(t("emergency_drawer_title", lang), expanded=False):
 
 
 # -------------------------------------------------------------
-# MAIN NAVIGATION TABS
+# MAIN NAVIGATION TABS (Includes Doctor & Staff Portal)
 # -------------------------------------------------------------
-tab_scan, tab_reminders, tab_vitals, tab_facilities, tab_chat, tab_settings = st.tabs([
+tab_scan, tab_reminders, tab_vitals, tab_facilities, tab_chat, tab_portal, tab_settings = st.tabs([
     t("tab_scan", lang),
     t("tab_reminders", lang),
     t("tab_vitals", lang),
     t("tab_facilities", lang),
     t("tab_chat", lang),
+    t("tab_doctor_portal", lang),
     t("tab_settings", lang)
 ])
 
@@ -432,7 +601,6 @@ with tab_scan:
         file_bytes = uploaded_file.getvalue()
         st.session_state.image_bytes = file_bytes
 
-        # Validation & Quality Check
         valid, err_msg = ImageProcessingService.validate_file(file_bytes)
         if not valid:
             st.error(err_msg)
@@ -458,7 +626,7 @@ with tab_scan:
                         st.session_state.prescription = extractor.extract_from_image(file_bytes)
                         st.rerun()
 
-    # Step 2: Review & Confirmation Screen (Feature D)
+    # Step 2: Review & Confirmation Screen
     if st.session_state.prescription:
         presc: Prescription = st.session_state.prescription
         st.markdown("---")
@@ -532,7 +700,6 @@ with tab_scan:
                 if med.is_uncertain:
                     st.warning(f"⚠️ {med.uncertainty_reason or 'Unclear handwriting'}")
 
-                # Indian Healthcare & Drug Database Grounding (NLEM & Jan Aushadhi)
                 ref_info = MedicineReferenceService.lookup_medicine(med.candidate_medicine_name or med.raw_medicine_name)
                 if ref_info:
                     with st.expander("🏛️ Indian NLEM & Jan Aushadhi Reference", expanded=False):
@@ -562,7 +729,7 @@ with tab_scan:
 
         st.markdown("---")
 
-        # Step 3: Explanation & Reminder Setup (Features E & F)
+        # Step 3: Explanation & Reminder Setup (Syncs to Clinical Database)
         if confirmed_all and presc.medicines:
             st.success("✅ All medicines verified!")
 
@@ -585,9 +752,8 @@ with tab_scan:
             st.markdown(summary_text)
 
             st.markdown("---")
-            st.subheader("4. Set Reminders")
+            st.subheader("4. Set Reminders & Sync to Treatment Database")
 
-            # Check for conflicting instructions with existing schedules
             potential_conflicts = []
             for med in presc.medicines:
                 conf = reminder_service.check_potential_conflicts(med)
@@ -606,6 +772,7 @@ with tab_scan:
 
             if st.button(t("save_reminders_btn", lang), type="primary"):
                 created_count = 0
+                verified_med_dicts = []
                 for med in presc.medicines:
                     if med.user_confirmed:
                         created = reminder_service.create_reminders_from_instruction(
@@ -614,7 +781,26 @@ with tab_scan:
                             prescription_date=presc.prescription_date
                         )
                         created_count += len(created)
-                st.success(f"🎉 {created_count} reminders created successfully!")
+                        verified_med_dicts.append({
+                            "candidate_medicine_name": med.candidate_medicine_name or med.raw_medicine_name,
+                            "strength": med.strength,
+                            "dose_instruction_raw": med.dose_instruction_raw,
+                            "frequency_raw": med.frequency_raw,
+                            "timing_raw": med.timing_raw
+                        })
+
+                # Sync to Clinical Database for Doctors and Healthcare Staff
+                target_pat_id = f"pat_{curr_u.id}"
+                clinical_db.save_prescription(
+                    patient_id=target_pat_id,
+                    doctor_name="Attending PHC Doctor",
+                    clinic_name="Community Health Centre",
+                    prescription_date=presc.prescription_date or datetime.now().strftime("%Y-%m-%d"),
+                    raw_text=presc.patient_name or "Handwritten Prescription",
+                    verified_medicines=verified_med_dicts
+                )
+
+                st.success(f"🎉 {created_count} reminders saved & synced to your treatment record!")
         else:
             st.warning("⚠️ Please verify all medicines above to activate reminders.")
 
@@ -639,7 +825,7 @@ with tab_reminders:
         st.markdown(f"""
         <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:12px 16px; margin-bottom:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="font-weight:bold; color:#166534;">📊 Today's Progress / आज की प्रगति</span>
+                <span style="font-weight:bold; color:#166534;">📊 Today's Progress / आज की खुराक प्रगति</span>
                 <span style="font-weight:800; color:#15803d;">{taken_count} / {len(total_enabled)} ({pct}%)</span>
             </div>
         </div>
@@ -718,6 +904,16 @@ with tab_reminders:
                 else:
                     if st.button(t("mark_taken_btn", lang), key=f"taken_{rem.id}", type="primary"):
                         reminder_service.mark_as_taken(rem.id, True)
+                        # Sync adherence event to Clinical Database
+                        target_pat_id = f"pat_{curr_u.id}"
+                        clinical_db.record_adherence(
+                            patient_id=target_pat_id,
+                            medicine_name=rem.medicine_name,
+                            dosage=rem.dosage or "1 dose",
+                            timing=rem.timing_label,
+                            scheduled_time=rem.reminder_time,
+                            taken_status=True
+                        )
                         st.rerun()
 
             with col_t2:
@@ -779,7 +975,7 @@ with tab_vitals:
     st.subheader(t("vitals_heading", lang))
     st.caption("Record digital health device readings and evaluate multi-day health risks:")
 
-    # Part A: Health Devices Vitals Recorder
+    # Part A: Health Devices Vitals Recorder (Syncs to Clinical DB)
     with st.expander("🩺 Health Device Vitals Recorder", expanded=True):
         dev_choice = st.selectbox(
             "Select Device:",
@@ -819,13 +1015,25 @@ with tab_vitals:
 
         if st.button("💾 Save Reading", key="btn_save_vital"):
             if val_input.strip():
+                dev_clean = dev_choice.split("(")[0].strip()
                 rec = device_service.record_reading(
-                    device_type=dev_choice.split("(")[0].strip(),
+                    device_type=dev_clean,
                     metric_name=v_metric,
                     value=val_input,
                     unit=v_unit
                 )
-                st.success(f"✅ Saved: {val_input} {v_unit}")
+                # Persist to Clinical Relational Database for Doctors & PHC Staff
+                target_pat_id = f"pat_{curr_u.id}"
+                clinical_db.save_vital(
+                    patient_id=target_pat_id,
+                    device_type=dev_clean,
+                    metric_name=v_metric,
+                    value=val_input,
+                    unit=v_unit,
+                    status_flag=rec.status_flag,
+                    alert_message=rec.alert_message
+                )
+                st.success(f"✅ Saved to treatment database: {val_input} {v_unit}")
                 if rec.alert_message:
                     st.warning(rec.alert_message)
             else:
@@ -847,7 +1055,7 @@ with tab_vitals:
 
     st.markdown("---")
 
-    # Part B: AI / ML Health Complication Risk Prediction
+    # Part B: AI / ML Health Complication Risk Prediction (Syncs to Clinical DB)
     with st.expander("🤖 AI / ML Health Complication Risk Predictor", expanded=True):
         st.markdown("Predict potential complications based on vital trends and adherence:")
 
@@ -895,15 +1103,32 @@ with tab_vitals:
                         st.caption(f"{badge} **{rf.feature_name}** ({rf.observed_value}): {rf.explanation_hindi}")
 
                 # Deep Learning sequence trajectory
+                trajectory_label = "स्थिर (Stable)"
                 try:
                     trend_vals = [float(x.strip()) for x in bp_seq_str.split(",") if x.strip()]
                     if len(trend_vals) >= 2:
                         t_res = ComplicationPredictionService.predict_temporal_trajectory(trend_vals)
+                        trajectory_label = t_res['trend_direction']
                         st.markdown("---")
-                        st.markdown(f"📈 **Trajectory:** {t_res['trend_direction']}")
+                        st.markdown(f"📈 **Trajectory:** {trajectory_label}")
                         st.caption(t_res['warning_message_hindi'])
                 except Exception:
                     pass
+
+                # Persist Prediction to Clinical Database for Hospital Staff
+                target_pat_id = f"pat_{curr_u.id}"
+                clinical_db.save_complication_prediction(
+                    patient_id=target_pat_id,
+                    risk_score=res.risk_score_percentage,
+                    risk_tier=res.risk_tier.value,
+                    systolic_bp=float(inp_sys),
+                    diastolic_bp=float(inp_dia),
+                    blood_sugar=float(inp_sugar),
+                    spo2=float(inp_spo2),
+                    adherence_pct=float(inp_adh),
+                    trajectory=trajectory_label,
+                    model_name=res.model_name
+                )
 
                 if res.emergency_dial_advised:
                     st.error("🚨 Critical indicators detected. Please contact 108 Emergency immediately.")
@@ -1035,7 +1260,153 @@ with tab_chat:
 
 
 # -------------------------------------------------------------
-# TAB 6: SETTINGS & INSTALLATION
+# TAB 6: DOCTOR & HOSPITAL STAFF TREATMENT PORTAL
+# -------------------------------------------------------------
+with tab_portal:
+    st.subheader("👨‍⚕️ डॉक्टर और अस्पताल स्टाफ पोर्टल (Doctor & Hospital Staff Portal)")
+    st.caption("अस्पताल के डॉक्टर, नर्स और PHC स्टाफ के लिए मरीज का संपूर्ण इलाज डेटा और क्लिनिकल ट्राइएज प्रबंधन:")
+
+    # Notice of clinical purpose & consent
+    st.markdown("""
+    <div style="background-color:#e0f2fe; border-left:6px solid #0284c7; padding:12px 16px; border-radius:12px; margin-bottom:14px;">
+        🏛️ <b>DISHA / ABDM क्लिनिकल डेटाबेस:</b> यह पोर्टल अधिकृत डॉक्टर व स्वास्थ्य स्टाफ को 
+        मरीज के पर्चे, उपकरण रीडिंग, दवा नियमितता और AI जोखिम पूर्वानुमान देखने और क्लिनिकल नोट्स जोड़ने की सुविधा देता है।
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Patient Selector
+    all_pats = clinical_db.list_all_patients()
+    if not all_pats:
+        st.info("डेटाबेस में फिलहाल कोई मरीज पंजीकृत नहीं है।")
+    else:
+        pat_display_map = {f"{p['name']} (उम्र: {p['age']}, ABHA: {p['id']})": p['id'] for p in all_pats}
+        selected_display = st.selectbox("मरीज चुनें (Select Patient for Treatment Review):", list(pat_display_map.keys()))
+        selected_pat_id = pat_display_map[selected_display]
+        selected_pat = clinical_db.get_patient(selected_pat_id)
+
+        if selected_pat:
+            col_p_info1, col_p_info2 = st.columns(2)
+            with col_p_info1:
+                st.markdown(f"👤 **मरीज का नाम:** {selected_pat['name']}")
+                st.markdown(f"🎂 **आयु / लिंग:** {selected_pat['age']} वर्ष | {selected_pat['gender']}")
+                st.markdown(f"🩸 **ब्लड ग्रुप:** {selected_pat['blood_group']}")
+            with col_p_info2:
+                consent_badge = "✅ मरीज द्वारा सहमति दी गई (Consent Granted)" if selected_pat['consent_shared_treatment'] else "❌ सहमति लंबित"
+                st.markdown(f"📋 **इलाज सहमति:** {consent_badge}")
+                st.markdown(f"📞 **इमरजेंसी संपर्क:** {selected_pat['emergency_contact']}")
+                st.markdown(f"🆔 **रिकॉर्ड आईडी:** `{selected_pat['id']}`")
+
+            st.markdown("---")
+
+            # Section A: Prescriptions & Medications
+            st.markdown("#### 📋 मरीज के पर्चे और दवाएं (Prescription Records):")
+            pat_prescs = clinical_db.get_patient_prescriptions(selected_pat_id)
+            if not pat_prescs:
+                st.caption("इस मरीज का कोई पर्चा दर्ज नहीं है।")
+            else:
+                for p in pat_prescs:
+                    with st.expander(f"📄 पर्चा दिनांक: {p['prescription_date']} — {p['clinic_name']} ({p['doctor_name']})", expanded=True):
+                        st.caption(f"मूल शब्द / Raw: {p['raw_text']}")
+                        for m in p.get("verified_medicines", []):
+                            st.markdown(f"• **{m.get('candidate_medicine_name', 'दवा')}** — {m.get('dose_instruction_raw', '')} | {m.get('frequency_raw', '')} ({m.get('timing_raw', '')})")
+
+            st.markdown("---")
+
+            # Section B: Device Vitals
+            st.markdown("#### 🩺 स्वास्थ्य उपकरण रीडिंग (Device Vitals & Trends):")
+            pat_vitals = clinical_db.get_patient_vitals(selected_pat_id, limit=5)
+            if not pat_vitals:
+                st.caption("कोई उपकरण रीडिंग उपलब्ध नहीं है।")
+            else:
+                col_v_a, col_v_b = st.columns(2)
+                for i, v in enumerate(pat_vitals):
+                    target_col = col_v_a if i % 2 == 0 else col_v_b
+                    with target_col:
+                        st.markdown(f"""
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 14px; margin-bottom:8px;">
+                            <div style="font-weight:bold; color:#1e293b;">{v['device_type']} ({v['metric_name']})</div>
+                            <div style="font-size:1.35rem; font-weight:800; color:#047857;">{v['value']} {v['unit']}</div>
+                            <div style="font-size:0.8rem; color:#64748b;">{v['timestamp']} • {v['status_flag']}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+            st.markdown("---")
+
+            # Section C: Adherence Rate & AI Risk Summary
+            col_sum_adh, col_sum_ai = st.columns(2)
+            with col_sum_adh:
+                st.markdown("#### ⏰ दवा नियमितता (Adherence):")
+                adh = clinical_db.get_patient_adherence_rate(selected_pat_id)
+                st.markdown(f"**नियमितता दर:** **{adh['percentage']}%** ({adh['total_taken']} / {adh['total_scheduled']} खुराक)")
+                st.progress(adh['percentage'] / 100.0)
+
+            with col_sum_ai:
+                st.markdown("#### 🤖 AI जोखिम पूर्वानुमान:")
+                pred = clinical_db.get_latest_complication_prediction(selected_pat_id)
+                if pred:
+                    st.markdown(f"**जोखिम स्कोर:** **{pred['risk_score']}%** ({pred['risk_tier']})")
+                    st.caption(f"ट्रेंड: {pred.get('trajectory', 'स्थिर')} | मॉडल: {pred.get('model_name')}")
+                else:
+                    st.caption("जोखिम पूर्वानुमान अभी नहीं हुआ है।")
+
+            st.markdown("---")
+
+            # Section D: Doctor Clinical Note Input
+            st.markdown("#### ✍️ डॉक्टर / स्टाफ क्लिनिकल सलाह दर्ज करें (Add Treatment Note):")
+            doc_note_text = st.text_area("क्लिनिकल अवलोकन व दवा निर्देश (Clinical Observations & Advice):", placeholder="मरीज की स्थिति, दवा खुराक में बदलाव, या खानपान संबंधी निर्देश दर्ज करें...")
+            col_triage_stat, col_triage_rec = st.columns(2)
+            with col_triage_stat:
+                doc_triage = st.selectbox("ट्राइएज स्थिति (Triage Priority):", [
+                    "🟢 सामान्य / स्थिर (Normal / Stable)",
+                    "🟡 फॉलो-अप आवश्यक (Follow-up Required)",
+                    "🔴 अति-आवश्यक ध्यान (Urgent Attention)"
+                ])
+            with col_triage_rec:
+                doc_action = st.text_input("सिफारिश (Action):", placeholder="उदा. 7 दिन बाद दोबारा बीपी नापें")
+
+            if st.button("💾 क्लिनिकल सलाह सहेजें (Save Clinical Note)", type="primary", key="btn_save_doc_note"):
+                if doc_note_text.strip():
+                    clinical_db.add_staff_clinical_note(
+                        patient_id=selected_pat_id,
+                        staff_id=curr_u.id,
+                        staff_name=curr_u.name,
+                        staff_role="Physician / Doctor" if curr_u.role == "doctor" else ("PHC Nurse / Staff" if curr_u.role == "staff" else "Medical Attendant"),
+                        observation_notes=doc_note_text,
+                        triage_status=doc_triage,
+                        recommended_action=doc_action
+                    )
+                    st.success("✅ क्लिनिकल सलाह सफलतापूर्वक डेटाबेस में सहेज ली गई!")
+                    st.rerun()
+                else:
+                    st.warning("कृपया क्लिनिकल अवलोकन दर्ज करें।")
+
+            # Past Clinical Notes
+            past_notes = clinical_db.get_staff_clinical_notes(selected_pat_id)
+            if past_notes:
+                st.markdown("#### 🕒 पूर्व क्लिनिकल नोट्स (Past Staff Notes):")
+                for n in past_notes[:4]:
+                    st.markdown(f"""
+                    <div style="background:#fefce8; border-left:4px solid #ca8a04; border-radius:10px; padding:10px 14px; margin-bottom:8px;">
+                        <div style="font-weight:bold; color:#854d0e;">{n['staff_name']} ({n['staff_role']}) — <span style="font-size:0.85rem; color:#713f12;">{n['created_at']}</span></div>
+                        <div style="font-size:0.95rem; color:#1e293b; margin-top:3px;">{n['observation_notes']}</div>
+                        <div style="font-size:0.85rem; color:#475569; margin-top:2px;"><b>ट्राइएज:</b> {n['triage_status']} | <b>सलाह:</b> {n['recommended_action'] or 'निर्देशानुसार'}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            st.markdown("---")
+
+            # Section E: Export Clinical Summary Card (ABDM / PHC EHR JSON)
+            summary_export = clinical_db.export_patient_clinical_summary(selected_pat_id)
+            st.download_button(
+                label="📥 मरीज का हेल्थ कार्ड डाउनलोड करें (Export Patient Clinical Summary JSON)",
+                data=json.dumps(summary_export, ensure_ascii=False, indent=2),
+                file_name=f"SehatSaathi_Patient_{selected_pat_id}.json",
+                mime="application/json"
+            )
+
+
+# -------------------------------------------------------------
+# TAB 7: SETTINGS & INSTALLATION
 # -------------------------------------------------------------
 with tab_settings:
     st.subheader(t("settings_heading", lang))

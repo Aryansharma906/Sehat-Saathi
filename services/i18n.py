@@ -107,6 +107,11 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "💬 Ask AI Questions",
         "hinglish": "💬 Sawaal Poochein"
     },
+    "tab_doctor_portal": {
+        "hi": "👨‍⚕️ डॉक्टर व स्टाफ पोर्टल (Doctor & Staff)",
+        "en": "👨‍⚕️ Doctor & Staff Portal",
+        "hinglish": "👨‍⚕️ Doctor aur Staff Portal"
+    },
     "tab_settings": {
         "hi": "⚙️ सेटिंग्स (Settings)",
         "en": "⚙️ Settings",
