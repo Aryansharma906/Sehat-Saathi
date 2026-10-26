@@ -2,7 +2,7 @@
 
 **Project:** Sehat Saathi (सेहत साथी)  
 **Lead:** Agent 1 (Technical Lead / Coordinator)  
-**Stack:** Python 3.13, Streamlit, Google GenAI SDK (Gemini 2.5/2.0 Flash), Pydantic v2, Pillow, Pytest
+**Stack:** Python 3.13, Starlette + Uvicorn, HTML/CSS/JavaScript, Google GenAI SDK, Pydantic v2, Pillow, Pytest
 
 ---
 
@@ -10,9 +10,15 @@
 
 ```
 +--------------------------------------------------------------------------+
-|                        Streamlit Frontend (app/)                        |
-|   Home -> Upload/Camera -> Quality Check -> Review & Confirm            |
-|   -> Explanation & Audio (TTS) -> Reminders & Grounded Chat              |
+|                  Browser Frontend (webapp/static/)                      |
+|   Overview -> Prescription Review -> Confirmed Reminders                |
+|   -> Vitals & Wellbeing -> Nearby Care -> Grounded Health Q&A            |
++------------------------------------+-------------------------------------+
+                                     |
+                                     v
++--------------------------------------------------------------------------+
+|                 Starlette ASGI App and JSON API (webapp/)                 |
+|   Local-only by default; prescription photos handled in memory           |
 +------------------------------------+-------------------------------------+
                                      |
                                      v

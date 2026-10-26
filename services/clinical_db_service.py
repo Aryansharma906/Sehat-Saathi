@@ -45,9 +45,42 @@ class ClinicalDatabaseService:
                 phone TEXT,
                 abha_id TEXT,
                 profile_pic TEXT,
+                medical_license_no TEXT,
+                specialization TEXT,
+                hospital_clinic TEXT,
+                qualification TEXT,
+                staff_designation TEXT,
+                employee_id TEXT,
+                department_ward TEXT,
+                age INTEGER,
+                gender TEXT,
+                blood_group TEXT,
+                emergency_contact TEXT,
+                address TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """)
+
+            # Dynamic column migration for existing database files
+            cursor.execute("PRAGMA table_info(users)")
+            existing_cols = {col["name"] for col in cursor.fetchall()}
+            new_cols = {
+                "medical_license_no": "TEXT",
+                "specialization": "TEXT",
+                "hospital_clinic": "TEXT",
+                "qualification": "TEXT",
+                "staff_designation": "TEXT",
+                "employee_id": "TEXT",
+                "department_ward": "TEXT",
+                "age": "INTEGER",
+                "gender": "TEXT",
+                "blood_group": "TEXT",
+                "emergency_contact": "TEXT",
+                "address": "TEXT"
+            }
+            for col_name, col_type in new_cols.items():
+                if col_name not in existing_cols:
+                    cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
 
             # 2. Patients table (Linked to user, holds medical profile & consent)
             cursor.execute("""
@@ -159,22 +192,39 @@ class ClinicalDatabaseService:
 
     def upsert_user(self, user_dict: Dict[str, Any]) -> str:
         """
-        Saves or updates a user profile.
+        Saves or updates a user profile with role-specific attributes.
         """
         user_id = user_dict.get("id") or str(uuid.uuid4())[:8]
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
-            INSERT INTO users (id, google_id, email, name, role, phone, abha_id, profile_pic)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (
+                id, google_id, email, name, role, phone, abha_id, profile_pic,
+                medical_license_no, specialization, hospital_clinic, qualification,
+                staff_designation, employee_id, department_ward,
+                age, gender, blood_group, emergency_contact, address
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
-                google_id=excluded.google_id,
-                email=excluded.email,
+                google_id=COALESCE(excluded.google_id, users.google_id),
+                email=COALESCE(excluded.email, users.email),
                 name=excluded.name,
                 role=excluded.role,
                 phone=excluded.phone,
                 abha_id=excluded.abha_id,
-                profile_pic=excluded.profile_pic
+                profile_pic=excluded.profile_pic,
+                medical_license_no=excluded.medical_license_no,
+                specialization=excluded.specialization,
+                hospital_clinic=excluded.hospital_clinic,
+                qualification=excluded.qualification,
+                staff_designation=excluded.staff_designation,
+                employee_id=excluded.employee_id,
+                department_ward=excluded.department_ward,
+                age=excluded.age,
+                gender=excluded.gender,
+                blood_group=excluded.blood_group,
+                emergency_contact=excluded.emergency_contact,
+                address=excluded.address
             """, (
                 user_id,
                 user_dict.get("google_id"),
@@ -183,10 +233,29 @@ class ClinicalDatabaseService:
                 user_dict.get("role", "patient"),
                 user_dict.get("phone"),
                 user_dict.get("abha_id"),
-                user_dict.get("profile_pic", "👤")
+                user_dict.get("profile_pic", "👤"),
+                user_dict.get("medical_license_no"),
+                user_dict.get("specialization"),
+                user_dict.get("hospital_clinic"),
+                user_dict.get("qualification"),
+                user_dict.get("staff_designation"),
+                user_dict.get("employee_id"),
+                user_dict.get("department_ward"),
+                user_dict.get("age"),
+                user_dict.get("gender"),
+                user_dict.get("blood_group"),
+                user_dict.get("emergency_contact"),
+                user_dict.get("address")
             ))
             conn.commit()
         return user_id
+
+    def get_user(self, user_id: str) -> Optional[Dict[str, Any]]:
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
 
     def upsert_patient(self, patient_dict: Dict[str, Any]) -> str:
         """
@@ -347,7 +416,7 @@ class ClinicalDatabaseService:
             total = cursor.fetchone()["total"]
             cursor.execute("SELECT COUNT(*) as taken FROM clinical_adherence WHERE patient_id = ? AND taken_status = 1", (patient_id,))
             taken = cursor.fetchone()["taken"]
-            pct = int((taken / total) * 100) if total > 0 else 100
+            pct = int((taken / total) * 100) if total > 0 else 0
             return {"total_scheduled": total, "total_taken": taken, "percentage": pct}
 
     def save_complication_prediction(

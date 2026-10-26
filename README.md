@@ -1,7 +1,13 @@
 # 💊 Sehat Saathi (सेहत साथी)
 
+> **Status: local research prototype only.** This is not a government service, not a validated clinical product, and not suitable for real patient data or clinical decisions. The facility directory and public-service configuration cover only a small India-focused demo cluster. Production startup is intentionally blocked. See [deployment readiness](docs/DEPLOYMENT_READINESS.md) before any pilot or deployment discussion.
+
 > **Accessible AI-Assisted Prescription Reader and Medication Companion for Rural India & Older Adults**  
 > *Developed for the AURIX AI Hackathon using Google Antigravity*
+
+**Plain-language overview:** [Read the short project brief](docs/PROJECT_BRIEF.md).
+
+**Vercel demo:** the deploy entrypoint is isolated and read-only; it excludes the repository health-data files and accepts only synthetic prescription samples. This is a public demonstration, not a place to enter patient or personal health information.
 
 ---
 
@@ -43,8 +49,11 @@ In rural India, millions of older adults and patients struggle to read doctors' 
 
 ```
 sehat-saathi/
+├── webapp/
+│   ├── main.py                     # Starlette ASGI server and JSON API
+│   └── static/                     # Responsive browser-first application
 ├── app/
-│   └── main.py                     # Streamlit Mobile-First UI (Large-font mode, 6 tabs, Emergency call 108/112)
+│   └── main.py                     # Legacy Streamlit compatibility UI
 ├── models/
 │   ├── prescription.py             # Pydantic Schemas with Safety Invariants
 │   ├── reminder.py                 # Reminder & Schedule Models with Traceability
@@ -120,26 +129,29 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ## 💻 Running the Application
 
-Launch the Streamlit app:
+Start the local browser application:
 ```bash
-source .venv/bin/activate
-streamlit run app/main.py
+uvicorn webapp.main:app --host 127.0.0.1 --port 8000 --env-file .env
 ```
-Open your browser at `http://localhost:8501`.
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The server binds to your computer only by default. Keep it on loopback unless you configure authentication before exposing it to a network.
+
+The new interface uses the project's existing Python services and local data stores. Prescription scans require `GEMINI_API_KEY`; the two sample prescriptions are available in demo mode without an API key. Photos are processed in memory. A reminder can only be saved after reviewing and confirming its medicine name, dose, frequency, and timing.
 
 ---
 
 ## 🧪 Running Automated Tests
 
-All 24 automated safety, extraction, traceability, and reminder tests can be run with `pytest`:
+Install the development dependencies, then run the complete safety, service, and UI compatibility suite:
 ```bash
 source .venv/bin/activate
+pip install -r requirements-test.txt
 pytest
 ```
+The legacy Streamlit UI is only kept for regression compatibility; it is not needed to run the browser app.
 
 ---
 
 ## 📋 Honest Limitations Disclosure (Requirement 7 & 8)
 - **In-App Alerts vs OS Background Alarms:** Reminders are managed dynamically inside the web application. When the browser or phone is fully locked/closed, background OS-level push alarms or SMS are not guaranteed without a native mobile wrapper or SMS gateway.
 - **Assistive Scope:** Designed for patient understanding and reminder adherence; never replaces a doctor or pharmacist.
-- **Offline Scope:** Saved reminders and past confirmed prescriptions are fully accessible offline; scanning new photos requires an internet connection for Gemini Multimodal processing.
+- **Offline Scope:** Health records are stored locally on the host computer and are available while its web server is running. The browser UI is not yet cached for use when the host or server is offline. New AI-assisted prescription scans require an internet connection and a configured Gemini API key.

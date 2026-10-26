@@ -1,8 +1,8 @@
 """
 Sehat Saathi (सेहत साथी) — Main Streamlit Application
 AI-assisted prescription reader, medication companion, and rural healthcare assistant.
-Designed for rural India and older adults with multi-lingual UI/UX, Google Sign-In,
-and Clinical Relational Database for Doctors, Nurses, and Healthcare Staff.
+Designed as a local research prototype for rural India and older adults. Profile forms
+do not authenticate users or verify clinician credentials.
 """
 
 import os
@@ -20,6 +20,7 @@ os.environ.setdefault("STREAMLIT_CONFIG_DIR", "/tmp/.streamlit")
 
 import io
 import json
+import uuid
 import urllib.parse
 from datetime import datetime
 from dotenv import load_dotenv
@@ -53,6 +54,7 @@ from storage.persistence import LocalStorageAdapter
 from services.i18n import t
 from services.auth_service import AuthService, User
 from services.clinical_db_service import ClinicalDatabaseService
+from services.proximity_service import ProximityLocationService, haversine_distance_miles
 
 # Instantiate core services
 language_service = SimpleHindiLanguageService()
@@ -64,108 +66,11 @@ mental_service = MentalHealthService()
 clinical_db = ClinicalDatabaseService()
 
 
-def seed_initial_clinical_data_if_empty(db: ClinicalDatabaseService):
-    """Populates realistic initial patients so doctors and staff can test the portal immediately."""
-    patients = db.list_all_patients()
-    if not patients:
-        # Patient 1: Ramesh Kumar
-        u1 = db.upsert_user({
-            "id": "user_ramesh",
-            "name": "रमेश कुमार (Ramesh Kumar)",
-            "email": "ramesh.kumar1965@gmail.com",
-            "role": "patient",
-            "phone": "9123456789",
-            "abha_id": "91-1234-5678-9012"
-        })
-        p1 = db.upsert_patient({
-            "id": "pat_ramesh",
-            "user_id": u1,
-            "name": "रमेश कुमार (Ramesh Kumar)",
-            "age": 58,
-            "gender": "पुरुष (Male)",
-            "blood_group": "B+",
-            "emergency_contact": "9876500000",
-            "consent_shared_treatment": 1
-        })
-        db.save_prescription(
-            patient_id=p1,
-            doctor_name="डॉ. अदिति शर्मा (Dr. Aditi Sharma, MD)",
-            clinic_name="नीमराना सामुदायिक स्वास्थ्य केंद्र (CHC)",
-            prescription_date="2026-10-24",
-            raw_text="Tab Amlodipine 5mg OD pc, Tab Metformin 500mg BD pc",
-            verified_medicines=[
-                {"candidate_medicine_name": "Amlodipine 5mg", "dose_instruction_raw": "1 गोली", "frequency_raw": "सुबह 1 बार", "timing_raw": "खाने के बाद"},
-                {"candidate_medicine_name": "Metformin 500mg", "dose_instruction_raw": "1 गोली", "frequency_raw": "दिन में 2 बार", "timing_raw": "खाने के बाद"}
-            ]
-        )
-        db.save_vital(p1, "डिजिटल बीपी मॉनिटर", "रक्तचाप (Blood Pressure)", "136/86", "mmHg", "उच्च रक्तचाप (High BP Warning)")
-        db.save_vital(p1, "पल्स ऑक्सीमीटर", "ऑक्सीजन (SpO2)", "98", "%", "सामान्य (Normal)")
-        db.save_vital(p1, "डिजिटल ग्लूकोमीटर", "रक्त शर्करा (Blood Sugar)", "138", "mg/dL", "सामान्य (Normal)")
-        db.record_adherence(p1, "Amlodipine 5mg", "1 गोली", "सुबह", "08:00", taken_status=True)
-        db.record_adherence(p1, "Metformin 500mg", "1 गोली", "दोपहर", "13:30", taken_status=True)
-        db.save_complication_prediction(
-            patient_id=p1,
-            risk_score=26.4,
-            risk_tier="सामान्य जोखिम (Low Risk)",
-            systolic_bp=136.0,
-            diastolic_bp=86.0,
-            blood_sugar=138.0,
-            spo2=98.0,
-            adherence_pct=92.0,
-            trajectory="स्थिर (Stable)",
-            model_name="EnsembleClinicalClassifier"
-        )
-        db.add_staff_clinical_note(
-            patient_id=p1,
-            staff_id="doc_aiims_001",
-            staff_name="डॉ. अदिति शर्मा (Dr. Aditi Sharma, MD)",
-            staff_role="Physician / Doctor",
-            observation_notes="मरीज का रक्तचाप हल्का बढ़ा हुआ है। दवा नियमित लेने की सलाह दी गई। 15 दिन बाद फॉलो-अप आवश्यक।",
-            triage_status="सामान्य फॉलो-अप (Follow-up Required)",
-            recommended_action="कम नमक और नियमित सुबह की सैर।"
-        )
-
-        # Patient 2: Geeta Devi (High BP crisis sample for triage demonstration)
-        u2 = db.upsert_user({
-            "id": "user_geeta",
-            "name": "गीता देवी (Geeta Devi)",
-            "email": "geeta.devi@example.com",
-            "role": "patient",
-            "phone": "9876543210",
-            "abha_id": "91-8899-7766-5544"
-        })
-        p2 = db.upsert_patient({
-            "id": "pat_geeta",
-            "user_id": u2,
-            "name": "गीता देवी (Geeta Devi)",
-            "age": 63,
-            "gender": "महिला (Female)",
-            "blood_group": "O+",
-            "emergency_contact": "108",
-            "consent_shared_treatment": 1
-        })
-        db.save_vital(p2, "डिजिटल बीपी मॉनिटर", "रक्तचाप (Blood Pressure)", "162/98", "mmHg", "अत्यधिक उच्च रक्तचाप (Crisis Warning)")
-        db.save_complication_prediction(
-            patient_id=p2,
-            risk_score=78.5,
-            risk_tier="उच्च जोखिम (High Risk)",
-            systolic_bp=162.0,
-            diastolic_bp=98.0,
-            blood_sugar=210.0,
-            spo2=94.0,
-            adherence_pct=60.0,
-            trajectory="तेजी से बढ़ता (Worsening)",
-            model_name="EnsembleClinicalClassifier"
-        )
-
-seed_initial_clinical_data_if_empty(clinical_db)
-
-
 # Streamlit Page Configuration
 st.set_page_config(
     page_title="Sehat Saathi | सेहत साथी",
     page_icon="💊",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
@@ -173,8 +78,8 @@ st.set_page_config(
 if "app_lang" not in st.session_state:
     st.session_state.app_lang = "hi"
 if "current_user" not in st.session_state:
-    # Default patient profile
-    st.session_state.current_user = AuthService.create_google_demo_user(role="patient")
+    # Blank guest patient - asks user for their real data without pre-filling fake records
+    st.session_state.current_user = AuthService.create_blank_user(role="patient")
 if "prescription" not in st.session_state:
     st.session_state.prescription = None
 if "image_bytes" not in st.session_state:
@@ -182,36 +87,46 @@ if "image_bytes" not in st.session_state:
 if "confirmed_medicines" not in st.session_state:
     st.session_state.confirmed_medicines = []
 if "demo_mode" not in st.session_state:
-    st.session_state.demo_mode = True
+    st.session_state.demo_mode = False if os.environ.get("GEMINI_API_KEY") else True
 if "large_font_mode" not in st.session_state:
     st.session_state.large_font_mode = False
+if "nav_ctrl" not in st.session_state:
+    st.session_state.nav_ctrl = 0
+if "open_emergency_drawer" not in st.session_state:
+    st.session_state.open_emergency_drawer = False
+if "active_view" not in st.session_state:
+    st.session_state.active_view = "screen"
+if "user_locality" not in st.session_state:
+    st.session_state.user_locality = "Neemrana"
 
-# Ensure active patient profile exists in database
+# Ensure active profile exists in database if user has entered their details
 curr_u = st.session_state.current_user
-clinical_db.upsert_user(curr_u.model_dump())
-if curr_u.role == "patient":
-    curr_pat_id = f"pat_{curr_u.id}"
-    if not clinical_db.get_patient(curr_pat_id):
-        clinical_db.upsert_patient({
-            "id": curr_pat_id,
-            "user_id": curr_u.id,
-            "name": curr_u.name,
-            "age": 58,
-            "gender": "पुरुष (Male)",
-            "blood_group": "B+",
-            "emergency_contact": curr_u.phone or "108",
-            "consent_shared_treatment": 1
-        })
+if curr_u.name.strip():
+    clinical_db.upsert_user(curr_u.model_dump())
+    if curr_u.role == "patient":
+        curr_pat_id = f"pat_{curr_u.id}"
+        if not clinical_db.get_patient(curr_pat_id):
+            clinical_db.upsert_patient({
+                "id": curr_pat_id,
+                "user_id": curr_u.id,
+                "name": curr_u.name,
+                "age": curr_u.age or 0,
+                "gender": curr_u.gender or "",
+                "blood_group": curr_u.blood_group or "",
+                "emergency_contact": curr_u.emergency_contact or (curr_u.phone or ""),
+                "consent_shared_treatment": 1
+            })
 
 
 # Custom CSS & PWA Meta for Cross-Platform Compatibility (iOS, Android & Desktop Web)
 st.markdown("""
 <!-- PWA & Mobile WebApp Compatibility Tags -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="सेहत साथी">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sehat Saathi">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#047857">
+<meta name="theme-color" content="#0d9488">
 <link rel="manifest" href="static/manifest.json">
 <link rel="apple-touch-icon" href="static/icon-192.png">
 
@@ -224,72 +139,150 @@ st.markdown("""
 </script>
 
 <style>
-    /* Apple Human Interface Typography & Canvas */
+    /* Sehat Saathi visual system */
     :root {
-        --apple-bg: #f5f5f7;
-        --apple-card: #ffffff;
-        --apple-text: #1d1d1f;
-        --apple-subtext: #86868b;
-        --apple-blue: #0071e3;
-        --apple-green: #34c759;
-        --apple-red: #ff3b30;
-        --apple-orange: #ff9500;
-        --apple-border: rgba(0, 0, 0, 0.08);
+        --hai-bg: #f8fafc;
+        --hai-card: #ffffff;
+        --hai-text: #0f172a;
+        --hai-subtext: #64748b;
+        --hai-teal: #0d9488;
+        --hai-blue: #2563eb;
+        --hai-indigo: #4f46e5;
+        --hai-sky: #0284c7;
+        --hai-rose: #e11d48;
+        --hai-border: #e2e8f0;
     }
 
     html, body, [class*="css"], .stApp {
-        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
-        background-color: #f5f5f7 !important;
-        color: #1d1d1f !important;
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+        background-color: #f8fafc !important;
+        background-image:
+            radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.08) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.08) 0px, transparent 50%),
+            radial-gradient(at 50% 100%, rgba(14, 165, 233, 0.05) 0px, transparent 50%) !important;
+        color: #0f172a !important;
         -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
         letter-spacing: -0.012em;
+        -webkit-tap-highlight-color: transparent !important;
+        touch-action: manipulation;
     }
 
-    /* Apple-style floating main card */
+    /* Floating HealthAI Assistant Card Container (Desktop Web vs Native Mobile) */
     @media (min-width: 769px) {
         .main {
-            max-width: 940px !important;
+            max-width: 960px !important;
             margin: 24px auto !important;
             background: #ffffff !important;
-            border-radius: 28px !important;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+            border-radius: 26px !important;
+            box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.07), 0 4px 16px rgba(15, 23, 42, 0.03) !important;
             padding: 32px 38px !important;
-            border: 1px solid rgba(0, 0, 0, 0.06) !important;
+            border: 1px solid rgba(226, 232, 240, 0.85) !important;
         }
     }
     @media (max-width: 768px) {
         .main {
             max-width: 100% !important;
-            padding: 10px 14px !important;
+            margin: 0 !important;
+            padding: 8px 12px 60px 12px !important;
             background: #ffffff !important;
+            border-radius: 0 0 20px 20px !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 2rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
         }
         body {
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
+        }
+        /* Mobile Touch Sizing (Prevents iOS Safari auto-zoom) */
+        input, select, textarea, .stTextInput input, .stNumberInput input {
+            font-size: 16px !important;
+            min-height: 46px !important;
+            border-radius: 14px !important;
+        }
+        .stSelectbox div[data-baseweb="select"] {
+            min-height: 46px !important;
+            border-radius: 14px !important;
         }
     }
 
-    /* Apple Glassmorphic Brand Header */
+    /* Modern Glassmorphic Brand Navbar */
     .apple-header {
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-radius: 22px;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        padding: 18px 22px;
-        margin-bottom: 14px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-radius: 20px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        padding: 16px 22px;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    }
+    @media (max-width: 768px) {
+        .apple-header {
+            padding: 12px 14px !important;
+            border-radius: 16px !important;
+            margin-bottom: 12px !important;
+        }
+        .apple-header h1 {
+            font-size: 1.25rem !important;
+        }
+        .apple-header p {
+            font-size: 0.78rem !important;
+        }
+        .hai-hero-banner {
+            border-radius: 18px !important;
+            padding: 16px 18px !important;
+            margin-bottom: 14px !important;
+        }
+        .hai-hero-banner h2 {
+            font-size: 1.32rem !important;
+        }
+        .hai-hero-banner p {
+            font-size: 0.85rem !important;
+        }
     }
 
-    /* Apple-style Segmented Control Tabs */
+    /* Swipeable Segmented Control Navigation Tabs on Mobile */
+    @media (max-width: 768px) {
+        div[data-testid="stSegmentedControl"] {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+            gap: 6px !important;
+            padding: 5px 6px !important;
+            background: #f1f5f9 !important;
+            border-radius: 16px !important;
+        }
+        div[data-testid="stSegmentedControl"]::-webkit-scrollbar {
+            display: none !important;
+        }
+        div[data-testid="stSegmentedControl"] [data-baseweb="radio"],
+        div[data-testid="stSegmentedControl"] button {
+            flex: 0 0 auto !important;
+            white-space: nowrap !important;
+            padding: 8px 14px !important;
+            font-size: 0.86rem !important;
+            border-radius: 12px !important;
+        }
+    }
+
+    /* Segmented Control Navigation Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 4px;
-        background-color: #f5f5f7;
+        gap: 6px;
+        background-color: #f1f5f9;
         padding: 5px;
         border-radius: 980px;
-        border: 1px solid #e5e5ea;
+        border: 1px solid #e2e8f0;
         margin-bottom: 22px;
     }
     .stTabs [data-baseweb="tab"] {
@@ -297,7 +290,7 @@ st.markdown("""
         white-space: pre-wrap;
         background-color: transparent;
         border-radius: 980px;
-        color: #86868b;
+        color: #64748b;
         font-size: 0.94rem;
         font-weight: 500;
         padding: 6px 16px;
@@ -306,50 +299,248 @@ st.markdown("""
     }
     .stTabs [aria-selected="true"] {
         background-color: #ffffff !important;
-        color: #1d1d1f !important;
+        color: #0f172a !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
         font-weight: 600 !important;
     }
 
-    /* Apple Pill Primary CTA Buttons */
+    /* Primary CTA Buttons with Native Tactile Tap Response */
     .stButton>button {
         width: 100%;
         border-radius: 980px !important;
-        font-size: 1.08rem !important;
+        font-size: 1.05rem !important;
         padding: 0.72rem 1.4rem !important;
         font-weight: 600 !important;
         min-height: 48px !important;
         border: none !important;
-        background: #0071e3 !important;
+        background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%) !important;
         color: #ffffff !important;
-        box-shadow: 0 2px 8px rgba(0, 113, 227, 0.22) !important;
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25) !important;
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
         letter-spacing: -0.01em;
     }
     .stButton>button:hover {
-        background: #0077ed !important;
-        transform: scale(1.01) !important;
-        box-shadow: 0 6px 18px rgba(0, 113, 227, 0.32) !important;
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35) !important;
     }
-    .stButton>button:active {
+    .stButton>button:active, a:active {
+        transform: scale(0.97) !important;
+        filter: brightness(0.95);
+    }
+
+    /* View Switcher Segmented Buttons */
+    div[class*="st-key-view_tab_"] button {
+        border-radius: 980px !important;
+        min-height: 42px !important;
+        font-size: 0.94rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* HealthAI Assistant Bento Action Hub Buttons */
+    div[class*="st-key-hub_btn_"] button {
+        height: 120px !important;
+        min-height: 120px !important;
+        border-radius: 20px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        white-space: pre-wrap !important;
+        line-height: 1.35 !important;
+        padding: 12px 14px !important;
+        border: none !important;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08) !important;
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        cursor: pointer !important;
+    }
+    div[class*="st-key-hub_btn_"] button p {
+        font-size: 0.98rem !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        line-height: 1.35 !important;
+        margin: 0 !important;
+        white-space: pre-wrap !important;
+    }
+    div[class*="st-key-hub_btn_"]:hover button {
+        transform: translateY(-3px) scale(1.02) !important;
+    }
+    div[class*="st-key-hub_btn_scan"] button {
+        background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
+        box-shadow: 0 6px 20px rgba(13, 148, 136, 0.3) !important;
+    }
+    div[class*="st-key-hub_btn_reminders"] button {
+        background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3) !important;
+    }
+    div[class*="st-key-hub_btn_vitals"] button {
+        background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%) !important;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3) !important;
+    }
+    div[class*="st-key-hub_btn_emergency"] button {
+        background: linear-gradient(135deg, #e11d48 0%, #ef4444 100%) !important;
+        box-shadow: 0 6px 20px rgba(225, 29, 72, 0.3) !important;
+    }
+
+    /* 2x2 Bento Action Hub Grid on Mobile Phones */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-hub_btn_"]) {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-hub_btn_"]) > div {
+            width: 100% !important;
+            margin: 0 !important;
+        }
+        div[class*="st-key-hub_btn_"] button {
+            min-height: 94px !important;
+            height: auto !important;
+            padding: 10px 8px !important;
+            border-radius: 16px !important;
+        }
+        div[class*="st-key-hub_btn_"] button p {
+            font-size: 0.86rem !important;
+            line-height: 1.25 !important;
+        }
+    }
+
+    /* HealthAI Metric Summary Tiles */
+    div[class*="st-key-tile_btn_"] button {
+        height: 104px !important;
+        min-height: 104px !important;
+        background: #ffffff !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 18px !important;
+        padding: 10px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        text-align: center !important;
+        white-space: pre-wrap !important;
+        line-height: 1.3 !important;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        cursor: pointer !important;
+    }
+    div[class*="st-key-tile_btn_"] button p {
+        font-size: 0.92rem !important;
+        color: #0f172a !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+        margin: 0 !important;
+        white-space: pre-wrap !important;
+    }
+    div[class*="st-key-tile_btn_"]:hover button {
+        background: #f8fafc !important;
+        border-color: #2563eb !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    /* 2x2 Metric Summary Grid on Mobile Phones */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-tile_btn_"]) {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 10px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-tile_btn_"]) > div {
+            width: 100% !important;
+            margin: 0 !important;
+        }
+        div[class*="st-key-tile_btn_"] button {
+            min-height: 88px !important;
+            height: auto !important;
+            padding: 8px !important;
+            border-radius: 16px !important;
+        }
+        div[class*="st-key-tile_btn_"] button p {
+            font-size: 0.82rem !important;
+            line-height: 1.25 !important;
+        }
+    }
+    div[class*="st-key-tile_btn_"]:active button {
         transform: scale(0.98) !important;
     }
 
-    /* Apple Health Action Hub Cards */
-    .hub-card {
-        border-radius: 20px;
-        padding: 16px 14px;
-        color: #ffffff;
-        text-align: center;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Emergency Calling Buttons */
+    div[class*="st-key-emg_call_"] a {
+        color: #ffffff !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+        font-size: 0.98rem !important;
+        border: none !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+        transition: transform 0.18s ease, filter 0.18s ease !important;
+        text-align: center !important;
+        padding: 11px 14px !important;
+        min-height: 46px !important;
     }
-    .hub-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    div[class*="st-key-emg_call_"]:hover a {
+        transform: translateY(-2px) !important;
+        filter: brightness(1.08) !important;
+    }
+    div[class*="st-key-emg_call_108"] a { background: #d32f2f !important; }
+    div[class*="st-key-emg_call_102"] a { background: #e65100 !important; }
+    div[class*="st-key-emg_call_112"] a { background: #b71c1c !important; }
+    div[class*="st-key-emg_call_104"] a { background: #1565c0 !important; }
+    div[class*="st-key-emg_call_14416"] a { background: #4a148c !important; }
+    div[class*="st-key-emg_call_1091"] a { background: #ad1457 !important; }
+
+    /* Map Navigation Buttons */
+    div[class*="st-key-link_maps_"] a {
+        color: #ffffff !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+        font-size: 0.98rem !important;
+        padding: 12px 14px !important;
+        min-height: 48px !important;
+        text-align: center !important;
+        margin-bottom: 8px !important;
+        border: none !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+        transition: transform 0.18s ease, filter 0.18s ease !important;
+    }
+    div[class*="st-key-link_maps_"]:hover a {
+        transform: translateY(-2px) !important;
+        filter: brightness(1.08) !important;
+    }
+    div[class*="st-key-link_maps_phc"] a { background: #065f46 !important; }
+    div[class*="st-key-link_maps_chemist"] a { background: #0f766e !important; }
+    div[class*="st-key-link_maps_jan"] a { background: #c2410c !important; }
+    div[class*="st-key-link_maps_dr"] a { background: #1d4ed8 !important; }
+
+    /* WhatsApp & Tele-MANAS CTA Buttons */
+    div[class*="st-key-link_wa_share"] a {
+        background: #25D366 !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 1.02rem !important;
+        border-radius: 14px !important;
+        padding: 12px 16px !important;
+        min-height: 48px !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(37,211,102,0.28) !important;
+        transition: transform 0.18s ease !important;
+        text-align: center !important;
+        margin-bottom: 14px !important;
+    }
+    div[class*="st-key-link_wa_share"]:hover a {
+        transform: translateY(-2px) scale(1.01) !important;
+        filter: brightness(1.05) !important;
+    }
+    div[class*="st-key-link_tele_manas"] a {
+        background: #c2185b !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        border: none !important;
+        padding: 10px 14px !important;
     }
 
-    /* Apple Subtle Alert & Notice Cards */
+    /* Subtle Alert & Notice Cards */
     .uncertain-card {
         background-color: #fff9f0;
         border-left: 5px solid #ff9500;
@@ -375,24 +566,176 @@ st.markdown("""
         border-bottom: 1px solid rgba(52, 199, 89, 0.15);
     }
     .disclaimer-banner {
-        background-color: #f5f8ff;
-        border-left: 5px solid #0071e3;
+        background-color: #f0fdf4;
+        border-left: 5px solid #0d9488;
         padding: 12px 18px;
         border-radius: 16px;
         font-size: 0.95rem;
         margin-bottom: 14px;
-        color: #004b99;
-        border-top: 1px solid rgba(0, 113, 227, 0.15);
-        border-right: 1px solid rgba(0, 113, 227, 0.15);
-        border-bottom: 1px solid rgba(0, 113, 227, 0.15);
+        color: #115e59;
+        border-top: 1px solid rgba(13, 148, 136, 0.15);
+        border-right: 1px solid rgba(13, 148, 136, 0.15);
+        border-bottom: 1px solid rgba(13, 148, 136, 0.15);
     }
     .due-badge {
-        background-color: #ff3b30;
+        background-color: #ef4444;
         color: white;
         padding: 3px 9px;
         border-radius: 980px;
         font-weight: 700;
         font-size: 0.8rem;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# A coherent visual layer for the complete care journey. The rules below intentionally
+# keep Streamlit's native controls and the existing navigation/state model intact.
+st.markdown("""
+<style>
+    :root {
+        --ss-ink: #183b36;
+        --ss-muted: #667b75;
+        --ss-green: #177a63;
+        --ss-green-dark: #105847;
+        --ss-mint: #e8f4ed;
+        --ss-paper: #f5f7f2;
+        --ss-line: #dce7df;
+        --ss-card: #ffffff;
+        --ss-coral: #b64c3d;
+        --ss-shadow: 0 12px 34px rgba(24, 59, 54, .075);
+    }
+    html, body, [class*="css"], .stApp {
+        color: var(--ss-ink) !important;
+        background: var(--ss-paper) !important;
+        background-image: radial-gradient(ellipse at 90% 0%, rgba(217,235,219,.55), transparent 32%) !important;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+        letter-spacing: 0 !important;
+    }
+    [data-testid="stAppViewContainer"] { background: transparent !important; }
+    .main {
+        max-width: 1180px !important;
+        margin: 18px auto 30px !important;
+        padding: 26px 34px 42px !important;
+        background: rgba(255,255,255,.82) !important;
+        border: 1px solid rgba(220,231,223,.9) !important;
+        border-radius: 30px !important;
+        box-shadow: 0 20px 60px rgba(33,69,58,.08) !important;
+    }
+    .block-container { max-width: 1120px !important; padding-top: 1rem !important; }
+    h1, h2, h3, h4 { color: var(--ss-ink) !important; letter-spacing: -.035em !important; }
+    h1 { font-size: clamp(1.65rem, 3vw, 2.2rem) !important; }
+    h2 { font-size: clamp(1.45rem, 2.4vw, 1.9rem) !important; }
+    h3 { font-size: 1.3rem !important; }
+    p, label, .stCaption, [data-testid="stMarkdownContainer"] { color: inherit; }
+    .apple-header {
+        border: 1px solid var(--ss-line) !important;
+        border-radius: 22px !important;
+        background: rgba(255,255,255,.88) !important;
+        box-shadow: 0 4px 18px rgba(24,59,54,.04) !important;
+        padding: 15px 20px !important;
+    }
+    .apple-header h1 { color: var(--ss-ink) !important; background: none !important; -webkit-text-fill-color: var(--ss-ink) !important; }
+    .hai-hero-banner {
+        background: radial-gradient(ellipse at 84% 24%, rgba(255,255,255,.13), transparent 34%), linear-gradient(118deg, #143f36 0%, #1e5b49 62%, #39785e 100%) !important;
+        border: 0 !important;
+        border-radius: 26px !important;
+        padding: 28px 32px !important;
+        box-shadow: 0 20px 42px rgba(23,92,70,.22) !important;
+        min-height: 300px;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+    .hai-hero-banner::after { content: ""; position: absolute; width: 310px; height: 310px; border: 1px solid rgba(241,248,237,.12); border-radius: 50%; right: 9%; top: -150px; pointer-events: none; }
+    .hero-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(290px, .9fr); align-items: center; gap: 12px; position: relative; z-index: 1; }
+    .hero-copy { position: relative; z-index: 2; }
+    .hero-copy h2 { max-width: 600px; font-size: clamp(1.8rem,3.1vw,2.65rem) !important; letter-spacing: -.045em !important; line-height: 1.16 !important; }
+    .hero-copy p { max-width: 600px !important; font-size: 1rem !important; }
+    .hero-art { width: 100%; max-width: 440px; justify-self: end; margin: -10px 0 -14px; filter: drop-shadow(0 12px 18px rgba(11,47,37,.16)); animation: companion-float 6s ease-in-out infinite; }
+    @keyframes companion-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    @media (prefers-reduced-motion: reduce) { .hero-art { animation: none; } * { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+    div[data-testid="stSegmentedControl"] {
+        border: 1px solid var(--ss-line) !important;
+        background: #edf3ee !important;
+        border-radius: 17px !important;
+        padding: 5px !important;
+        gap: 4px !important;
+    }
+    div[data-testid="stSegmentedControl"] button {
+        border-radius: 12px !important;
+        min-height: 44px !important;
+        color: #526b63 !important;
+        font-weight: 650 !important;
+    }
+    div[data-testid="stSegmentedControl"] button[aria-checked="true"] {
+        background: white !important;
+        color: var(--ss-green-dark) !important;
+        box-shadow: 0 2px 9px rgba(26,67,54,.11) !important;
+    }
+    .stButton > button, .stLinkButton > a, [data-testid="stLinkButton"] a {
+        border-radius: 14px !important;
+        min-height: 48px !important;
+        font-weight: 650 !important;
+        letter-spacing: 0 !important;
+        transition: transform .18s ease, box-shadow .18s ease, background .18s ease !important;
+    }
+    .stButton > button[kind="primary"] { background: var(--ss-green) !important; border: 1px solid var(--ss-green) !important; box-shadow: 0 5px 14px rgba(23,122,99,.18) !important; }
+    .stButton > button[kind="secondary"] { background: white !important; color: var(--ss-ink) !important; border: 1px solid var(--ss-line) !important; box-shadow: none !important; }
+    .stButton > button:hover, .stLinkButton > a:hover { transform: translateY(-2px) !important; box-shadow: var(--ss-shadow) !important; }
+    div[class*="st-key-hub_btn_"] button {
+        min-height: 136px !important;
+        height: 100% !important;
+        border-radius: 20px !important;
+        border: 1px solid var(--ss-line) !important;
+        background: white !important;
+        color: var(--ss-ink) !important;
+        box-shadow: 0 6px 18px rgba(24,59,54,.05) !important;
+        white-space: pre-wrap !important;
+        line-height: 1.45 !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        padding: 18px !important;
+    }
+    div[class*="st-key-hub_btn_"] button p { color: var(--ss-ink) !important; font-size: 1rem !important; font-weight: 650 !important; }
+    div[class*="st-key-hub_btn_scan"] button { background: var(--ss-mint) !important; border-color: #c9e0d0 !important; }
+    div[class*="st-key-hub_btn_reminders"] button { background: #eff3fa !important; border-color: #d9e1ed !important; }
+    div[class*="st-key-hub_btn_vitals"] button { background: #f3f2ec !important; border-color: #e3e0d2 !important; }
+    div[class*="st-key-hub_btn_emergency"] button { background: #fff1ed !important; border-color: #f2d2c9 !important; color: #873d34 !important; }
+    div[class*="st-key-tile_btn_"] button {
+        min-height: 112px !important;
+        border: 1px solid var(--ss-line) !important;
+        border-radius: 18px !important;
+        background: white !important;
+        box-shadow: 0 4px 14px rgba(24,59,54,.04) !important;
+        color: var(--ss-ink) !important;
+    }
+    div[class*="st-key-tile_btn_"] button p { color: var(--ss-ink) !important; font-weight: 650 !important; }
+    div[class*="st-key-tile_btn_"]:hover button { border-color: #a8cbb6 !important; background: #fbfdfb !important; }
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        border-color: var(--ss-line) !important;
+        border-radius: 18px !important;
+        background: white !important;
+        box-shadow: 0 5px 16px rgba(24,59,54,.035) !important;
+    }
+    [data-testid="stExpander"] { border: 1px solid var(--ss-line) !important; border-radius: 16px !important; background: white !important; }
+    [data-baseweb="input"] > div, [data-baseweb="select"] > div, textarea {
+        border-radius: 13px !important;
+        border-color: #cbdad0 !important;
+        background: white !important;
+    }
+    [data-testid="stAlert"] { border-radius: 15px !important; }
+    .disclaimer-banner { background: #f0f5ee !important; color: #405c4f !important; border: 1px solid #dce9dc !important; border-left: 4px solid #6b9b76 !important; border-radius: 14px !important; }
+    .uncertain-card { border-radius: 14px !important; }
+    .confirmed-card { border-radius: 14px !important; }
+    @media (max-width: 768px) {
+        .main { margin: 0 !important; padding: 12px 14px 34px !important; border-radius: 0 0 20px 20px !important; box-shadow: none !important; }
+        .block-container { padding: 12px 0.35rem 2rem !important; }
+        .apple-header { border-radius: 17px !important; padding: 12px !important; }
+        .hai-hero-banner { border-radius: 20px !important; padding: 22px 20px !important; min-height: 0 !important; }
+        .hero-layout { grid-template-columns: 1fr; gap: 0; }
+        .hero-art { max-width: 270px; justify-self: center; margin: -2px auto -20px; }
+        div[class*="st-key-hub_btn_"] button { min-height: 105px !important; padding: 13px !important; border-radius: 17px !important; }
+        div[class*="st-key-tile_btn_"] button { min-height: 92px !important; }
+        div[data-testid="stSegmentedControl"] { overflow-x: auto !important; flex-wrap: nowrap !important; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -403,79 +746,216 @@ st.markdown("""
 # -------------------------------------------------------------
 lang = st.session_state.app_lang
 u_role_badge = t("role_doctor", lang) if curr_u.role == "doctor" else (t("role_staff", lang) if curr_u.role == "staff" else t("role_patient", lang))
+disp_name = curr_u.name.split('(')[0].strip() if curr_u.name.strip() else t('lbl_unregistered_guest', lang)
 st.markdown(f"""
 <div class="apple-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
     <div style="display: flex; align-items: center; gap: 14px;">
-        <div style="background: linear-gradient(135deg, #34c759, #30b0c7); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; box-shadow: 0 4px 14px rgba(52, 199, 89, 0.28);">
-            💊
+        <div style="background: #e8f4ed; width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; border: 1px solid #cfe3d4;">
+            🩺
         </div>
         <div>
             <div style="display: flex; align-items: center; gap: 8px;">
-                <h1 style="margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: #1d1d1f;">Sehat Saathi</h1>
-                <span style="font-size: 1.15rem; color: #86868b; font-weight: 500;">| सेहत साथी</span>
+                <h1 style="margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; color: #183b36;">सेहत साथी</h1>
+                <span style="font-size: 1.1rem; color: #667b75; font-weight: 600;">Sehat Saathi</span>
             </div>
-            <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #86868b; font-weight: 400;">{t('app_tagline', lang)}</p>
+            <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #64748b; font-weight: 500;">{t('app_tagline', lang)}</p>
         </div>
     </div>
     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <a href="tel:108" style="background:#ff3b30; color:white; padding:6px 14px; border-radius:980px; font-size:0.82rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 10px rgba(255,59,48,0.25); transition:all 0.2s ease;">
+        <a href="tel:108" style="background: linear-gradient(135deg, #ef4444, #dc2626); color:white; padding:7px 15px; border-radius:980px; font-size:0.84rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; box-shadow:0 3px 12px rgba(239,68,68,0.35); transition:all 0.2s ease;">
             {t('btn_emergency_108', lang)}
         </a>
-        <span style="background: #f5f5f7; border: 1px solid #e5e5ea; padding: 5px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #1d1d1f;">
-            {u_role_badge}: {curr_u.name.split('(')[0].strip()}
+        <span style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 13px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #0f172a;">
+            {u_role_badge}: {disp_name}
         </span>
-        <span style="background: #eafaf1; border: 1px solid #b7ebd0; padding: 5px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #19692c;">
+        <span style="background: #f0fdf4; border: 1px solid #86efac; padding: 6px 13px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #166534; display:inline-flex; align-items:center; gap:4px;">
+            <span style="width:7px; height:7px; border-radius:50%; background:#22c55e;"></span>
             {t('status_active', lang)}
         </span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# User Authentication, Language Selector & Accessibility Bar
-col_user_bar, col_lang, col_a11y = st.columns([3, 2, 2])
+# Navigation Menu, User Authentication, Language Selector & Accessibility Bar
+col_menu, col_user_bar, col_lang, col_a11y = st.columns([1.8, 2.8, 1.8, 1.4])
+
+with col_menu:
+    with st.popover(t("btn_menu", lang), help="Open navigation menu"):
+        st.markdown(f"#### {t('menu_title', lang)}")
+        if st.button(f"📊 {t('nav_dashboard', lang)}", key="menu_item_dash", use_container_width=True):
+            st.session_state.active_view = "dashboard"
+            st.rerun()
+        st.markdown("---")
+        if st.button(f"📸 {t('tab_scan', lang)}", key="menu_item_scan", use_container_width=True):
+            st.session_state.nav_ctrl = 0
+            st.session_state.active_view = "screen"
+            st.rerun()
+        if st.button(f"⏰ {t('tab_reminders', lang)}", key="menu_item_reminders", use_container_width=True):
+            st.session_state.nav_ctrl = 1
+            st.session_state.active_view = "screen"
+            st.rerun()
+        if st.button(f"🩺 {t('tab_vitals', lang)}", key="menu_item_vitals", use_container_width=True):
+            st.session_state.nav_ctrl = 2
+            st.session_state.active_view = "screen"
+            st.rerun()
+        if st.button(f"🏥 {t('tab_facilities', lang)}", key="menu_item_facilities", use_container_width=True):
+            st.session_state.nav_ctrl = 3
+            st.session_state.active_view = "screen"
+            st.rerun()
+        if st.button(f"💬 {t('tab_chat', lang)}", key="menu_item_chat", use_container_width=True):
+            st.session_state.nav_ctrl = 4
+            st.session_state.active_view = "screen"
+            st.rerun()
+        if st.button(f"👨‍⚕️ {t('tab_doctor_portal', lang)}", key="menu_item_portal", use_container_width=True):
+            st.session_state.nav_ctrl = 5
+            st.session_state.active_view = "screen"
+            st.rerun()
+        if st.button(f"⚙️ {t('tab_settings', lang)}", key="menu_item_settings", use_container_width=True):
+            st.session_state.nav_ctrl = 6
+            st.session_state.active_view = "screen"
+            st.rerun()
 
 with col_user_bar:
-    with st.popover(t("account_popover_btn", lang), help="Google Sign-In, ABHA ID or Switch Profile"):
+    with st.popover(t("account_popover_btn", lang), help="Local demo profile settings; no sign-in is available"):
         st.markdown(f"#### {t('user_signin_title', lang)}")
         st.caption(t("user_signin_caption", lang))
-        
-        # Google Sign-in button
-        google_auth_url = AuthService.get_google_auth_url(redirect_uri="http://localhost:8501")
-        st.markdown(f"""
-        <a href="{google_auth_url}" target="_blank" style="text-decoration:none;">
-            <div style="background-color:#ffffff; border:1.5px solid #dadce0; border-radius:12px; padding:10px 14px; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" />
-                <span style="color:#3c4043; font-weight:600; font-size:0.95rem;">{t('btn_google_signin', lang)}</span>
-            </div>
-        </a>
-        """, unsafe_allow_html=True)
+
+        # This repository does not implement an OAuth callback, verified identity,
+        # or a secure session. Do not send users to Google's consent page with a
+        # placeholder client ID: it looks like sign-in but cannot complete.
+        st.info(
+            "Google sign-in is not available in this prototype. No account is created, "
+            "and profile data is stored only in the local development database."
+        )
 
         st.markdown(f"**{t('quick_role_select', lang)}**")
         col_r1, col_r2, col_r3 = st.columns(3)
         with col_r1:
-            if st.button(t("btn_role_pat", lang), key="btn_role_pat"):
-                st.session_state.current_user = AuthService.create_google_demo_user("patient")
+            if st.button(t("btn_role_pat", lang), key="btn_role_pat", type="primary" if curr_u.role == "patient" else "secondary"):
+                st.session_state.current_user = AuthService.create_blank_user("patient")
                 st.rerun()
         with col_r2:
-            if st.button(t("btn_role_doc", lang), key="btn_role_doc"):
-                st.session_state.current_user = AuthService.create_google_demo_user("doctor")
+            if st.button(t("btn_role_doc", lang), key="btn_role_doc", type="primary" if curr_u.role == "doctor" else "secondary"):
+                st.session_state.current_user = AuthService.create_blank_user("doctor")
                 st.rerun()
         with col_r3:
-            if st.button(t("btn_role_staff", lang), key="btn_role_staff"):
-                st.session_state.current_user = AuthService.create_google_demo_user("staff")
+            if st.button(t("btn_role_staff", lang), key="btn_role_staff", type="primary" if curr_u.role == "staff" else "secondary"):
+                st.session_state.current_user = AuthService.create_blank_user("staff")
                 st.rerun()
 
         st.markdown("---")
         st.markdown(f"**{t('login_mobile_abha_header', lang)}**")
-        c_name = st.text_input(t("lbl_patient_name", lang), value=curr_u.name, key="inp_login_name")
-        c_phone = st.text_input(t("lbl_mobile_optional", lang), value=curr_u.phone or "", key="inp_login_phone")
-        c_abha = st.text_input(t("lbl_abha_optional", lang), value=curr_u.abha_id or "", placeholder="उदा. 91-1234-5678-9012" if lang != "en" else "e.g. 91-1234-5678-9012", key="inp_login_abha")
-        if st.button(t("btn_save_profile", lang), key="btn_save_user_prof"):
-            new_u = AuthService.create_custom_user(c_name, curr_u.email, c_phone, c_abha, role=curr_u.role)
-            st.session_state.current_user = new_u
-            clinical_db.upsert_user(new_u.model_dump())
-            st.success(t("msg_profile_saved", lang))
-            st.rerun()
+
+        if curr_u.role == "doctor":
+            st.warning(
+                "Doctor profile entry is a local demo only. This app does not verify "
+                "medical registration, authenticate clinicians, or protect the doctor portal. "
+                "Do not enter real clinician or patient information."
+            )
+            st.markdown(f"*{t('lbl_doctor_profile_hdr', lang)}*")
+            d_name = st.text_input(t("lbl_doctor_name", lang), value=curr_u.name, key="inp_doc_name")
+            d_license = st.text_input(t("lbl_medical_license", lang), value=curr_u.medical_license_no or "", key="inp_doc_license")
+            d_spec = st.text_input(t("lbl_specialization", lang), value=curr_u.specialization or "", key="inp_doc_spec")
+            d_hosp = st.text_input(t("lbl_hospital_clinic", lang), value=curr_u.hospital_clinic or "", key="inp_doc_hosp")
+            d_qual = st.text_input(t("lbl_qualification", lang), value=curr_u.qualification or "", key="inp_doc_qual")
+            d_phone = st.text_input(t("lbl_doctor_phone", lang), value=curr_u.phone or "", key="inp_doc_phone")
+
+            if st.button(t("btn_save_profile", lang), key="btn_save_user_prof"):
+                new_u = AuthService.create_custom_user(
+                    name=d_name,
+                    email=curr_u.email,
+                    phone=d_phone,
+                    role="doctor",
+                    medical_license_no=d_license,
+                    specialization=d_spec,
+                    hospital_clinic=d_hosp,
+                    qualification=d_qual,
+                    user_id=curr_u.id
+                )
+                st.session_state.current_user = new_u
+                clinical_db.upsert_user(new_u.model_dump())
+                st.success(t("msg_profile_saved", lang))
+                st.rerun()
+
+        elif curr_u.role == "staff":
+            st.markdown(f"*{t('lbl_staff_profile_hdr', lang)}*")
+            s_name = st.text_input(t("lbl_staff_name", lang), value=curr_u.name, key="inp_staff_name")
+            s_desig = st.text_input(t("lbl_staff_designation", lang), value=curr_u.staff_designation or "", key="inp_staff_desig")
+            s_empid = st.text_input(t("lbl_employee_id", lang), value=curr_u.employee_id or "", key="inp_staff_empid")
+            s_ward = st.text_input(t("lbl_department_ward", lang), value=curr_u.department_ward or "", key="inp_staff_ward")
+            s_hosp = st.text_input(t("lbl_hospital_clinic", lang), value=curr_u.hospital_clinic or "", key="inp_staff_hosp")
+            s_phone = st.text_input(t("lbl_staff_phone", lang), value=curr_u.phone or "", key="inp_staff_phone")
+
+            if st.button(t("btn_save_profile", lang), key="btn_save_user_prof"):
+                new_u = AuthService.create_custom_user(
+                    name=s_name,
+                    email=curr_u.email,
+                    phone=s_phone,
+                    role="staff",
+                    staff_designation=s_desig,
+                    employee_id=s_empid,
+                    department_ward=s_ward,
+                    hospital_clinic=s_hosp,
+                    user_id=curr_u.id
+                )
+                st.session_state.current_user = new_u
+                clinical_db.upsert_user(new_u.model_dump())
+                st.success(t("msg_profile_saved", lang))
+                st.rerun()
+
+        else: # patient
+            st.markdown(f"*{t('lbl_patient_profile_hdr', lang)}*")
+            p_name = st.text_input(t("lbl_patient_name", lang), value=curr_u.name, key="inp_pat_name")
+            col_p_a, col_p_g = st.columns(2)
+            with col_p_a:
+                p_age = st.number_input(t("lbl_patient_age_inp", lang), min_value=0, max_value=120, value=curr_u.age or 0, key="inp_pat_age")
+            with col_p_g:
+                gender_opts = ["पुरुष (Male)", "महिला (Female)", "अन्य (Other)"]
+                g_idx = 0
+                if curr_u.gender in gender_opts:
+                    g_idx = gender_opts.index(curr_u.gender)
+                p_gender = st.selectbox(t("lbl_patient_gender", lang), gender_opts, index=g_idx, key="inp_pat_gender")
+
+            bg_opts = ["--", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+            b_idx = 0
+            if curr_u.blood_group in bg_opts:
+                b_idx = bg_opts.index(curr_u.blood_group)
+            p_blood = st.selectbox(t("lbl_patient_blood_group", lang), bg_opts, index=b_idx, key="inp_pat_blood")
+
+            p_phone = st.text_input(t("lbl_mobile_optional", lang), value=curr_u.phone or "", key="inp_pat_phone")
+            p_abha = st.text_input(t("lbl_abha_optional", lang), value=curr_u.abha_id or "", placeholder="उदा. 91-1234-5678-9012" if lang != "en" else "e.g. 91-1234-5678-9012", key="inp_pat_abha")
+            p_emg = st.text_input(t("lbl_emergency_contact_inp", lang), value=curr_u.emergency_contact or "", key="inp_pat_emg")
+            p_addr = st.text_input(t("lbl_patient_address", lang), value=curr_u.address or "", key="inp_pat_addr")
+
+            if st.button(t("btn_save_profile", lang), key="btn_save_user_prof"):
+                new_u = AuthService.create_custom_user(
+                    name=p_name,
+                    email=curr_u.email,
+                    phone=p_phone,
+                    abha_id=p_abha,
+                    role="patient",
+                    age=int(p_age) if p_age > 0 else None,
+                    gender=p_gender,
+                    blood_group=p_blood if p_blood != "--" else None,
+                    emergency_contact=p_emg,
+                    address=p_addr,
+                    user_id=curr_u.id
+                )
+                st.session_state.current_user = new_u
+                clinical_db.upsert_user(new_u.model_dump())
+                pat_id = f"pat_{new_u.id}"
+                clinical_db.upsert_patient({
+                    "id": pat_id,
+                    "user_id": new_u.id,
+                    "name": new_u.name,
+                    "age": new_u.age or 0,
+                    "gender": new_u.gender or "",
+                    "blood_group": new_u.blood_group or "",
+                    "emergency_contact": new_u.emergency_contact or (new_u.phone or ""),
+                    "consent_shared_treatment": 1
+                })
+                st.success(t("msg_profile_saved", lang))
+                st.rerun()
 
 with col_lang:
     LANG_DISPLAY = ["🇮🇳 हिन्दी", "🇬🇧 English", "🌾 Hinglish"]
@@ -523,84 +1003,117 @@ if st.session_state.large_font_mode:
     """, unsafe_allow_html=True)
 
 
+# Sehat Saathi care hero
+st.markdown(f"""
+<div class="hai-hero-banner">
+  <div class="hero-layout">
+    <div class="hero-copy">
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.19);padding:7px 13px;border-radius:999px;font-size:.82rem;font-weight:650;color:#e3f4df;margin-bottom:17px;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#b8df94;box-shadow:0 0 12px #b8df94;"></span>
+        {t('hero_badge', lang)}
+      </div>
+      <h2 style="margin:0 0 10px;color:#fff;">{t('hero_headline', lang)}</h2>
+      <p style="margin:0 0 19px;color:#e1eee6;line-height:1.65;">{t('hero_sub', lang)}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:.79rem;">
+        <span style="background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);padding:7px 11px;border-radius:999px;color:#f3f8f3;font-weight:600;">{t('hero_chip_ocr', lang)}</span>
+        <span style="background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);padding:7px 11px;border-radius:999px;color:#f3f8f3;font-weight:600;">{t('hero_chip_reminders', lang)}</span>
+        <span style="background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);padding:7px 11px;border-radius:999px;color:#f3f8f3;font-weight:600;">{t('hero_chip_vitals', lang)}</span>
+        <span style="background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);padding:7px 11px;border-radius:999px;color:#f3f8f3;font-weight:600;">{t('hero_chip_clinics', lang)}</span>
+      </div>
+    </div>
+    <img class="hero-art" src="/app/static/care-companion.svg" alt="Sehat Saathi care companion illustration" />
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
 # Dynamic counts for home cards
 all_current_reminders = reminder_service.get_all_reminders()
 active_rem_count = len([r for r in all_current_reminders if r.enabled])
 recent_vitals_count = len(device_service.get_all_readings())
 
-# 4 Apple Health-Style Action Cards (Visual Home Hub)
-st.markdown(f"""
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
-    <div class="hub-card" style="background: linear-gradient(135deg, #34c759 0%, #30b0c7 100%);">
-        <div style="font-size: 1.8rem; margin-bottom: 4px;">📸</div>
-        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_scan_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{t('card_scan_desc', lang)}</div>
-    </div>
-    <div class="hub-card" style="background: linear-gradient(135deg, #0071e3 0%, #5856d6 100%);">
-        <div style="font-size: 1.8rem; margin-bottom: 4px;">⏰</div>
-        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_reminders_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{active_rem_count} {t('card_reminders_desc', lang)}</div>
-    </div>
-    <div class="hub-card" style="background: linear-gradient(135deg, #32ade6 0%, #0071e3 100%);">
-        <div style="font-size: 1.8rem; margin-bottom: 4px;">🩺</div>
-        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_vitals_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{recent_vitals_count} {t('card_vitals_desc', lang)}</div>
-    </div>
-    <div class="hub-card" style="background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);">
-        <div style="font-size: 1.8rem; margin-bottom: 4px;">🚨</div>
-        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_emergency_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{t('card_emergency_desc', lang)}</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+# 4 Apple Health-Style Action Cards (Interactive Visual Home Hub)
+col_c1, col_c2, col_c3, col_c4 = st.columns(4)
+
+with col_c1:
+    if st.button(f"📸 {t('card_scan_title', lang)}\n\n{t('card_scan_desc', lang)}", key="hub_btn_scan", use_container_width=True):
+        st.session_state.nav_ctrl = 0
+        st.session_state.active_view = "screen"
+        st.rerun()
+
+with col_c2:
+    if st.button(f"⏰ {t('card_reminders_title', lang)}\n\n{active_rem_count} {t('card_reminders_desc', lang)}", key="hub_btn_reminders", use_container_width=True):
+        st.session_state.nav_ctrl = 1
+        st.session_state.active_view = "screen"
+        st.rerun()
+
+with col_c3:
+    if st.button(f"🩺 {t('card_vitals_title', lang)}\n\n{recent_vitals_count} {t('card_vitals_desc', lang)}", key="hub_btn_vitals", use_container_width=True):
+        st.session_state.nav_ctrl = 2
+        st.session_state.active_view = "screen"
+        st.rerun()
+
+with col_c4:
+    if st.button(f"🚨 {t('card_emergency_title', lang)}\n\n{t('card_emergency_desc', lang)}", key="hub_btn_emergency", use_container_width=True):
+        st.session_state.open_emergency_drawer = not st.session_state.get("open_emergency_drawer", False)
+        st.rerun()
 
 # Feature: Apple Health-Style Summary Tile Banner
 target_pat_id = f"pat_{curr_u.id}"
 pat_vitals_summary = clinical_db.get_patient_vitals(target_pat_id, limit=4)
-bp_val = "136/86 mmHg"
-spo2_val = "98%"
-sugar_val = "138 mg/dL"
+bp_val = "--"
+bp_status = t("tile_no_data", lang)
+spo2_val = "--"
+spo2_status = t("tile_no_data", lang)
+sugar_val = "--"
+sugar_status = t("tile_no_data", lang)
+
 for pv in pat_vitals_summary:
     m_name = pv.get("metric_name", "")
     if "रक्तचाप" in m_name or "BP" in m_name or "Blood Pressure" in m_name:
         bp_val = f"{pv['value']} {pv['unit']}"
+        bp_status = pv.get("status_flag", t("tile_bp_status", lang))
     elif "SpO2" in m_name or "ऑक्सीजन" in m_name:
         spo2_val = f"{pv['value']}{pv['unit']}"
+        spo2_status = pv.get("status_flag", t("tile_spo2_status", lang))
     elif "Sugar" in m_name or "शुगर" in m_name:
         sugar_val = f"{pv['value']} {pv['unit']}"
-adh_stat = clinical_db.get_patient_adherence_rate(target_pat_id)
-adh_pct_str = f"{adh_stat['percentage']}%"
+        sugar_status = pv.get("status_flag", t("tile_sugar_status", lang))
 
-st.markdown(f"""
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
-    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_bp_title', lang)}</div>
-        <div style="font-size:1.35rem; font-weight:700; color:#1d1d1f; letter-spacing:-0.03em; margin:2px 0;">{bp_val}</div>
-        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">{t('tile_bp_status', lang)}</div>
-    </div>
-    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_spo2_title', lang)}</div>
-        <div style="font-size:1.35rem; font-weight:700; color:#30b0c7; letter-spacing:-0.03em; margin:2px 0;">{spo2_val}</div>
-        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">{t('tile_spo2_status', lang)}</div>
-    </div>
-    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_sugar_title', lang)}</div>
-        <div style="font-size:1.35rem; font-weight:700; color:#1d1d1f; letter-spacing:-0.03em; margin:2px 0;">{sugar_val}</div>
-        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">{t('tile_sugar_status', lang)}</div>
-    </div>
-    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_adherence_title', lang)}</div>
-        <div style="font-size:1.35rem; font-weight:700; color:#0071e3; letter-spacing:-0.03em; margin:2px 0;">{adh_pct_str}</div>
-        <div style="font-size:0.72rem; color:#0071e3; font-weight:600;">⭐ {adh_stat['total_taken']} {t('tile_doses_taken', lang)}</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+adh_stat = clinical_db.get_patient_adherence_rate(target_pat_id)
+if adh_stat['total_scheduled'] == 0:
+    adh_pct_str = "--"
+    adh_sub = t("tile_no_reminders_yet", lang)
+else:
+    adh_pct_str = f"{adh_stat['percentage']}%"
+    adh_sub = f"⭐ {adh_stat['total_taken']} {t('tile_doses_taken', lang)}"
+
+col_t1, col_t2, col_t3, col_t4 = st.columns(4)
+with col_t1:
+    if st.button(f"💓 {t('tile_bp_title', lang)}\n{bp_val}\n● {bp_status}", key="tile_btn_bp", use_container_width=True):
+        st.session_state.nav_ctrl = 2
+        st.session_state.active_view = "screen"
+        st.rerun()
+with col_t2:
+    if st.button(f"🫁 {t('tile_spo2_title', lang)}\n{spo2_val}\n● {spo2_status}", key="tile_btn_spo2", use_container_width=True):
+        st.session_state.nav_ctrl = 2
+        st.session_state.active_view = "screen"
+        st.rerun()
+with col_t3:
+    if st.button(f"🩸 {t('tile_sugar_title', lang)}\n{sugar_val}\n● {sugar_status}", key="tile_btn_sugar", use_container_width=True):
+        st.session_state.nav_ctrl = 2
+        st.session_state.active_view = "screen"
+        st.rerun()
+with col_t4:
+    if st.button(f"💊 {t('tile_adherence_title', lang)}\n{adh_pct_str}\n{adh_sub}", key="tile_btn_adh", use_container_width=True):
+        st.session_state.nav_ctrl = 1
+        st.session_state.active_view = "screen"
+        st.rerun()
 
 # Safety Disclaimer (Rule 12)
 st.markdown(f'<div class="disclaimer-banner">{t("safety_disclaimer", lang)}</div>', unsafe_allow_html=True)
 
 # Persistent 1-Tap Emergency Calling Bar (India Emergency Agencies)
-with st.expander(t("emergency_drawer_title", lang), expanded=False):
+with st.expander(t("emergency_drawer_title", lang), expanded=st.session_state.get("open_emergency_drawer", False)):
     st.markdown(t("emergency_instruction", lang))
     agencies = EmergencyService.get_emergency_numbers()
     col_em1, col_em2 = st.columns(2)
@@ -609,36 +1122,187 @@ with st.expander(t("emergency_drawer_title", lang), expanded=False):
         with target_col:
             tel_link = EmergencyService.build_tel_link(ag.get("number", "108"))
             label_text = ag.get("name_en", ag.get("name_hindi", "Emergency")) if lang == "en" else ag.get("name_hindi", "आपातकालीन")
-            ag_color = ag.get("color", "#d32f2f")
             ag_icon = ag.get("icon", "🚨")
             ag_num = ag.get("number", "108")
-            st.markdown(
-                f'<a href="{tel_link}" style="text-decoration:none;">'
-                f'<div style="background-color:{ag_color}; color:white; padding:10px 12px; border-radius:12px; margin-bottom:6px; font-weight:bold; text-align:center;">'
-                f'{ag_icon} {label_text} ({ag_num})'
-                f'</div></a>',
-                unsafe_allow_html=True
+            st.link_button(
+                f"{ag_icon} {label_text} ({ag_num})",
+                tel_link,
+                use_container_width=True,
             )
 
 
 # -------------------------------------------------------------
-# MAIN NAVIGATION TABS (Includes Doctor & Staff Portal)
+# MAIN NAVIGATION: Apple Segmented Control Bar
 # -------------------------------------------------------------
-tab_scan, tab_reminders, tab_vitals, tab_facilities, tab_chat, tab_portal, tab_settings = st.tabs([
-    t("tab_scan", lang),
-    t("tab_reminders", lang),
-    t("tab_vitals", lang),
-    t("tab_facilities", lang),
-    t("tab_chat", lang),
-    t("tab_doctor_portal", lang),
-    t("tab_settings", lang)
-])
+nav_labels = [
+    f"📸 {t('tab_scan', lang)}",
+    f"⏰ {t('tab_reminders', lang)}",
+    f"🩺 {t('tab_vitals', lang)}",
+    f"🏥 {t('tab_facilities', lang)}",
+    f"💬 {t('tab_chat', lang)}",
+    f"👨‍⚕️ {t('tab_doctor_portal', lang)}",
+    f"⚙️ {t('tab_settings', lang)}"
+]
 
+if "target_nav_ctrl" in st.session_state:
+    st.session_state.nav_ctrl = st.session_state.pop("target_nav_ctrl")
+
+chosen_tab = st.segmented_control(
+    "Navigation",
+    options=list(range(len(nav_labels))),
+    format_func=lambda i: nav_labels[i],
+    key="nav_ctrl",
+    label_visibility="collapsed"
+)
+active_tab = st.session_state.nav_ctrl if st.session_state.nav_ctrl is not None else 0
+
+# Synchronize segmented_control tab changes with screen view
+if "last_nav_ctrl" not in st.session_state:
+    st.session_state.last_nav_ctrl = active_tab
+elif st.session_state.last_nav_ctrl != active_tab:
+    st.session_state.active_view = "screen"
+    st.session_state.last_nav_ctrl = active_tab
+
+# View Switcher Bar (Dashboard vs Dedicated Screen)
+col_vmode1, col_vmode2 = st.columns([1, 1])
+with col_vmode1:
+    if st.button("📊 " + t("nav_dashboard", lang), key="view_tab_dashboard", type="primary" if st.session_state.get("active_view") == "dashboard" else "secondary", use_container_width=True):
+        st.session_state.active_view = "dashboard"
+        st.rerun()
+with col_vmode2:
+    if st.button("📱 " + nav_labels[active_tab], key="view_tab_screen", type="primary" if st.session_state.get("active_view", "screen") == "screen" else "secondary", use_container_width=True):
+        st.session_state.active_view = "screen"
+        st.rerun()
+
+# -------------------------------------------------------------
+# DASHBOARD VIEW: Summary Overview, 10-Mile Proximity Spotlight & Modules Grid
+# -------------------------------------------------------------
+if st.session_state.get("active_view") == "dashboard":
+    st.subheader(f"📊 {t('nav_dashboard', lang)}")
+    st.caption(t("hero_sub", lang))
+
+    # 1. Proximity Radar Spotlight (< 10 Miles)
+    dash_locality = st.session_state.get("user_locality", "Neemrana")
+    dash_prox = ProximityLocationService.find_facilities_within_proximity(
+        locality=dash_locality,
+        max_radius_miles=10.0
+    )
+    dash_nearest = dash_prox.get("nearest_facility")
+
+    if dash_nearest:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #059669; border-radius: 20px; padding: 20px 24px; margin-bottom: 22px; box-shadow: 0 6px 20px rgba(5, 150, 105, 0.12);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                <span style="background: #059669; color: white; padding: 4px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 700;">
+                    {t('spotlight_badge', lang)}
+                </span>
+                <span style="font-size: 0.95rem; font-weight: 700; color: #065f46;">
+                    📍 {dash_nearest['distance_miles']} miles away ({dash_nearest['distance_km']} km)
+                </span>
+            </div>
+            <h3 style="margin: 0 0 6px 0; color: #064e3b; font-size: 1.35rem; font-weight: 800;">
+                {dash_nearest['name_en'] if lang == 'en' else dash_nearest['name_hindi']}
+            </h3>
+            <p style="margin: 0 0 4px 0; font-size: 0.92rem; color: #047857; font-weight: 600;">
+                {dash_nearest['category_label']} • {dash_nearest['address']}
+            </p>
+            <p style="margin: 0 0 12px 0; font-size: 0.86rem; color: #374151;">
+                ⏰ <b>{dash_nearest['timing']}</b>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_d_call, col_d_dir, col_d_more = st.columns([1, 1, 1.2])
+        with col_d_call:
+            st.link_button(
+                f"📞 {t('btn_call_support', lang)} ({dash_nearest['phone']})",
+                dash_nearest['tel_url'],
+                use_container_width=True,
+                key="dash_spotlight_call"
+            )
+        with col_d_dir:
+            st.link_button(
+                f"🗺️ {t('btn_maps_directions', lang)}",
+                dash_nearest['directions_url'],
+                use_container_width=True,
+                key="dash_spotlight_dir"
+            )
+        with col_d_more:
+            if st.button(f"🏥 {t('tab_facilities', lang)} →", key="dash_open_fac_btn", use_container_width=True):
+                st.session_state.target_nav_ctrl = 3
+                st.session_state.active_view = "screen"
+                st.rerun()
+
+    st.markdown("---")
+    st.markdown(f"#### {t('dashboard_services_title', lang)}")
+
+    # 2. Comprehensive Health Modules Grid
+    col_m1, col_m2 = st.columns(2)
+    with col_m1:
+        with st.container(border=True):
+            st.markdown(f"**📸 {t('tab_scan', lang)}**")
+            st.caption(t("card_scan_desc", lang))
+            if st.button(f"{t('lbl_open_screen', lang)}", key="grid_btn_scan", use_container_width=True):
+                st.session_state.target_nav_ctrl = 0
+                st.session_state.active_view = "screen"
+                st.rerun()
+
+        with st.container(border=True):
+            st.markdown(f"**⏰ {t('tab_reminders', lang)}**")
+            st.caption(f"{active_rem_count} {t('card_reminders_desc', lang)}")
+            if st.button(f"{t('lbl_open_screen', lang)}", key="grid_btn_rem", use_container_width=True):
+                st.session_state.target_nav_ctrl = 1
+                st.session_state.active_view = "screen"
+                st.rerun()
+
+        with st.container(border=True):
+            st.markdown(f"**🩺 {t('tab_vitals', lang)}**")
+            st.caption(f"{recent_vitals_count} {t('card_vitals_desc', lang)}")
+            if st.button(f"{t('lbl_open_screen', lang)}", key="grid_btn_vit", use_container_width=True):
+                st.session_state.target_nav_ctrl = 2
+                st.session_state.active_view = "screen"
+                st.rerun()
+
+    with col_m2:
+        with st.container(border=True):
+            st.markdown(f"**🏥 {t('tab_facilities', lang)}**")
+            st.caption(f"{dash_prox['total_found']} {t('status_active', lang)} (< 10 miles)")
+            if st.button(f"{t('lbl_open_screen', lang)}", key="grid_btn_fac", use_container_width=True):
+                st.session_state.target_nav_ctrl = 3
+                st.session_state.active_view = "screen"
+                st.rerun()
+
+        with st.container(border=True):
+            st.markdown(f"**💬 {t('tab_chat', lang)}**")
+            st.caption(t("chat_sub", lang))
+            if st.button(f"{t('lbl_open_screen', lang)}", key="grid_btn_chat", use_container_width=True):
+                st.session_state.target_nav_ctrl = 4
+                st.session_state.active_view = "screen"
+                st.rerun()
+
+        with st.container(border=True):
+            st.markdown(f"**👨‍⚕️ {t('tab_doctor_portal', lang)}**")
+            st.caption(t("portal_sub", lang))
+            if st.button(f"{t('lbl_open_screen', lang)}", key="grid_btn_portal", use_container_width=True):
+                st.session_state.target_nav_ctrl = 5
+                st.session_state.active_view = "screen"
+                st.rerun()
+
+is_dashboard_active = st.session_state.get("active_view") == "dashboard"
+
+if not is_dashboard_active:
+    col_ret1, col_ret2 = st.columns([1.5, 2.5])
+    with col_ret1:
+        if st.button(t("btn_back_to_dashboard", lang), key="btn_return_dashboard"):
+            st.session_state.active_view = "dashboard"
+            st.rerun()
+    with col_ret2:
+        st.markdown(f"**📱 {nav_labels[active_tab]}**")
 
 # -------------------------------------------------------------
 # TAB 1: SCAN & PROCESS PRESCRIPTION
 # -------------------------------------------------------------
-with tab_scan:
+if active_tab == 0 and not is_dashboard_active:
     st.subheader(t("scan_section_title", lang))
 
     # Accessible Photo Guidance for Rural Users
@@ -677,7 +1341,7 @@ with tab_scan:
             st.rerun()
 
     st.markdown("---")
-    
+
     # Image Input: File Uploader or Camera
     input_options = [t("input_mode_upload", lang), t("input_mode_camera", lang)]
     input_method = st.radio(t("input_mode_label", lang), input_options, horizontal=True)
@@ -713,7 +1377,7 @@ with tab_scan:
                         else:
                             is_ambig = hasattr(uploaded_file, "name") and uploaded_file.name and "ambiguous" in uploaded_file.name.lower()
                             extractor = MockPrescriptionExtractor(scenario="ambiguous" if is_ambig else "clean")
-                        
+
                         st.session_state.prescription = extractor.extract_from_image(file_bytes)
                         st.rerun()
 
@@ -721,7 +1385,7 @@ with tab_scan:
     if st.session_state.prescription:
         presc: Prescription = st.session_state.prescription
         st.markdown("---")
-        
+
         col_rev_head, col_rev_discard = st.columns([3, 1])
         with col_rev_head:
             st.subheader(t("review_heading", lang))
@@ -748,7 +1412,7 @@ with tab_scan:
                 card_class = "uncertain-card" if med.is_uncertain else "confirmed-card"
                 badge_icon = "⚠️" if med.is_uncertain else "✅"
                 st.markdown(f'<div class="{card_class}"><b>{badge_icon} #{idx+1}:</b> {med.raw_medicine_name}</div>', unsafe_allow_html=True)
-                
+
                 col_a, col_b = st.columns(2)
                 with col_a:
                     med.candidate_medicine_name = st.text_input(
@@ -897,7 +1561,7 @@ with tab_scan:
 # -------------------------------------------------------------
 # TAB 2: MEDICATION REMINDERS & ADHERENCE
 # -------------------------------------------------------------
-with tab_reminders:
+elif active_tab == 1 and not is_dashboard_active:
     st.subheader(t("reminders_heading", lang))
     st.caption(t("reminders_sub", lang))
 
@@ -927,12 +1591,11 @@ with tab_reminders:
             if r.enabled:
                 share_lines.append(f"• {r.medicine_name}: {r.timing_label} ({r.reminder_time}) - {r.food_relation}")
         encoded_text = urllib.parse.quote("\n".join(share_lines))
-        st.markdown(
-            f'<a href="https://api.whatsapp.com/send?text={encoded_text}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background-color:#25D366; color:white; text-align:center; padding:10px 14px; border-radius:12px; font-weight:bold; margin-bottom:15px; box-shadow:0 2px 8px rgba(37,211,102,0.2);">'
-            f'{t("share_wa_btn", lang)}'
-            f'</div></a>',
-            unsafe_allow_html=True
+        st.link_button(
+            f"📲 {t('share_wa_btn', lang)}",
+            f"https://api.whatsapp.com/send?text={encoded_text}",
+            use_container_width=True,
+            key="link_wa_share"
         )
 
         with st.expander(t("expander_clear_reminders", lang), expanded=False):
@@ -952,7 +1615,7 @@ with tab_reminders:
 
         for rem in all_reminders:
             is_due = reminder_service.is_due_now(rem)
-            
+
             t_label = rem.timing_label.lower()
             if "सुबह" in t_label or "morning" in t_label:
                 icon_time = t("lbl_morning", lang)
@@ -1017,12 +1680,12 @@ with tab_reminders:
                         st.rerun()
 
     st.markdown("---")
-    
+
     # Progress Tracker Questionnaire
     with st.expander(t("expander_progress_tracker", lang), expanded=False):
         st.markdown(t("progress_tracker_intro", lang))
         q_items = ProgressTrackerService.get_questionnaire_items()
-        
+
         q1_label = q_items[0]["question_hindi"] if lang == "hi" else ("1. How do you feel after starting this medication?" if lang == "en" else "1. Dawai shuru karne ke baad kaisa feel ho raha hai?")
         q2_label = q_items[1]["question_hindi"] if lang == "hi" else ("2. Have you taken all prescribed doses on time?" if lang == "en" else "2. Kya sabhi dawaiyan time par li hain?")
         q3_label = q_items[2]["question_hindi"] if lang == "hi" else ("3. How much relief in your fever, pain, or main symptoms?" if lang == "en" else "3. Bukhaar, dard ya symptoms me kitna aaram hai?")
@@ -1066,7 +1729,7 @@ with tab_reminders:
 # -------------------------------------------------------------
 # TAB 3: HEALTH DEVICES, VITALS & COMPLICATION PREDICTION
 # -------------------------------------------------------------
-with tab_vitals:
+elif active_tab == 2 and not is_dashboard_active:
     st.subheader(t("vitals_heading", lang))
     st.caption(t("vitals_sub", lang))
 
@@ -1086,15 +1749,16 @@ with tab_vitals:
 
         col_val1, col_val2 = st.columns(2)
         with col_val1:
-            if "Oximeter" in dev_choice or "ऑक्सीमीटर" in dev_choice:
+            dev_lower = dev_choice.lower()
+            if "oximeter" in dev_lower or "ऑक्सी" in dev_lower or "spo2" in dev_lower:
                 v_metric = "SpO2"
                 v_unit = "%"
                 v_hint = "e.g. 98"
-            elif "BP" in dev_choice or "रक्तचाप" in dev_choice:
+            elif "bp" in dev_lower or "रक्तचाप" in dev_lower or "pressure" in dev_lower:
                 v_metric = "Blood Pressure"
                 v_unit = "mmHg"
                 v_hint = "e.g. 120/80"
-            elif "Glucometer" in dev_choice or "ग्लूकोमीटर" in dev_choice or "शुगर" in dev_choice:
+            elif "gluco" in dev_lower or "ग्लूको" in dev_lower or "sugar" in dev_lower or "शुगर" in dev_lower:
                 v_metric = "Blood Sugar"
                 v_unit = "mg/dL"
                 v_hint = "e.g. 110"
@@ -1179,7 +1843,7 @@ with tab_vitals:
                     adherence_percentage=float(inp_adh),
                     active_medications_count=active_meds_count if active_meds_count > 0 else 2
                 )
-                
+
                 res = ComplicationPredictionService.predict_complication_risk(pred_input, lang=lang)
 
                 tier_badge = "🟢" if res.risk_tier == RiskTier.LOW else ("🟡" if res.risk_tier == RiskTier.MODERATE else "🔴")
@@ -1254,62 +1918,179 @@ with tab_vitals:
 
             if m_res.tele_manas_recommended:
                 st.markdown(f"""
-                <div style="background-color:#fce4ec; border-left:6px solid #c2185b; padding:12px; border-radius:12px; margin-top:10px;">
+                <div style="background-color:#fce4ec; border-left:6px solid #c2185b; padding:12px; border-radius:12px; margin-top:10px; margin-bottom:8px;">
                     🌸 <b>{t('tele_manas_box_title', lang)}</b><br>
-                    {t('tele_manas_box_desc', lang)}<br><br>
-                    👉 <a href="tel:14416" style="background-color:#c2185b; color:white; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:bold;">
-                    {t('tele_manas_call_btn', lang)}
-                    </a>
+                    {t('tele_manas_box_desc', lang)}
                 </div>
                 """, unsafe_allow_html=True)
+                st.link_button(
+                    f"📞 {t('tele_manas_call_btn', lang)} (14416)",
+                    "tel:14416",
+                    use_container_width=True,
+                    key="link_tele_manas"
+                )
 
 
 # -------------------------------------------------------------
-# TAB 4: NEARBY CLINICS & DISEASE PREVENTION
+# TAB 4: NEARBY CLINICS & 10-MILE PROXIMITY RADAR
 # -------------------------------------------------------------
-with tab_facilities:
+elif active_tab == 3 and not is_dashboard_active:
     st.subheader(t("facilities_heading", lang))
     st.caption(t("facilities_sub", lang))
 
-    user_locality = st.text_input(t("lbl_user_locality", lang), placeholder="e.g. Behror, Neemrana" if lang == "en" else "उदा. बहरोड़, नीमराना")
+    col_loc1, col_loc2 = st.columns([2, 1])
+    with col_loc1:
+        user_locality = st.text_input(
+            t("lbl_user_locality", lang),
+            value=st.session_state.get("user_locality", "Neemrana"),
+            placeholder="e.g. Behror, Neemrana, Alwar" if lang == "en" else "उदा. बहरोड़, नीमराना, अलवर",
+            key="inp_user_locality"
+        )
+        st.session_state.user_locality = user_locality
+    with col_loc2:
+        max_radius = st.slider(
+            t("lbl_radius_filter", lang),
+            min_value=1.0,
+            max_value=25.0,
+            value=10.0,
+            step=1.0,
+            key="proximity_radius_slider"
+        )
 
+    # Category selector
+    cat_options = [
+        ("all", t("opt_all_facilities", lang)),
+        ("clinic", t("opt_clinics_only", lang)),
+        ("chemist", t("opt_chemists_only", lang)),
+        ("jan_aushadhi", t("opt_jan_aushadhi_only", lang))
+    ]
+    chosen_cat_tuple = st.selectbox(
+        t("lbl_category_filter", lang),
+        cat_options,
+        format_func=lambda x: x[1],
+        key="fac_cat_filter"
+    )
+    chosen_cat = chosen_cat_tuple[0]
+
+    # Run 10-Mile Proximity Search
+    prox_res = ProximityLocationService.find_facilities_within_proximity(
+        locality=user_locality,
+        max_radius_miles=max_radius,
+        category=chosen_cat
+    )
+
+    nearest = prox_res.get("nearest_facility")
+
+    # 1. Spotlight Card for Nearest Facility (< 10 Miles)
+    if nearest:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #059669; border-radius: 18px; padding: 18px 22px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(5, 150, 105, 0.12);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                <span style="background: #059669; color: white; padding: 4px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 700;">
+                    {t('spotlight_badge', lang)}
+                </span>
+                <span style="font-size: 0.95rem; font-weight: 700; color: #065f46;">
+                    📍 {nearest['distance_miles']} miles away ({nearest['distance_km']} km)
+                </span>
+            </div>
+            <h3 style="margin: 0 0 6px 0; color: #064e3b; font-size: 1.3rem; font-weight: 800;">
+                {nearest['name_en'] if lang == 'en' else nearest['name_hindi']}
+            </h3>
+            <p style="margin: 0 0 4px 0; font-size: 0.9rem; color: #047857; font-weight: 600;">
+                {nearest['category_label']} • {nearest['address']}
+            </p>
+            <p style="margin: 0 0 12px 0; font-size: 0.85rem; color: #374151;">
+                ⏰ <b>{nearest['timing']}</b>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_spot_call, col_spot_dir = st.columns(2)
+        with col_spot_call:
+            st.link_button(
+                f"📞 {t('btn_call_support', lang)} ({nearest['phone']})",
+                nearest['tel_url'],
+                use_container_width=True,
+                key="btn_spotlight_call"
+            )
+        with col_spot_dir:
+            st.link_button(
+                f"🗺️ {t('btn_maps_directions', lang)}",
+                nearest['directions_url'],
+                use_container_width=True,
+                key="btn_spotlight_dir"
+            )
+        st.markdown("---")
+
+    # 2. List of all verified facilities within proximity
+    fac_list = prox_res.get("facilities", [])
+    if fac_list:
+        st.markdown(f"#### 📍 {t('facilities_heading', lang)} (< {int(max_radius)} miles): {len(fac_list)} {t('status_active', lang)}")
+        for idx, f_item in enumerate(fac_list):
+            f_name = f_item['name_en'] if lang == 'en' else f_item['name_hindi']
+            with st.expander(f"📍 {f_item['distance_miles']} mi — {f_name} ({f_item['category_label']})", expanded=(idx == 0)):
+                st.markdown(f"**{t('lbl_address_village', lang)}** {f_item['address']}")
+                st.markdown(f"**समय (Timing):** {f_item['timing']}")
+                if f_item.get("services"):
+                    st.markdown(f"**{t('services_offered', lang)}**")
+                    for s_item in f_item["services"]:
+                        st.write(f"• {s_item}")
+
+                col_fc_call, col_fc_dir = st.columns(2)
+                with col_fc_call:
+                    st.link_button(
+                        f"📞 Call {f_item['phone']}",
+                        f_item['tel_url'],
+                        use_container_width=True,
+                        key=f"fac_call_{f_item['id']}"
+                    )
+                with col_fc_dir:
+                    st.link_button(
+                        f"🗺️ Directions",
+                        f_item['directions_url'],
+                        use_container_width=True,
+                        key=f"fac_dir_{f_item['id']}"
+                    )
+    else:
+        st.info(t("msg_no_facilities_found", lang))
+
+    st.markdown("---")
+    st.markdown(f"**🌐 Google Maps Live Search ({user_locality}):**")
+
+    # Universal Google Maps Buttons (Preserves keys for backwards compatibility)
     col_map1, col_map2 = st.columns(2)
     with col_map1:
         phc_url = PreventionAndFacilitiesService.build_maps_search_url("Primary Health Centre PHC Hospital", user_locality)
-        st.markdown(
-            f'<a href="{phc_url}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background-color:#065f46; color:white; text-align:center; padding:12px; border-radius:12px; font-weight:bold; margin-bottom:10px;">'
-            f'{t("maps_phc_btn", lang)}'
-            f'</div></a>',
-            unsafe_allow_html=True
+        st.link_button(
+            f"🏥 {t('maps_phc_btn', lang)}",
+            phc_url,
+            use_container_width=True,
+            key="link_maps_phc"
         )
 
         chemist_url = PreventionAndFacilitiesService.build_maps_search_url("Medical Store Chemist Pharmacy", user_locality)
-        st.markdown(
-            f'<a href="{chemist_url}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background-color:#0f766e; color:white; text-align:center; padding:12px; border-radius:12px; font-weight:bold; margin-bottom:10px;">'
-            f'{t("maps_chemist_btn", lang)}'
-            f'</div></a>',
-            unsafe_allow_html=True
+        st.link_button(
+            f"💊 {t('maps_chemist_btn', lang)}",
+            chemist_url,
+            use_container_width=True,
+            key="link_maps_chemist"
         )
 
     with col_map2:
         ja_url = PreventionAndFacilitiesService.build_maps_search_url("Pradhan Mantri Jan Aushadhi Kendra", user_locality)
-        st.markdown(
-            f'<a href="{ja_url}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background-color:#c2410c; color:white; text-align:center; padding:12px; border-radius:12px; font-weight:bold; margin-bottom:10px;">'
-            f'{t("maps_jan_btn", lang)}'
-            f'</div></a>',
-            unsafe_allow_html=True
+        st.link_button(
+            f"🏛️ {t('maps_jan_btn', lang)}",
+            ja_url,
+            use_container_width=True,
+            key="link_maps_jan"
         )
 
         dr_url = PreventionAndFacilitiesService.build_maps_search_url("Doctor Clinic", user_locality)
-        st.markdown(
-            f'<a href="{dr_url}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background-color:#1d4ed8; color:white; text-align:center; padding:12px; border-radius:12px; font-weight:bold; margin-bottom:10px;">'
-            f'{t("maps_doctor_btn", lang)}'
-            f'</div></a>',
-            unsafe_allow_html=True
+        st.link_button(
+            f"👨‍⚕️ {t('maps_doctor_btn', lang)}",
+            dr_url,
+            use_container_width=True,
+            key="link_maps_dr"
         )
 
     st.markdown("---")
@@ -1322,7 +2103,7 @@ with tab_facilities:
             st.markdown(f"**{t('lbl_key_advice', lang)}** {p_sub}")
             for pt in p_points:
                 st.write(f"• {pt}")
-            
+
             if st.button(t("btn_read_aloud", lang), key=f"audio_prev_{topic['id']}"):
                 with st.spinner(t("spinner_generating_audio", lang)):
                     audio_text = f"{p_title}. {p_sub}. " + " ".join(p_points)
@@ -1334,7 +2115,7 @@ with tab_facilities:
 # -------------------------------------------------------------
 # TAB 5: CHAT / QUESTIONS
 # -------------------------------------------------------------
-with tab_chat:
+elif active_tab == 4 and not is_dashboard_active:
     st.subheader(t("chat_heading", lang))
     st.caption(t("chat_sub", lang))
 
@@ -1379,9 +2160,16 @@ with tab_chat:
 # -------------------------------------------------------------
 # TAB 6: DOCTOR & HOSPITAL STAFF TREATMENT PORTAL
 # -------------------------------------------------------------
-with tab_portal:
-    st.subheader(t("portal_heading", lang))
-    st.caption(t("portal_sub", lang))
+elif active_tab == 5 and not is_dashboard_active:
+    if curr_u.role == "doctor":
+        st.subheader(t("portal_doctor_heading", lang))
+        st.caption(f"🩺 {curr_u.name or 'Doctor'} • {curr_u.medical_license_no or 'NMC Reg Pending'} • {curr_u.specialization or 'General Medicine'} • {curr_u.hospital_clinic or 'Hospital/CHC'}")
+    elif curr_u.role == "staff":
+        st.subheader(t("portal_staff_heading", lang))
+        st.caption(f"🏥 {curr_u.name or 'Staff'} • {curr_u.staff_designation or 'Healthcare Staff'} • {curr_u.employee_id or 'ID Pending'} • {curr_u.department_ward or 'OPD / Ward'}")
+    else:
+        st.subheader(t("portal_patient_heading", lang))
+        st.caption(f"👤 {curr_u.name or 'Patient'} • {curr_u.phone or 'Contact'} • {t('portal_sub', lang)}")
 
     # Notice of clinical purpose & consent
     st.markdown(f"""
@@ -1390,11 +2178,157 @@ with tab_portal:
     </div>
     """, unsafe_allow_html=True)
 
-    # Patient Selector
+    # Patient Selector & Dynamic Registration
     all_pats = clinical_db.list_all_patients()
     if not all_pats:
-        st.info("डेटाबेस में फिलहाल कोई मरीज पंजीकृत नहीं है।" if lang != "en" else "No patients currently registered in database.")
+        st.markdown(f"""
+        <div style="background:#f8fafc; border:1.5px dashed #cbd5e1; border-radius:18px; padding:20px; text-align:center; margin-bottom:16px;">
+            <div style="font-size:2.2rem; margin-bottom:6px;">📋</div>
+            <div style="font-size:1.15rem; font-weight:700; color:#1e293b;">{t('portal_no_patients_title', lang)}</div>
+            <div style="font-size:0.9rem; color:#64748b; margin-top:4px;">{t('portal_no_patients_desc', lang)}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_act1, col_act2 = st.columns([1, 1])
+        with col_act2:
+            if st.button("⚡ त्वरित डेमो मरीज डेटा जोड़ें (Quick Sample Patient)", key="btn_quick_sample_patient"):
+                new_pid = f"pat_{uuid.uuid4().hex[:8]}"
+                new_uid = f"user_{uuid.uuid4().hex[:8]}"
+                clinical_db.upsert_user({
+                    "id": new_uid,
+                    "name": "राम अवतार (Ram Avtar)",
+                    "role": "patient",
+                    "phone": "9876543210",
+                    "age": 62,
+                    "gender": "पुरुष (Male)",
+                    "blood_group": "B+",
+                    "emergency_contact": "9876500000",
+                    "address": "गाँव माजरा, नीमराना"
+                })
+                clinical_db.upsert_patient({
+                    "id": new_pid,
+                    "user_id": new_uid,
+                    "name": "राम अवतार (Ram Avtar)",
+                    "age": 62,
+                    "gender": "पुरुष (Male)",
+                    "blood_group": "B+",
+                    "emergency_contact": "9876500000",
+                    "consent_shared_treatment": 1
+                })
+                clinical_db.save_vital(new_pid, "डिजिटल बीपी मॉनिटर", "रक्तचाप (Blood Pressure)", "135/86", "mmHg", "सामान्य (Normal)")
+                clinical_db.record_adherence(new_pid, "Amlodipine 5mg", "1 गोली", "सुबह", "08:00", taken_status=True)
+                st.success("डेमो मरीज पंजीकृत! (Sample patient ready for review)")
+                st.rerun()
+
+        with st.form("reg_first_patient_form"):
+            st.markdown(f"#### {t('form_reg_patient_title', lang)}")
+            col_np1, col_np2 = st.columns(2)
+            with col_np1:
+                np_name = st.text_input(t("lbl_patient_name", lang), key="np_name_init")
+                np_age = st.number_input(t("lbl_patient_age_inp", lang), min_value=1, max_value=120, value=45, key="np_age_init")
+                np_gender = st.selectbox(t("lbl_patient_gender", lang), ["पुरुष (Male)", "महिला (Female)", "अन्य (Other)"], key="np_gender_init")
+            with col_np2:
+                np_blood = st.selectbox(t("lbl_patient_blood_group", lang), ["B+", "A+", "O+", "AB+", "B-", "A-", "O-", "AB-"], key="np_blood_init")
+                np_phone = st.text_input(t("lbl_mobile_optional", lang), key="np_phone_init")
+                np_emg = st.text_input(t("lbl_emergency_contact_inp", lang), key="np_emg_init")
+            np_complaint = st.text_input(t("lbl_chief_complaint", lang), placeholder=t("ph_chief_complaint", lang), key="np_comp_init")
+            np_addr = st.text_input(t("lbl_address_village", lang), placeholder=t("ph_address_village", lang), key="np_addr_init")
+
+            if st.form_submit_button(t("btn_register_patient_modal", lang), type="primary"):
+                if np_name.strip():
+                    new_pid = f"pat_{uuid.uuid4().hex[:8]}"
+                    new_uid = f"user_{uuid.uuid4().hex[:8]}"
+                    clinical_db.upsert_user({
+                        "id": new_uid,
+                        "name": np_name,
+                        "role": "patient",
+                        "phone": np_phone,
+                        "age": int(np_age),
+                        "gender": np_gender,
+                        "blood_group": np_blood,
+                        "emergency_contact": np_emg,
+                        "address": np_addr
+                    })
+                    clinical_db.upsert_patient({
+                        "id": new_pid,
+                        "user_id": new_uid,
+                        "name": np_name,
+                        "age": int(np_age),
+                        "gender": np_gender,
+                        "blood_group": np_blood,
+                        "emergency_contact": np_emg,
+                        "consent_shared_treatment": 1
+                    })
+                    if np_complaint.strip():
+                        clinical_db.add_staff_clinical_note(
+                            patient_id=new_pid,
+                            staff_id=curr_u.id,
+                            staff_name=curr_u.name or "Healthcare Provider",
+                            staff_role="Physician / Doctor" if curr_u.role == "doctor" else ("PHC Nurse / Staff" if curr_u.role == "staff" else "Attending Staff"),
+                            observation_notes=f"Initial registration chief complaint: {np_complaint}",
+                            triage_status="सामान्य फॉलो-अप (Follow-up Required)",
+                            recommended_action="Baseline clinical checkup and routine monitoring"
+                        )
+                    st.success(t("patient_registered_success", lang))
+                    st.rerun()
+                else:
+                    st.warning("कृपया मरीज का नाम दर्ज करें।" if lang != "en" else "Please enter the patient's name.")
     else:
+        with st.expander(t("portal_register_patient_btn", lang), expanded=False):
+            with st.form("reg_additional_patient_form"):
+                st.markdown(f"#### {t('form_reg_patient_title', lang)}")
+                col_ap1, col_ap2 = st.columns(2)
+                with col_ap1:
+                    ap_name = st.text_input(t("lbl_patient_name", lang), key="ap_name")
+                    ap_age = st.number_input(t("lbl_patient_age_inp", lang), min_value=1, max_value=120, value=45, key="ap_age")
+                    ap_gender = st.selectbox(t("lbl_patient_gender", lang), ["पुरुष (Male)", "महिला (Female)", "अन्य (Other)"], key="ap_gender")
+                with col_ap2:
+                    ap_blood = st.selectbox(t("lbl_patient_blood_group", lang), ["B+", "A+", "O+", "AB+", "B-", "A-", "O-", "AB-"], key="ap_blood")
+                    ap_phone = st.text_input(t("lbl_mobile_optional", lang), key="ap_phone")
+                    ap_emg = st.text_input(t("lbl_emergency_contact_inp", lang), key="ap_emg")
+                ap_complaint = st.text_input(t("lbl_chief_complaint", lang), placeholder=t("ph_chief_complaint", lang), key="ap_comp")
+                ap_addr = st.text_input(t("lbl_address_village", lang), placeholder=t("ph_address_village", lang), key="ap_addr")
+
+                if st.form_submit_button(t("btn_register_patient_modal", lang), type="primary"):
+                    if ap_name.strip():
+                        new_pid = f"pat_{uuid.uuid4().hex[:8]}"
+                        new_uid = f"user_{uuid.uuid4().hex[:8]}"
+                        clinical_db.upsert_user({
+                            "id": new_uid,
+                            "name": ap_name,
+                            "role": "patient",
+                            "phone": ap_phone,
+                            "age": int(ap_age),
+                            "gender": ap_gender,
+                            "blood_group": ap_blood,
+                            "emergency_contact": ap_emg,
+                            "address": ap_addr
+                        })
+                        clinical_db.upsert_patient({
+                            "id": new_pid,
+                            "user_id": new_uid,
+                            "name": ap_name,
+                            "age": int(ap_age),
+                            "gender": ap_gender,
+                            "blood_group": ap_blood,
+                            "emergency_contact": ap_emg,
+                            "consent_shared_treatment": 1
+                        })
+                        if ap_complaint.strip():
+                            clinical_db.add_staff_clinical_note(
+                                patient_id=new_pid,
+                                staff_id=curr_u.id,
+                                staff_name=curr_u.name or "Healthcare Provider",
+                                staff_role="Physician / Doctor" if curr_u.role == "doctor" else ("PHC Nurse / Staff" if curr_u.role == "staff" else "Attending Staff"),
+                                observation_notes=f"Initial registration chief complaint: {ap_complaint}",
+                                triage_status="सामान्य फॉलो-अप (Follow-up Required)",
+                                recommended_action="Baseline clinical checkup and routine monitoring"
+                            )
+                        st.success(t("patient_registered_success", lang))
+                        st.rerun()
+                    else:
+                        st.warning("कृपया मरीज का नाम दर्ज करें।" if lang != "en" else "Please enter the patient's name.")
+
         pat_display_map = {f"{p['name']} ({t('lbl_patient_age', lang).split('(')[0].strip()}: {p['age']}, ID: {p['id']})": p['id'] for p in all_pats}
         selected_display = st.selectbox(t("lbl_select_patient", lang), list(pat_display_map.keys()))
         selected_pat_id = pat_display_map[selected_display]
@@ -1525,7 +2459,7 @@ with tab_portal:
 # -------------------------------------------------------------
 # TAB 7: SETTINGS & INSTALLATION
 # -------------------------------------------------------------
-with tab_settings:
+elif active_tab == 6 and not is_dashboard_active:
     st.subheader(t("settings_heading", lang))
 
     env_api_key = os.environ.get("GEMINI_API_KEY", "")
@@ -1593,22 +2527,22 @@ with tab_settings:
 
 
 # -------------------------------------------------------------
-# APPLE-STYLE MINIMALIST FOOTER: Compliance & Helplines
+# HEALTHAI ASSISTANT FOOTER: Compliance, Helplines & Credits
 # -------------------------------------------------------------
 st.markdown(f"""
-<div style="margin-top: 48px; padding: 24px 16px 18px 16px; border-top: 1px solid #e5e5ea; color: #86868b; font-size: 0.85rem; text-align: center; background: transparent;">
-    <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.82rem; font-weight: 500;">
-        <span>{t('footer_compliance', lang)}</span>
+<div style="margin-top: 48px; padding: 26px 18px 20px 18px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-align: center; background: transparent;">
+    <div style="margin-bottom: 12px; line-height: 1.6; font-size: 0.84rem; display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-weight: 700; color: #0f172a;">{t('footer_helplines', lang)}</span>
+        <a href="tel:108" style="background:#fef2f2; border:1px solid #fecaca; color:#dc2626; padding:3px 10px; border-radius:980px; font-weight:700; text-decoration:none; font-size:0.8rem;">🚨 {t('footer_ambulance', lang)} (108)</a>
+        <a href="tel:112" style="background:#fef2f2; border:1px solid #fecaca; color:#dc2626; padding:3px 10px; border-radius:980px; font-weight:700; text-decoration:none; font-size:0.8rem;">🛡️ {t('footer_emergency', lang)} (112)</a>
+        <a href="tel:104" style="background:#eff6ff; border:1px solid #bfdbfe; color:#2563eb; padding:3px 10px; border-radius:980px; font-weight:700; text-decoration:none; font-size:0.8rem;">📞 {t('footer_health_advice', lang)} (104)</a>
+        <a href="tel:14416" style="background:#fdf2f8; border:1px solid #fbcfe8; color:#db2777; padding:3px 10px; border-radius:980px; font-weight:700; text-decoration:none; font-size:0.8rem;">🌸 {t('footer_tele_manas', lang)} (14416)</a>
     </div>
-    <div style="margin-bottom: 10px; line-height: 1.6; font-size: 0.82rem;">
-        {t('footer_helplines', lang)} 
-        <a href="tel:108" style="color:#ff3b30; font-weight:600; text-decoration:none;">{t('footer_ambulance', lang)}</a> &nbsp;•&nbsp; 
-        <a href="tel:112" style="color:#ff3b30; font-weight:600; text-decoration:none;">{t('footer_emergency', lang)}</a> &nbsp;•&nbsp; 
-        <a href="tel:104" style="color:#0071e3; font-weight:600; text-decoration:none;">{t('footer_health_advice', lang)}</a> &nbsp;•&nbsp; 
-        <a href="tel:14416" style="color:#ff2d55; font-weight:600; text-decoration:none;">{t('footer_tele_manas', lang)}</a>
+    <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; font-size: 0.8rem; font-weight: 500; color: #94a3b8;">
+        <span>🔒 ABHA & DISHA Compliant</span> • <span>⚡ Powered by Google Gemini AI</span> • <span>🏥 Ayushman Bharat Digital Mission (ABDM)</span>
     </div>
-    <div style="font-size: 0.76rem; color: #a1a1a6;">
-        {t('footer_copyright', lang)}
+    <div style="font-size: 0.76rem; color: #94a3b8; margin-top: 4px;">
+        HealthAI Assistant • सेहत साथी © 2026 • Dedicated to Accessible Rural & Urban Healthcare
     </div>
 </div>
 """, unsafe_allow_html=True)

@@ -1,0 +1,5 @@
+-r requirements.txt
+httpx>=0.27.0
+pytest>=8.0.0
+# Legacy UI regression suite; production runs through the Starlette web app.
+streamlit>=1.35.0

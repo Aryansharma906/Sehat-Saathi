@@ -1,0 +1,14 @@
+.env
+.env.*
+*.secret
+*.pem
+*.key
+data/
+tests/
+docs/
+app/
+.streamlit/
+.git/
+.venv/
+.pytest_cache/
+requirements-test.txt

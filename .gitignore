@@ -5,6 +5,7 @@ __pycache__/
 
 # Virtual environments
 .venv/
+.vercel/
 venv/
 ENV/
 env/
@@ -36,3 +37,4 @@ data/processed/*
 !data/processed/.gitkeep
 logs/*
 !logs/.gitkeep
+.vercel

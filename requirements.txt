@@ -1,5 +1,7 @@
 # Sehat Saathi Core Dependencies
-streamlit>=1.35.0
+starlette>=0.37.0,<1.0
+uvicorn>=0.30.0
+python-multipart>=0.0.9
 pydantic>=2.7.0
 pillow>=10.0.0
 cryptography==48.0.1
@@ -7,6 +9,3 @@ google-genai>=1.0.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 gTTS>=2.5.0
-
-# Testing & Quality
-pytest>=8.0.0

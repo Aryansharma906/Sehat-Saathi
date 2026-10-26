@@ -1,6 +1,6 @@
 """
-Unit tests for AuthService and ClinicalDatabaseService
-Verifies user authentication, Google Sign-in demo workflows, relational schema creation,
+Unit tests for local profile models and ClinicalDatabaseService.
+Verifies that sign-in fails closed, relational schema creation,
 patient data ingestion, doctor/staff clinical triage note logging, and ABDM clinical summary export.
 """
 
@@ -19,11 +19,9 @@ def temp_db():
         yield service
 
 
-def test_auth_service_google_oauth_url():
-    url = AuthService.get_google_auth_url(redirect_uri="http://localhost:8501")
-    assert "https://accounts.google.com/o/oauth2/v2/auth" in url
-    assert "response_type=code" in url
-    assert "scope=openid" in url
+def test_google_signin_fails_closed_without_an_oauth_flow():
+    with pytest.raises(RuntimeError, match="Google sign-in is not implemented"):
+        AuthService.get_google_auth_url(redirect_uri="http://localhost:8501")
 
 
 def test_auth_service_roles():
@@ -148,3 +146,97 @@ def test_clinical_db_export_summary(temp_db):
     assert summary["patient_profile"]["name"] == "Mohan Lal"
     assert len(summary["recent_vitals"]) == 1
     assert summary["ai_complication_prediction"]["risk_score"] == 24.5
+
+
+def test_distinct_doctor_vs_staff_profiles(temp_db):
+    # Blank user starts without pre-existing fake data
+    blank_doc = AuthService.create_blank_user(role="doctor")
+    assert blank_doc.name == ""
+    assert blank_doc.role == "doctor"
+    assert blank_doc.medical_license_no is None
+
+    blank_staff = AuthService.create_blank_user(role="staff")
+    assert blank_staff.name == ""
+    assert blank_staff.role == "staff"
+    assert blank_staff.staff_designation is None
+
+    # Custom Doctor Profile
+    doc = AuthService.create_custom_user(
+        name="Dr. Aditi Sharma",
+        role="doctor",
+        medical_license_no="MCI-2014-98421",
+        specialization="Cardiology",
+        hospital_clinic="District Hospital, Alwar",
+        qualification="MBBS, MD (Cardiology)",
+        phone="9876543210"
+    )
+    assert doc.medical_license_no == "MCI-2014-98421"
+    assert doc.specialization == "Cardiology"
+    assert doc.qualification == "MBBS, MD (Cardiology)"
+    assert doc.staff_designation is None
+
+    temp_db.upsert_user(doc.model_dump())
+    loaded_doc = temp_db.get_user(doc.id)
+    assert loaded_doc["medical_license_no"] == "MCI-2014-98421"
+    assert loaded_doc["specialization"] == "Cardiology"
+    assert loaded_doc["hospital_clinic"] == "District Hospital, Alwar"
+
+    # Custom Staff Profile
+    staff = AuthService.create_custom_user(
+        name="Priya Verma",
+        role="staff",
+        staff_designation="Senior Staff Nurse",
+        employee_id="EMP-PHC-8819",
+        department_ward="Maternal & Child Ward",
+        hospital_clinic="Neemrana CHC",
+        phone="9811223344"
+    )
+    assert staff.staff_designation == "Senior Staff Nurse"
+    assert staff.employee_id == "EMP-PHC-8819"
+    assert staff.department_ward == "Maternal & Child Ward"
+    assert staff.medical_license_no is None
+
+    temp_db.upsert_user(staff.model_dump())
+    loaded_staff = temp_db.get_user(staff.id)
+    assert loaded_staff["staff_designation"] == "Senior Staff Nurse"
+    assert loaded_staff["employee_id"] == "EMP-PHC-8819"
+    assert loaded_staff["department_ward"] == "Maternal & Child Ward"
+
+
+def test_clean_empty_database_and_user_data_collection(temp_db):
+    # Verify no default pre-existing data exists
+    assert len(temp_db.list_all_patients()) == 0
+    adh = temp_db.get_patient_adherence_rate("pat_non_existent")
+    assert adh["total_scheduled"] == 0
+    assert adh["percentage"] == 0.0
+    assert len(temp_db.get_patient_vitals("pat_non_existent")) == 0
+
+    # User enters their actual data
+    p_id = "pat_real_001"
+    u_id = "user_real_001"
+    temp_db.upsert_user({
+        "id": u_id,
+        "name": "राम अवतार (Ram Avtar)",
+        "role": "patient",
+        "phone": "9414012345",
+        "age": 61,
+        "gender": "पुरुष (Male)",
+        "blood_group": "AB+",
+        "emergency_contact": "9414099999",
+        "address": "गाँव माजरा, नीमराना"
+    })
+    temp_db.upsert_patient({
+        "id": p_id,
+        "user_id": u_id,
+        "name": "राम अवतार (Ram Avtar)",
+        "age": 61,
+        "gender": "पुरुष (Male)",
+        "blood_group": "AB+",
+        "emergency_contact": "9414099999",
+        "consent_shared_treatment": 1
+    })
+
+    patients = temp_db.list_all_patients()
+    assert len(patients) == 1
+    assert patients[0]["name"] == "राम अवतार (Ram Avtar)"
+    assert patients[0]["age"] == 61

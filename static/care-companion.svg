@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="390" viewBox="0 0 560 390" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">The Sehat Saathi Care Atlas</title>
+  <desc id="desc">An illustrated map tracing a route between medicines, a personal check-in, and nearby care.</desc>
+  <defs>
+    <linearGradient id="mapPaper" x1="70" y1="36" x2="501" y2="354" gradientUnits="userSpaceOnUse"><stop stop-color="#FBF7E9"/><stop offset="1" stop-color="#F0E7D0"/></linearGradient>
+    <linearGradient id="pinGreen" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#587E62"/><stop offset="1" stop-color="#315F51"/></linearGradient>
+    <filter id="paperShadow" x="21" y="14" width="525" height="380" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="15" stdDeviation="12" flood-color="#4C5944" flood-opacity=".12"/></filter>
+    <pattern id="grain" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".45" fill="#8A8169" opacity=".16"/></pattern>
+  </defs>
+  <g filter="url(#paperShadow)">
+    <path d="M64 33c37-10 62 5 99 0 40-6 62-4 104 1 46 5 69-4 110 1 42 5 79-5 125 2 13 2 20 8 20 21v268c0 13-8 21-21 22-35 3-67-4-103 0-44 5-79-5-122-1-48 4-82-2-123 1-36 3-70-4-104 0-13 2-22-5-22-19V54c0-12 11-18 37-21Z" fill="url(#mapPaper)"/>
+    <path d="M64 33c37-10 62 5 99 0 40-6 62-4 104 1 46 5 69-4 110 1 42 5 79-5 125 2 13 2 20 8 20 21v268c0 13-8 21-21 22-35 3-67-4-103 0-44 5-79-5-122-1-48 4-82-2-123 1-36 3-70-4-104 0-13 2-22-5-22-19V54c0-12 11-18 37-21Z" fill="url(#grain)"/>
+    <path d="M89 77c36-21 69-15 102 1 28 13 50 10 72-4 32-21 68-25 104-7 25 12 47 13 72 2 21-9 42-11 62-4M78 94c37-20 70-15 103 1 29 14 51 10 74-4 33-21 70-25 107-7 25 12 48 13 73 2 23-10 43-11 66-3M77 274c42-18 79-16 108 1 31 18 57 16 89-5 35-23 69-28 106-11 31 14 54 16 83 5 15-6 29-8 44-7M81 291c40-17 77-15 105 2 34 20 62 16 94-5 35-23 69-28 106-11 31 14 55 16 83 5 16-6 29-7 44-6" stroke="#B8B89A" stroke-width="1.3" opacity=".48" stroke-linecap="round"/>
+    <path d="M141 204c54-40 94-42 130-9 36 32 52 35 86 4 37-34 78-36 118-3" stroke="#A96248" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+    <path d="M141 204c54-40 94-42 130-9 36 32 52 35 86 4 37-34 78-36 118-3" stroke="#F9F2DF" stroke-width="1" stroke-dasharray="1 12" stroke-linecap="round"/>
+    <path d="M96 57h85" stroke="#8B806A" stroke-width="1"/>
+    <text x="96" y="53" fill="#786F5F" font-family="Arial,sans-serif" font-size="8" font-weight="700" letter-spacing="1.7">YOUR CARE, DRAWN YOUR WAY</text>
+    <text x="433" y="58" fill="#A66A4E" font-family="Georgia,serif" font-size="12" font-style="italic">no. 01</text>
+    <g transform="translate(121 153)">
+      <circle cx="20" cy="20" r="29" fill="#F3E4D3" stroke="#D9BCA4"/>
+      <rect x="9" y="6" width="22" height="30" rx="3" fill="#FBF8EF" stroke="#AB7159" stroke-width="1.4"/>
+      <path d="M15 15h10m-10 5h10" stroke="#C18668" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M20 25v6m-3-3h6" stroke="#53775A" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M-7 60h70" stroke="#B7AF98" stroke-width="1"/>
+      <text x="-6" y="74" fill="#6D7165" font-family="Arial,sans-serif" font-size="8" font-weight="700" letter-spacing="1">MEDICINE</text>
+      <text x="-6" y="87" fill="#98917F" font-family="Georgia,serif" font-size="9" font-style="italic">reviewed together</text>
+    </g>
+    <g transform="translate(337 157)">
+      <circle cx="20" cy="20" r="29" fill="#E8EBDD" stroke="#B9C6A9"/>
+      <circle cx="20" cy="20" r="14" fill="#F8F6E9" stroke="#668166" stroke-width="1.5"/>
+      <path d="M20 11v9l6 4" stroke="#668166" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M-10 60h94" stroke="#B7AF98" stroke-width="1"/>
+      <text x="-9" y="74" fill="#6D7165" font-family="Arial,sans-serif" font-size="8" font-weight="700" letter-spacing="1">CHECK IN</text>
+      <text x="-9" y="87" fill="#98917F" font-family="Georgia,serif" font-size="9" font-style="italic">at your own pace</text>
+    </g>
+    <g transform="translate(421 177)">
+      <circle cx="24" cy="18" r="35" fill="#DCE5D5" stroke="#B3C2A8" stroke-width="1.2"/>
+      <path d="M24 2c-10 0-17 7-17 17 0 13 17 30 17 30s17-17 17-30C41 9 34 2 24 2Z" fill="url(#pinGreen)"/>
+      <circle cx="24" cy="19" r="7" fill="#F7F3E5"/>
+      <path d="M24 14v10m-5-5h10" stroke="#52765A" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(248 172)">
+      <circle cx="22" cy="22" r="41" fill="#FAF6E8" stroke="#D6CBAE" stroke-width="1.3"/>
+      <circle cx="22" cy="22" r="32" stroke="#B5A477" stroke-width="1" stroke-dasharray="2 5"/>
+      <path d="M22 6v32M6 22h32" stroke="#587B60" stroke-width="6" stroke-linecap="square"/>
+      <circle cx="22" cy="22" r="7" fill="#FBF8EF"/>
+      <path d="M22 0v4m0 36v4M0 22h4m36 0h4" stroke="#AE7155" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(473 292)">
+      <circle cx="17" cy="17" r="17" fill="#E7E7D5"/>
+      <path d="M17 8v18m-9-9h18" stroke="#8F9A6F" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="m17 4 2 6h-4l2-6Zm13 13-6 2v-4l6 2Zm-13 13-2-6h4l-2 6ZM4 17l6-2v4l-6-2Z" fill="#A7A984"/>
+    </g>
+    <path d="M95 329c32-7 57-5 81 0m9-1h34" stroke="#AE7155" stroke-width="1.2" stroke-linecap="round"/>
+    <text x="95" y="347" fill="#8A806D" font-family="Georgia,serif" font-size="10" font-style="italic">A good day is made of small steps.</text>
+  </g>
+</svg>

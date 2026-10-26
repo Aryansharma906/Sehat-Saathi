@@ -77,7 +77,7 @@ class PrescriptionChatService:
                 "उत्तर सरल हिंदी में दें:"
             )
             response = self.client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-3.5-flash-lite",
                 contents=prompt
             )
             return response.text or "क्षमा करें, उत्तर प्राप्त नहीं हो सका।"

@@ -55,6 +55,43 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "hinglish": "🚨 108 Emergency"
     },
 
+    # HealthAI Assistant Hero Section
+    "hero_badge": {
+        "hi": "✨ AI-संचालित स्वास्थ्य सहायक • Google Gemini द्वारा सशक्त",
+        "en": "✨ AI-Powered Healthcare Companion • Powered by Google Gemini",
+        "hinglish": "✨ AI-Powered Health Assistant • Google Gemini dwara powered"
+    },
+    "hero_headline": {
+        "hi": "आपकी सेहत का भरोसेमंद AI साथी",
+        "en": "Your Intelligent AI Health Assistant",
+        "hinglish": "Aapki Sehat ka Intelligent AI Saathi"
+    },
+    "hero_sub": {
+        "hi": "हस्तलिखित पर्चे का विश्लेषण, समय पर खुराक के रिमाइंडर, डिजिटल वाइटल्स ट्रैकिंग और 24/7 आपातकालीन सहायता।",
+        "en": "Instant prescription deciphering, scheduled medication reminders, digital vitals monitoring, and 24/7 emergency support.",
+        "hinglish": "Prescription deciphering, regular medicine reminders, digital vitals tracking aur 24/7 emergency support."
+    },
+    "hero_chip_ocr": {
+        "hi": "📸 AI पर्चा स्कैनर",
+        "en": "📸 Prescription OCR",
+        "hinglish": "📸 AI Prescription OCR"
+    },
+    "hero_chip_reminders": {
+        "hi": "⏰ दवा रिमाइंडर",
+        "en": "⏰ Dose Reminders",
+        "hinglish": "⏰ Dawai Reminders"
+    },
+    "hero_chip_vitals": {
+        "hi": "🩺 वाइटल्स और जोखिम AI",
+        "en": "🩺 Vitals & Risk AI",
+        "hinglish": "🩺 Vitals & Risk AI"
+    },
+    "hero_chip_clinics": {
+        "hi": "🏥 नज़दीकी स्वास्थ्य केंद्र",
+        "en": "🏥 Verified Clinics",
+        "hinglish": "🏥 Verified Clinics"
+    },
+
     # Roles & Identity Popover
     "role_doctor": {
         "hi": "👨‍⚕️ डॉक्टर",
@@ -112,14 +149,139 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "hinglish": "🏥 Staff"
     },
     "login_mobile_abha_header": {
-        "hi": "मोबाइल नंबर या आभा (ABHA) आईडी से लॉगिन:",
-        "en": "Sign in with Mobile Number or ABHA ID:",
-        "hinglish": "Mobile number ya ABHA ID se login:"
+        "hi": "प्रोफ़ाइल विवरण और पहचान:",
+        "en": "Profile Details & Credentials:",
+        "hinglish": "Profile Details aur Credentials:"
+    },
+    "lbl_doctor_profile_hdr": {
+        "hi": "🩺 डॉक्टर प्रोफ़ाइल विवरण (Doctor Profile)",
+        "en": "🩺 Doctor Profile Credentials",
+        "hinglish": "🩺 Doctor Profile Details"
+    },
+    "lbl_staff_profile_hdr": {
+        "hi": "🏥 स्वास्थ्य स्टाफ प्रोफ़ाइल (Staff Profile)",
+        "en": "🏥 Healthcare Staff Credentials",
+        "hinglish": "🏥 Staff Profile Details"
+    },
+    "lbl_patient_profile_hdr": {
+        "hi": "👤 मरीज प्रोफ़ाइल विवरण (Patient Profile)",
+        "en": "👤 Patient Health Profile",
+        "hinglish": "👤 Patient Profile Details"
+    },
+    "portal_register_patient_btn": {
+        "hi": "➕ नया मरीज पंजीकृत करें (Register New Patient)",
+        "en": "➕ Register New Patient",
+        "hinglish": "➕ Naya Patient Register Karein"
+    },
+    "form_reg_patient_title": {
+        "hi": "📋 नए मरीज का पंजीकरण व स्वास्थ्य डेटा",
+        "en": "📋 Register New Patient & Clinical Profile",
+        "hinglish": "📋 Naye Patient ka Registration"
+    },
+    "lbl_chief_complaint": {
+        "hi": "मुख्य स्वास्थ्य समस्या / लक्षण (Chief Complaint):",
+        "en": "Chief Health Concern / Symptoms:",
+        "hinglish": "Mukhya Samasya / Symptoms:"
+    },
+    "ph_chief_complaint": {
+        "hi": "उदा. 3 दिन से बुखार व सिरदर्द",
+        "en": "e.g. Fever and headache for 3 days",
+        "hinglish": "Jaise 3 din se bukhar aur sirdard"
+    },
+    "lbl_address_village": {
+        "hi": "गाँव / पता (Village / Address):",
+        "en": "Village / Address:",
+        "hinglish": "Gaon / Pata:"
+    },
+    "ph_address_village": {
+        "hi": "उदा. नीमराना, अलवर",
+        "en": "e.g. Neemrana, Alwar",
+        "hinglish": "Jaise Neemrana, Alwar"
+    },
+    "lbl_doctor_name": {
+        "hi": "डॉक्टर का पूरा नाम (Doctor Name):",
+        "en": "Doctor's Full Name:",
+        "hinglish": "Doctor ka Poora Naam:"
+    },
+    "lbl_medical_license": {
+        "hi": "मेडिकल काउंसिल / NMC रजिस्ट्रेशन नं. (License No.):",
+        "en": "Medical Council / NMC Reg No (License No):",
+        "hinglish": "Medical Council / NMC Reg No:"
+    },
+    "lbl_specialization": {
+        "hi": "विशेषज्ञता / विभाग (Specialization):",
+        "en": "Clinical Specialization / Department:",
+        "hinglish": "Specialization / Vibhaag:"
+    },
+    "lbl_hospital_clinic": {
+        "hi": "अस्पताल / पीएचसी / क्लीनिक का नाम:",
+        "en": "Hospital / Clinic / PHC Name:",
+        "hinglish": "Hospital / PHC / Clinic ka Naam:"
+    },
+    "lbl_qualification": {
+        "hi": "शैक्षणिक डिग्री (उदा. MBBS, MD):",
+        "en": "Medical Qualification (e.g. MBBS, MD):",
+        "hinglish": "Medical Degree (jaise MBBS, MD):"
+    },
+    "lbl_doctor_phone": {
+        "hi": "परामर्श फोन नंबर (Phone):",
+        "en": "Doctor Consultation Phone:",
+        "hinglish": "Doctor Phone Number:"
+    },
+    "lbl_staff_name": {
+        "hi": "स्वास्थ्य स्टाफ का नाम (Staff Name):",
+        "en": "Healthcare Staff Member Name:",
+        "hinglish": "Staff ka Poora Naam:"
+    },
+    "lbl_staff_designation": {
+        "hi": "पद / भूमिका (Designation):",
+        "en": "Role / Designation (Nurse, Pharmacist, ASHA):",
+        "hinglish": "Pad / Designation (Nurse, Pharmacist, ASHA):"
+    },
+    "lbl_employee_id": {
+        "hi": "कर्मचारी आईडी / कोड (Employee ID):",
+        "en": "Hospital Staff ID / Employee Code:",
+        "hinglish": "Staff ID / Code:"
+    },
+    "lbl_department_ward": {
+        "hi": "वार्ड / स्वास्थ्य इकाई (Ward / Unit):",
+        "en": "Assigned Ward / Department / Unit:",
+        "hinglish": "Ward / PHC Unit:"
+    },
+    "lbl_staff_phone": {
+        "hi": "स्टाफ संपर्क नंबर (Phone):",
+        "en": "Staff Contact Phone Number:",
+        "hinglish": "Staff Contact Phone:"
     },
     "lbl_patient_name": {
         "hi": "मरीज का नाम:",
         "en": "Patient Name:",
         "hinglish": "Mareez ka Naam:"
+    },
+    "lbl_patient_age_inp": {
+        "hi": "आयु / वर्ष (Age):",
+        "en": "Age (years):",
+        "hinglish": "Umra (Years):"
+    },
+    "lbl_patient_gender": {
+        "hi": "लिंग (Gender):",
+        "en": "Gender:",
+        "hinglish": "Gender (Ling):"
+    },
+    "lbl_patient_blood_group": {
+        "hi": "ब्लड ग्रुप (Blood Group):",
+        "en": "Blood Group:",
+        "hinglish": "Blood Group:"
+    },
+    "lbl_emergency_contact_inp": {
+        "hi": "आपातकालीन संपर्क फोन (Emergency Phone):",
+        "en": "Emergency Contact Phone:",
+        "hinglish": "Emergency Phone Number:"
+    },
+    "lbl_patient_address": {
+        "hi": "गाँव / कस्बा / पता (Village / Address):",
+        "en": "Village / Town / Address:",
+        "hinglish": "Gaon / Shehar / Pata:"
     },
     "lbl_mobile_optional": {
         "hi": "मोबाइल नंबर (वैकल्पिक):",
@@ -130,6 +292,16 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "hi": "ABHA ID (वैकल्पिक):",
         "en": "ABHA ID (Optional):",
         "hinglish": "ABHA ID (Optional):"
+    },
+    "lbl_unregistered_guest": {
+        "hi": "नया उपयोगकर्ता (Guest)",
+        "en": "New User (Guest)",
+        "hinglish": "Naya User (Guest)"
+    },
+    "msg_please_complete_profile": {
+        "hi": "कृपया अपने नाम और विवरण के साथ प्रोफ़ाइल सहेजें",
+        "en": "Please complete your profile details and save",
+        "hinglish": "Kripya apna profile details save karein"
     },
     "btn_save_profile": {
         "hi": "💾 प्रोफ़ाइल सहेजें (Save Profile)",
@@ -225,6 +397,16 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "Doses Taken",
         "hinglish": "Doses Li Gayi"
     },
+    "tile_no_data": {
+        "hi": "रीडिंग दर्ज करें",
+        "en": "No reading yet",
+        "hinglish": "Reading darj karein"
+    },
+    "tile_no_reminders_yet": {
+        "hi": "शेड्यूल जोड़ें",
+        "en": "No reminders set",
+        "hinglish": "Reminder add karein"
+    },
 
     # Tabs
     "tab_scan": {
@@ -261,6 +443,108 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "hi": "⚙️ सेटिंग्स (Settings)",
         "en": "⚙️ Settings",
         "hinglish": "⚙️ Settings"
+    },
+
+    # Menu & Screen Routing & Proximity
+    "nav_dashboard": {
+        "hi": "📊 डैशबोर्ड (Dashboard)",
+        "en": "📊 Dashboard",
+        "hinglish": "📊 Dashboard"
+    },
+    "btn_menu": {
+        "hi": "☰ मेनू (Menu)",
+        "en": "☰ Menu",
+        "hinglish": "☰ Menu"
+    },
+    "menu_title": {
+        "hi": "🧭 सेवा नेविगेशन मेनू",
+        "en": "🧭 Navigation Menu",
+        "hinglish": "🧭 Navigation Menu"
+    },
+    "btn_back_to_dashboard": {
+        "hi": "← 📊 मुख्य डैशबोर्ड पर लौटें",
+        "en": "← 📊 Back to Dashboard",
+        "hinglish": "← 📊 Dashboard par lautein"
+    },
+    "spotlight_title": {
+        "hi": "🏆 10 मील के दायरे में निकटतम स्वास्थ्य केंद्र व दुकान",
+        "en": "🏆 Nearest Recommended Clinic & Pharmacy (<10 Miles)",
+        "hinglish": "🏆 10 Mile Radius me Nearest Clinic & Pharmacy"
+    },
+    "spotlight_badge": {
+        "hi": "📍 निकटतम अनुशंसित (Closest Match)",
+        "en": "📍 Closest Match (< 10 Miles)",
+        "hinglish": "📍 Nearest Recommended (< 10 Miles)"
+    },
+    "btn_call_support": {
+        "hi": "📞 तुरंत कॉल करें",
+        "en": "📞 1-Tap Call Support",
+        "hinglish": "📞 Turant Call Karein"
+    },
+    "btn_maps_directions": {
+        "hi": "🗺️ 1-टैप रास्ता (Google Maps)",
+        "en": "🗺️ 1-Tap Directions",
+        "hinglish": "🗺️ 1-Tap Directions (Maps)"
+    },
+    "lbl_radius_filter": {
+        "hi": "दूरी का दायरा (रेडियस मील में):",
+        "en": "Proximity Radius (miles):",
+        "hinglish": "Distance Radius (miles):"
+    },
+    "lbl_category_filter": {
+        "hi": "स्वास्थ्य सुविधा प्रकार:",
+        "en": "Facility Category:",
+        "hinglish": "Facility Category:"
+    },
+    "opt_all_facilities": {
+        "hi": "सभी सुविधाएं (All Facilities)",
+        "en": "All Facilities (< 10 Miles)",
+        "hinglish": "Sabhi Facilities"
+    },
+    "opt_clinics_only": {
+        "hi": "🏥 अस्पताल व पीएचसी (Clinics & PHC)",
+        "en": "🏥 Clinics & PHCs",
+        "hinglish": "🏥 Clinics & PHCs"
+    },
+    "opt_chemists_only": {
+        "hi": "💊 24/7 मेडिकल स्टोर (24/7 Chemists)",
+        "en": "💊 24/7 Medical Stores",
+        "hinglish": "💊 24/7 Chemists"
+    },
+    "opt_jan_aushadhi_only": {
+        "hi": "🏛️ जन औषधि केंद्र (Jan Aushadhi)",
+        "en": "🏛️ PM Jan Aushadhi Kendras",
+        "hinglish": "🏛️ Jan Aushadhi"
+    },
+    "msg_no_facilities_found": {
+        "hi": "चयनित दायरे में कोई सत्यापित सुविधा नहीं मिली। कृपया दायरा बढ़ाएं या स्थान बदलें।",
+        "en": "No verified facilities found within selected radius. Please increase radius or change location.",
+        "hinglish": "Selected radius me koi verified facility nahi mili. Radius badhayein ya location change karein."
+    },
+    "services_offered": {
+        "hi": "उपलब्ध सेवाएं:",
+        "en": "Services Offered:",
+        "hinglish": "Available Services:"
+    },
+    "lbl_open_screen": {
+        "hi": "स्क्रीन खोलें →",
+        "en": "Open Screen →",
+        "hinglish": "Screen Kholein →"
+    },
+    "dashboard_quick_actions": {
+        "hi": "⚡ त्वरित स्वास्थ्य क्रियाएं (Quick Actions)",
+        "en": "⚡ Quick Health Actions",
+        "hinglish": "⚡ Quick Actions"
+    },
+    "dashboard_metrics_title": {
+        "hi": "📈 स्वास्थ्य मेट्रिक्स व वाइटल्स अवलोकन",
+        "en": "📈 Health Metrics & Vitals Overview",
+        "hinglish": "📈 Health Metrics & Vitals"
+    },
+    "dashboard_services_title": {
+        "hi": "🏥 संपूर्ण स्वास्थ्य सेवाएं व सुविधाएं",
+        "en": "🏥 All Health Services & Modules",
+        "hinglish": "🏥 All Health Services"
     },
 
     # Emergency Drawer
@@ -623,6 +907,21 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "Severity:",
         "hinglish": "Gambheerta:"
     },
+    "lbl_mild": {
+        "hi": "🟢 हल्का (Mild - आराम से सहन होने योग्य)",
+        "en": "🟢 Mild (Easily tolerable)",
+        "hinglish": "🟢 Halka (Mild)"
+    },
+    "lbl_moderate": {
+        "hi": "🟡 मध्यम (Moderate - दैनिक कार्यों में परेशानी)",
+        "en": "🟡 Moderate (Interfering with daily tasks)",
+        "hinglish": "🟡 Madhyam (Moderate)"
+    },
+    "lbl_severe": {
+        "hi": "🔴 गंभीर (Severe - असहनीय व तुरंत ध्यान योग्य)",
+        "en": "🔴 Severe (Unbearable, needs urgent attention)",
+        "hinglish": "🔴 Gambhir (Severe)"
+    },
     "lbl_notes_optional": {
         "hi": "अतिरिक्त विवरण (वैकल्पिक):",
         "en": "Notes (optional):",
@@ -669,6 +968,26 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "hi": "उपकरण चुनें (Select Device):",
         "en": "Select Device:",
         "hinglish": "Device Chunein:"
+    },
+    "dev_oximeter": {
+        "hi": "🫁 पल्स ऑक्सीमीटर (Pulse Oximeter - SpO2)",
+        "en": "🫁 Pulse Oximeter (SpO2)",
+        "hinglish": "🫁 Pulse Oximeter (SpO2)"
+    },
+    "dev_bp": {
+        "hi": "💓 डिजिटल बीपी मॉनिटर (Blood Pressure BP)",
+        "en": "💓 Digital BP Monitor (Blood Pressure)",
+        "hinglish": "💓 Digital BP Monitor (Blood Pressure)"
+    },
+    "dev_glucometer": {
+        "hi": "🩸 डिजिटल ग्लूकोमीटर (Blood Sugar Glucometer)",
+        "en": "🩸 Digital Glucometer (Blood Sugar)",
+        "hinglish": "🩸 Digital Glucometer (Blood Sugar)"
+    },
+    "dev_thermometer": {
+        "hi": "🌡️ डिजिटल थर्मामीटर (Body Temperature)",
+        "en": "🌡️ Digital Thermometer (Body Temperature)",
+        "hinglish": "🌡️ Digital Thermometer (Body Temperature)"
     },
     "lbl_enter_reading": {
         "hi": "रीडिंग दर्ज करें",
@@ -925,6 +1244,41 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "hi": "👨‍⚕️ डॉक्टर और अस्पताल स्टाफ पोर्टल (Doctor & Hospital Staff Portal)",
         "en": "👨‍⚕️ Doctor & Hospital Staff Treatment Portal",
         "hinglish": "👨‍⚕️ Doctor aur Hospital Staff Portal"
+    },
+    "portal_doctor_heading": {
+        "hi": "👨‍⚕️ डॉक्टर क्लिनिकल पोर्टल (Doctor Treatment & Triage Portal)",
+        "en": "👨‍⚕️ Doctor Clinical Treatment & Triage Portal",
+        "hinglish": "👨‍⚕️ Doctor Clinical Treatment Portal"
+    },
+    "portal_staff_heading": {
+        "hi": "🏥 अस्पताल एवं PHC स्टाफ केयर पोर्टल (Hospital & Staff Care Portal)",
+        "en": "🏥 Hospital & PHC Staff Care Portal",
+        "hinglish": "🏥 Hospital aur Staff Care Portal"
+    },
+    "portal_patient_heading": {
+        "hi": "📋 मेरा स्वास्थ्य व इलाज रिकॉर्ड (My Health Treatment Record)",
+        "en": "📋 My Health Treatment Record & Clinical Summary",
+        "hinglish": "📋 Mera Health Treatment Record"
+    },
+    "portal_no_patients_title": {
+        "hi": "📋 कोई पूर्व मरीज डेटा दर्ज नहीं है",
+        "en": "📋 No Pre-existing Patient Records Found",
+        "hinglish": "📋 Abhi koi mareez darj nahi hai"
+    },
+    "portal_no_patients_desc": {
+        "hi": "इलाज शुरू करने के लिए मरीज का विवरण दर्ज करें। जब मरीज स्वयं पर्चा स्कैन करेंगे, तो उनका रिकॉर्ड भी यहाँ स्वतः जुड़ जाएगा।",
+        "en": "Please register a patient to initiate clinical care records. Prescriptions scanned by patients will also automatically sync here.",
+        "hinglish": "Ilaaj shuru karne ke liye mareez ka data enter karein. Parchi scan hone par bhi record yahan jud jayega."
+    },
+    "btn_register_patient_modal": {
+        "hi": "➕ नया मरीज पंजीकृत करें (Register Patient)",
+        "en": "➕ Register New Patient for Care",
+        "hinglish": "➕ Naya Mareez Register Karein"
+    },
+    "patient_registered_success": {
+        "hi": "✅ नया मरीज सफलतापूर्वक पंजीकृत किया गया!",
+        "en": "✅ Patient successfully registered in clinical database!",
+        "hinglish": "✅ Naya mareez successfully register ho gaya!"
     },
     "portal_sub": {
         "hi": "अस्पताल के डॉक्टर, नर्स और PHC स्टाफ के लिए मरीज का संपूर्ण इलाज डेटा और क्लिनिकल ट्राइएज प्रबंधन:",

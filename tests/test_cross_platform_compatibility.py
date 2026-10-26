@@ -23,7 +23,7 @@ def test_pwa_manifest_validity():
     assert data["name"] == "Sehat Saathi (सेहत साथी)"
     assert data["short_name"] == "Sehat Saathi"
     assert data["display"] == "standalone"
-    assert data["theme_color"] == "#1b5e20"
+    assert data["theme_color"] == "#28654e"
     assert len(data["icons"]) >= 2
     assert any(icon["sizes"] == "192x192" for icon in data["icons"])
     assert any(icon["sizes"] == "512x512" for icon in data["icons"])

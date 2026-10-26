@@ -25,7 +25,7 @@ COMMON_ISSUE_TYPES = [
 ]
 
 SEVERE_SYMPTOM_KEYWORDS = [
-    "सांस", "सूजन", "breathing", "swelling", "allergy", "गंभीर", "घबराहट"
+    "सांस", "सूजन", "breathing", "swelling", "allergy", "गंभीर", "घबराहट", "severe", "chest pain", "सीने में दर्द"
 ]
 
 
@@ -67,7 +67,7 @@ class HealthIssueService:
         """
         is_severe = False
         lower_issue = (issue_type + " " + (notes or "") + " " + severity).lower()
-        if any(kw in lower_issue for kw in SEVERE_SYMPTOM_KEYWORDS) or "गंभीर" in severity:
+        if any(kw in lower_issue for kw in SEVERE_SYMPTOM_KEYWORDS) or "गंभीर" in severity or "severe" in severity.lower():
             is_severe = True
 
         log_entry = TreatmentIssueLog(

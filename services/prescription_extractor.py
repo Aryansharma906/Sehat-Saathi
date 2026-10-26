@@ -59,8 +59,8 @@ class GeminiMultimodalExtractor(BasePrescriptionExtractor):
     Multimodal visual extractor using the official google-genai SDK.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-2.5-flash"):
-        self.api_key = api_key or os.environ.get("GEMINI_API_KEY")
+    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.5-flash-lite"):
+        self.api_key = api_key if api_key is not None else os.environ.get("GEMINI_API_KEY")
         self.model_name = model_name
         self.client = None
         if self.api_key:
