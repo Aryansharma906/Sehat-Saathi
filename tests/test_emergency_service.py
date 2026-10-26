@@ -18,7 +18,9 @@ def test_emergency_numbers_catalog():
 
     for a in agencies:
         assert "name_hindi" in a
+        assert "name_en" in a
         assert "desc_hindi" in a
+        assert "desc_en" in a
         assert "icon" in a
         assert a["color"].startswith("#")
 

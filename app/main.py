@@ -519,12 +519,15 @@ with st.expander(t("emergency_drawer_title", lang), expanded=False):
     for idx, ag in enumerate(agencies):
         target_col = col_em1 if idx % 2 == 0 else col_em2
         with target_col:
-            tel_link = EmergencyService.build_tel_link(ag["number"])
-            label_text = ag["name_hindi"] if lang != "en" else ag["name_en"]
+            tel_link = EmergencyService.build_tel_link(ag.get("number", "108"))
+            label_text = ag.get("name_en", ag.get("name_hindi", "Emergency")) if lang == "en" else ag.get("name_hindi", "आपातकालीन")
+            ag_color = ag.get("color", "#d32f2f")
+            ag_icon = ag.get("icon", "🚨")
+            ag_num = ag.get("number", "108")
             st.markdown(
                 f'<a href="{tel_link}" style="text-decoration:none;">'
-                f'<div style="background-color:{ag["color"]}; color:white; padding:10px 12px; border-radius:12px; margin-bottom:6px; font-weight:bold; text-align:center;">'
-                f'{ag["icon"]} {label_text} ({ag["number"]})'
+                f'<div style="background-color:{ag_color}; color:white; padding:10px 12px; border-radius:12px; margin-bottom:6px; font-weight:bold; text-align:center;">'
+                f'{ag_icon} {label_text} ({ag_num})'
                 f'</div></a>',
                 unsafe_allow_html=True
             )
