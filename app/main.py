@@ -28,6 +28,8 @@ from services.prevention_and_facilities import PreventionAndFacilitiesService
 from services.emergency_service import EmergencyService
 from services.health_issue_service import HealthIssueService, COMMON_ISSUE_TYPES
 from services.progress_tracker_service import ProgressTrackerService
+from services.mental_health_service import MentalHealthService
+from services.device_data_service import DeviceDataService
 from storage.persistence import LocalStorageAdapter
 
 
@@ -157,9 +159,10 @@ with st.expander("🚨 आपातकाल में तुरंत मदद
 
 
 # Top Navigation
-tab_scan, tab_reminders, tab_facilities, tab_chat, tab_settings = st.tabs([
+tab_scan, tab_reminders, tab_vitals, tab_facilities, tab_chat, tab_settings = st.tabs([
     "📸 पर्ची पढ़ें (Scan)",
     "⏰ रिमाइंडर (Reminders)",
+    "🩺 जांच व मन की शांति (Vitals & Wellness)",
     "🏥 अस्पताल व बचाव (Clinics & Prevention)",
     "💬 सवाल पूछें (Ask)",
     "⚙️ सेटिंग्स (Settings)"
@@ -529,7 +532,128 @@ with tab_reminders:
 
 
 # -------------------------------------------------------------
-# TAB 3: NEARBY CLINICS, DOCTORS & DISEASE PREVENTION
+# TAB 3: HEALTH DEVICES & MENTAL WELLNESS
+# -------------------------------------------------------------
+with tab_vitals:
+    st.subheader("⌚ स्वास्थ्य उपकरण (Health Devices) और मन की शांति")
+    st.caption("घर में इस्तेमाल होने वाले स्वास्थ्य उपकरणों की रीडिंग दर्ज करें या मानसिक स्वास्थ्य जांचें:")
+
+    device_service = DeviceDataService()
+    mental_service = MentalHealthService()
+
+    # Part A: Health Devices Vitals Recorder
+    with st.expander("🩺 स्वास्थ्य उपकरण से रीडिंग सहेजें (Health Devices Vitals)", expanded=True):
+        st.markdown("अपने घर के डिजिटल उपकरण से आई रीडिंग यहां दर्ज करें:")
+        
+        dev_choice = st.selectbox(
+            "उपकरण चुनें (Select Device):",
+            [
+                "🩺 पल्स ऑक्सीमीटर (Pulse Oximeter - SpO2 / नाड़ी)",
+                "🩸 डिजिटल बीपी मॉनिटर (BP Monitor - रक्तचाप)",
+                "🍬 डिजिटल ग्लूकोमीटर (Glucometer - शुगर)",
+                "🌡️ डिजिटल थर्मामीटर (Thermometer - बुखार)"
+            ],
+            key="dev_choice_select"
+        )
+
+        col_val1, col_val2 = st.columns(2)
+        with col_val1:
+            if "ऑक्सीमीटर" in dev_choice:
+                v_metric = "ऑक्सीजन (SpO2)"
+                v_unit = "%"
+                v_hint = "उदा. 98"
+            elif "बीपी" in dev_choice:
+                v_metric = "रक्तचाप (Blood Pressure)"
+                v_unit = "mmHg"
+                v_hint = "उदा. 120/80"
+            elif "ग्लूकोमीटर" in dev_choice:
+                v_metric = "रक्त शर्करा (Blood Sugar)"
+                v_unit = "mg/dL"
+                v_hint = "उदा. 110"
+            else:
+                v_metric = "शरीर का तापमान (Temperature)"
+                v_unit = "°F"
+                v_hint = "उदा. 98.6"
+
+            val_input = st.text_input(f"रीडिंग दर्ज करें ({v_metric}):", placeholder=v_hint, key="vital_val_input")
+
+        with col_val2:
+            st.caption(f"इकाई (Unit): **{v_unit}**")
+            st.caption("स्रोत: **डिजिटल हेल्थ डिवाइस**")
+
+        if st.button("💾 उपकरण रीडिंग सहेजें (Save Reading)", key="btn_save_vital"):
+            if val_input.strip():
+                rec = device_service.record_reading(
+                    device_type=dev_choice.split("(")[0].strip(),
+                    metric_name=v_metric,
+                    value=val_input,
+                    unit=v_unit
+                )
+                st.success(f"✅ {v_metric} रीडिंग ({val_input} {v_unit}) दर्ज हो गई!")
+                if rec.alert_message:
+                    st.warning(rec.alert_message)
+            else:
+                st.warning("कृपया रीडिंग का मान दर्ज करें।")
+
+        # Device Export Import Option (Compatibility)
+        with st.expander("📥 डिवाइस डेटा फाइल इंपोर्ट करें (Import Device JSON)", expanded=False):
+            st.caption("स्मार्टवॉच या ब्लूटूथ डिवाइस के एक्सपोर्ट किए गए डेटा को सीधे इंपोर्ट करें:")
+            sample_json = '[{"device_type": "Pulse Oximeter", "metric_name": "SpO2", "value": "98", "unit": "%"}]'
+            json_text = st.text_area("डिवाइस JSON डेटा पेस्ट करें:", value=sample_json, height=70, key="dev_json_area")
+            if st.button("डेटा इंपोर्ट करें (Sync Data)", key="btn_import_dev"):
+                imp = device_service.import_device_json_data(json_text)
+                st.success(f"🎉 {len(imp)} डिवाइस रीडिंग सफलतापूर्वक सिंक हो गईं!")
+
+        # Past Readings
+        all_readings = device_service.get_all_readings()
+        if all_readings:
+            st.markdown("---")
+            st.markdown("#### 📋 हालिया उपकरण रीडिंग (Recent Readings):")
+            for r in all_readings[:4]:
+                st.caption(f"🔹 **{r.timestamp}** — {r.device_type}: **{r.value} {r.unit}** ({r.status_flag})")
+
+    st.markdown("---")
+
+    # Part B: Mental Health & Tele-MANAS (14416)
+    with st.expander("🧘 मन की बात — मानसिक स्वास्थ्य व नींद की जांच (Mental Wellness)", expanded=False):
+        st.markdown("शारीरिक स्वास्थ्य के साथ-साथ मानसिक शांति भी जरूरी है। इन 3 आसान सवालों के उत्तर दें:")
+        
+        m_sleep = st.radio(
+            "1. रात में नींद कैसी आ रही है?",
+            ["अच्छी नींद (Good Sleep)", "कभी-कभी परेशानी (Disturbed)", "बहुत कम नींद (Insomnia / Sleepless)"],
+            key="m_sleep_radio"
+        )
+        m_stress = st.radio(
+            "2. क्या किसी बात को लेकर अत्यधिक चिंता या घबराहट रहती है?",
+            ["सामान्य (Normal)", "हल्का तनाव (Mild Worry)", "बहुत अधिक चिंता (Severe Anxiety)"],
+            key="m_stress_radio"
+        )
+        m_mood = st.radio(
+            "3. मन की स्थिति कैसी है?",
+            ["प्रसन्न (Happy / Positive)", "सामान्य (Neutral)", "उदास या अकेलापन (Sad / Low Interest)"],
+            key="m_mood_radio"
+        )
+
+        if st.button("🌸 मन की स्थिति जांचें (Check Mental Wellness)", key="btn_check_mental"):
+            m_res = mental_service.evaluate_mental_wellness(m_sleep, m_stress, m_mood)
+            st.markdown(f"### मानसिक शांति स्कोर: **{m_res.wellness_score}%**")
+            st.progress(m_res.wellness_score / 100.0)
+            st.info(m_res.supportive_advice_hindi)
+
+            if m_res.tele_manas_recommended:
+                st.markdown("""
+                <div style="background-color:#fce4ec; border-left:6px solid #c2185b; padding:12px; border-radius:8px; margin-top:10px;">
+                    🌸 <b>राष्ट्रीय मानसिक स्वास्थ्य हेल्पलाइन (Tele-MANAS - MoHFW):</b><br>
+                    मन की बात साझा करने के लिए सरकार की 24x7 मुफ्त और गोपनीय हेल्पलाइन पर सीधे मनोवैज्ञानिक से बात करें:<br><br>
+                    👉 <a href="tel:14416" style="background-color:#c2185b; color:white; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                    📞 14416 पर तुरंत फोन करें (Tele-MANAS Toll-Free)
+                    </a>
+                </div>
+                """, unsafe_allow_html=True)
+
+
+# -------------------------------------------------------------
+# TAB 4: NEARBY CLINICS, DOCTORS & DISEASE PREVENTION
 # -------------------------------------------------------------
 with tab_facilities:
     st.subheader("🏥 नजदीकी अस्पताल, क्लीनिक और डॉक्टर खोजें")

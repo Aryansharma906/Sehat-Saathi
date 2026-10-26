@@ -17,6 +17,11 @@ In rural India, millions of older adults and patients struggle to read doctors' 
 5. **Remind (दवा रिमाइंडर):** Create reminders strictly from confirmed instructions without wiping older prescriptions.
 6. **Caregiver Share (परिवार को भेजें):** 1-tap WhatsApp schedule export for family caregivers assisting elderly relatives.
 7. **Ask (सवाल पूछें):** Constrained Q&A assistant to answer questions about the prescription without diagnosing or overriding medical advice.
+8. **Emergency Support (आपातकालीन नंबर):** Instant 1-tap calling for 108 (Ambulance), 112 (Emergency), 104 (Health advice), and 102 (Mother/Child).
+9. **Clinics & Chemists Map (अस्पताल व दवा दुकानें):** 1-tap turn-by-turn navigation on Google Maps for nearby PHCs, CHCs, and retail chemists.
+10. **Treatment Reaction Logger & Doctor Escalation (समस्या व डॉक्टर सूचना):** Log side-effects or allergic symptoms and generate 1-tap structured WhatsApp reports for the doctor.
+11. **Recovery Progress Tracking (स्वास्थ्य सुधार सवाल):** 30-second observational check-in to track recovery percentage over time.
+12. **Health Device Vitals & Mental Wellness (जांच व मन की शांति):** Standardized logging for BP, SpO2, blood sugar, and digital thermometers with clinical alert banners, alongside mental health screening integrated with Govt of India's Tele-MANAS (14416).
 
 ---
 
@@ -39,21 +44,30 @@ In rural India, millions of older adults and patients struggle to read doctors' 
 ```
 sehat-saathi/
 ├── app/
-│   └── main.py                     # Streamlit Mobile-First UI (Large-font mode, Photo guidance, WhatsApp share)
+│   └── main.py                     # Streamlit Mobile-First UI (Large-font mode, 6 tabs, Emergency call 108/112)
 ├── models/
 │   ├── prescription.py             # Pydantic Schemas with Safety Invariants
-│   └── reminder.py                 # Reminder & Schedule Models with Traceability
+│   ├── reminder.py                 # Reminder & Schedule Models with Traceability
+│   ├── health_issue.py             # Treatment side-effect & reaction logging
+│   ├── progress_tracker.py         # 30-second recovery questionnaire models
+│   └── vitals_and_mental_health.py # Device vitals (BP, SpO2, Sugar, Temp) & Mental health screening
 ├── services/
 │   ├── prescription_extractor.py   # BaseExtractor, GeminiMultimodal, MockExtractor
 │   ├── image_processing.py         # EXIF normalization, quality heuristics
-│   ├── medicine_reference.py       # Indian Healthcare Database (NLEM & Jan Aushadhi)
+│   ├── medicine_reference.py       # Indian Healthcare Database (NLEM & Jan Aushadhi generic mapping)
 │   ├── language_service.py         # Simple Hindi copy & gTTS audio
 │   ├── reminder_service.py         # Schedule logic, conflict detection, due-status check
-│   └── chat_service.py             # Grounded Q&A assistant with safety tripwires
+│   ├── chat_service.py             # Grounded Q&A assistant with safety tripwires
+│   ├── emergency_service.py        # Direct mobile dialer links (108, 112, 104, 102)
+│   ├── prevention_and_facilities.py# Disease prevention guides & universal Map links (PHC, CHC, Chemists)
+│   ├── health_issue_service.py     # Side-effect logging & WhatsApp doctor escalation
+│   ├── progress_tracker_service.py # 3-question recovery scoring & trend tracking
+│   ├── mental_health_service.py    # Mental wellness screening & Tele-MANAS (14416) referral
+│   └── device_data_service.py      # Standardized BP, SpO2, Glucose, Temp vitals with clinical alerts
 ├── storage/
 │   └── persistence.py              # Offline-friendly local storage adapter (JSON)
 ├── data/
-│   └── sample_prescriptions/       # Synthetic test prescriptions
+│   └── sample_prescriptions/       # Realistic synthetic test prescriptions
 ├── tests/
 │   ├── test_models.py
 │   ├── test_extraction.py
@@ -61,7 +75,12 @@ sehat-saathi/
 │   ├── test_conflicts_and_traceability.py
 │   ├── test_reminders.py
 │   ├── test_chat_safety.py
-│   └── test_image_processing.py
+│   ├── test_image_processing.py
+│   ├── test_emergency_service.py
+│   ├── test_prevention_and_facilities.py
+│   ├── test_health_issue_service.py
+│   ├── test_progress_tracker.py
+│   └── test_vitals_and_mental_health.py
 └── docs/                           # Architecture, Research & Safety Docs
 ```
 
