@@ -105,6 +105,15 @@ class Prescription(BaseModel):
         """Returns True if any medicine has uncertain fields or lacks user confirmation."""
         return any(med.is_uncertain or not med.user_confirmed for med in self.medicines)
 
+    def discard_medicine(self, medicine_id: str) -> bool:
+        """
+        Discard/Remove an individual medicine instruction from the unconfirmed prescription review.
+        Allows users to discard non-medicinal lines or unwanted medicines before confirming.
+        """
+        initial_len = len(self.medicines)
+        self.medicines = [m for m in self.medicines if m.id != medicine_id]
+        return len(self.medicines) < initial_len
+
     def can_create_reminders(self) -> bool:
         """
         Safety Gate (Rule 3): Can only create reminders if at least one medicine is confirmed

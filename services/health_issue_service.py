@@ -95,6 +95,16 @@ class HealthIssueService:
     def clear_issues(self) -> None:
         self._write_raw([])
 
+    def delete_issue(self, issue_id: str) -> bool:
+        """Discards a single logged health issue record."""
+        current = self.get_all_issues()
+        initial_len = len(current)
+        filtered = [item for item in current if item.id != issue_id]
+        if len(filtered) < initial_len:
+            self._write_raw([e.model_dump() for e in filtered])
+            return True
+        return False
+
     @classmethod
     def generate_doctor_notification_text(
         cls,

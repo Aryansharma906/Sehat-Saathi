@@ -150,3 +150,17 @@ class DeviceDataService:
             except Exception:
                 continue
         return results
+
+    def delete_reading(self, reading_id: str) -> bool:
+        """Discards a single recorded device vital reading."""
+        current = self.get_all_readings()
+        initial_len = len(current)
+        filtered = [item for item in current if item.id != reading_id]
+        if len(filtered) < initial_len:
+            self._write_raw([e.model_dump() for e in filtered])
+            return True
+        return False
+
+    def clear_readings(self) -> None:
+        """Discards all recorded device vitals."""
+        self._write_raw([])

@@ -142,6 +142,20 @@ class ProgressTrackerService:
                 continue
         return results
 
+    def delete_checkin(self, checkin_id: str) -> bool:
+        """Discards a single progress check-in."""
+        current = self.get_all_checkins()
+        initial_len = len(current)
+        filtered = [c for c in current if c.id != checkin_id]
+        if len(filtered) < initial_len:
+            self._write_raw([c.model_dump() for c in filtered])
+            return True
+        return False
+
+    def clear_checkins(self) -> None:
+        """Discards all progress check-ins."""
+        self._write_raw([])
+
     @classmethod
     def get_questionnaire_items(cls) -> List[Dict[str, Any]]:
         return QUESTIONNAIRE_ITEMS

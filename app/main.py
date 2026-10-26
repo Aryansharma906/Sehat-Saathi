@@ -243,8 +243,15 @@ with tab_scan:
     if st.session_state.prescription:
         presc: Prescription = st.session_state.prescription
         st.markdown("---")
-        st.subheader("2. पर्ची की जांच और पुष्टि करें (Review & Verify)")
-        st.write("कृपया AI द्वारा पढ़े गए शब्दों को अपने पर्चे से मिलाकर जांच लें:")
+        
+        col_rev_head, col_rev_discard = st.columns([3, 1])
+        with col_rev_head:
+            st.subheader("2. पर्ची की जांच और पुष्टि करें (Review & Verify)")
+            st.write("कृपया AI द्वारा पढ़े गए शब्दों को अपने पर्चे से मिलाकर जांच लें:")
+        with col_rev_discard:
+            if st.button("🗑️ पूरी पर्ची रद्द करें (Discard)", key="btn_discard_presc", help="इस पर्चे को छोड़ें और नया पर्चा शुरू करें"):
+                st.session_state.prescription = None
+                st.rerun()
 
         if presc.patient_name:
             st.info(f"👤 **मरीज का नाम:** {presc.patient_name} | 📅 **तारीख:** {presc.prescription_date or 'अनुपलब्ध'}")
@@ -310,11 +317,20 @@ with tab_scan:
                         if ref_info.get('jan_aushadhi_available'):
                             st.caption("💡 यह दवा प्रधानमंत्री जन औषधि केंद्र पर किफायती दर पर भी मिलती है।")
 
-                med.user_confirmed = st.checkbox(
-                    f"☑️ मैंने दवा #{idx+1} ({med.candidate_medicine_name}) की जानकारी पर्चे से जांच ली है",
-                    value=med.user_confirmed,
-                    key=f"confirm_{idx}"
-                )
+                col_conf, col_discard_med = st.columns([3, 1])
+                with col_conf:
+                    med.user_confirmed = st.checkbox(
+                        f"☑️ मैंने दवा #{idx+1} ({med.candidate_medicine_name}) की जानकारी पर्चे से जांच ली है",
+                        value=med.user_confirmed,
+                        key=f"confirm_{idx}"
+                    )
+                with col_discard_med:
+                    if st.button("🗑️ दवा हटाएं", key=f"discard_med_{med.id}", help="यदि यह लाइन दवा नहीं है या आप इसे नहीं सहेजना चाहते"):
+                        presc.discard_medicine(med.id)
+                        if not presc.medicines:
+                            st.session_state.prescription = None
+                        st.rerun()
+
                 if not med.user_confirmed:
                     confirmed_all = False
 
@@ -399,6 +415,22 @@ with tab_reminders:
             f'</div></a>',
             unsafe_allow_html=True
         )
+
+        with st.expander("🗑️ पुराने या सभी रिमाइंडर हटाएं (Discard / Clear Reminders)", expanded=False):
+            st.caption("यदि आपका इलाज पूरा हो चुका है या आप पुराने शेड्यूल हटाना चाहते हैं:")
+            col_disc1, col_disc2 = st.columns(2)
+            with col_disc1:
+                if st.button("🗑️ केवल बंद (Inactive) रिमाइंडर हटाएं", key="btn_discard_inactive"):
+                    count = reminder_service.discard_inactive_reminders()
+                    st.success(f"{count} पुराने निष्क्रिय रिमाइंडर हटा दिए गए।")
+                    st.rerun()
+            with col_disc2:
+                confirm_all = st.checkbox("हां, मैं सभी रिमाइंडर हटाना चाहता हूँ", key="confirm_clear_all_rem")
+                if confirm_all:
+                    if st.button("⚠️ सभी रिमाइंडर हमेशा के लिए हटाएं", type="primary", key="btn_discard_all_rem"):
+                        reminder_service.delete_all_reminders()
+                        st.success("सभी रिमाइंडर हटा दिए गए हैं।")
+                        st.rerun()
 
         for rem in all_reminders:
             is_due = reminder_service.is_due_now(rem)
@@ -524,8 +556,14 @@ with tab_reminders:
             st.markdown("---")
             st.markdown("#### 📋 पहले दर्ज की गई समस्याएं (Past Recorded Issues):")
             for pi in past_issues[:5]:  # Show top 5
-                alert_icon = "🚨" if pi.is_severe_alert else "🔹"
-                st.caption(f"{alert_icon} **{pi.timestamp}** | {pi.medicine_name} — *{pi.issue_type}* ({pi.severity})")
+                col_pi_txt, col_pi_del = st.columns([4, 1])
+                with col_pi_txt:
+                    alert_icon = "🚨" if pi.is_severe_alert else "🔹"
+                    st.caption(f"{alert_icon} **{pi.timestamp}** | {pi.medicine_name} — *{pi.issue_type}* ({pi.severity})")
+                with col_pi_del:
+                    if st.button("🗑️ हटाएं", key=f"del_issue_{pi.id}", help="इस परेशानी रिकॉर्ड को हटाएं"):
+                        issue_service.delete_issue(pi.id)
+                        st.rerun()
 
     st.markdown("---")
     st.info("ℹ️ **सूचना:** यह वेब ऐप आपके ब्राउज़र के भीतर रिमाइंडर प्रदर्शित करता है। फोन पूरी तरह लॉक या बंद होने पर सिस्टम पुश नोटिफिकेशन नहीं भेजेगा।")
@@ -610,7 +648,13 @@ with tab_vitals:
             st.markdown("---")
             st.markdown("#### 📋 हालिया उपकरण रीडिंग (Recent Readings):")
             for r in all_readings[:4]:
-                st.caption(f"🔹 **{r.timestamp}** — {r.device_type}: **{r.value} {r.unit}** ({r.status_flag})")
+                col_r_txt, col_r_del = st.columns([4, 1])
+                with col_r_txt:
+                    st.caption(f"🔹 **{r.timestamp}** — {r.device_type}: **{r.value} {r.unit}** ({r.status_flag})")
+                with col_r_del:
+                    if st.button("🗑️ हटाएं", key=f"del_vital_{r.id}", help="इस रीडिंग को हटाएं"):
+                        device_service.delete_reading(r.id)
+                        st.rerun()
 
     st.markdown("---")
 

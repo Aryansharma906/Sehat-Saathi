@@ -109,3 +109,17 @@ class MentalHealthService:
             except Exception:
                 continue
         return results
+
+    def delete_checkin(self, checkin_id: str) -> bool:
+        """Discards a single mental health check-in."""
+        current = self.get_all_checkins()
+        initial_len = len(current)
+        filtered = [c for c in current if c.id != checkin_id]
+        if len(filtered) < initial_len:
+            self._write_raw([c.model_dump() for c in filtered])
+            return True
+        return False
+
+    def clear_checkins(self) -> None:
+        """Discards all mental health check-ins."""
+        self._write_raw([])

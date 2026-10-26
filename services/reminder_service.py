@@ -137,6 +137,21 @@ class ReminderService:
     def delete_reminder(self, reminder_id: str) -> bool:
         return self.storage.delete_reminder(reminder_id)
 
+    def delete_all_reminders(self) -> None:
+        """Discards all saved reminder schedules."""
+        self.storage.clear_all()
+
+    def discard_inactive_reminders(self) -> int:
+        """
+        Discards only inactive/disabled reminder schedules, preserving active schedules.
+        Returns the count of discarded schedules.
+        """
+        current = self.storage.load_all_reminders()
+        active = [r for r in current if r.enabled]
+        discarded_count = len(current) - len(active)
+        self.storage.save_reminders(active)
+        return discarded_count
+
     def mark_as_taken(self, reminder_id: str, taken: bool = True) -> bool:
         """
         Rule 11: Marks medicine as taken strictly on explicit user action.

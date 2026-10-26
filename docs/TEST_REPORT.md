@@ -4,7 +4,7 @@
 **QA Lead:** Agent 8 (QA, Security & Integration)  
 **Test Suite:** Pytest 9.1.1, Python 3.13.7  
 **Execution Date:** 2026-10-26  
-**Status:** **41 / 41 TESTS PASSED (100% Pass Rate)**
+**Status:** **46 / 46 TESTS PASSED (100% Pass Rate)**
 
 ---
 
@@ -12,6 +12,7 @@
 
 | Test Module | Tests Run | Result | Coverage Area |
 | :--- | :--- | :--- | :--- |
+| **`tests/test_discard_features.py`** | 5 | **PASS** | Discarding whole draft prescriptions, discarding individual unconfirmed medicines from review list, discarding inactive reminders, clearing all schedules, and discarding logged issues/vitals |
 | **`tests/test_vitals_and_mental_health.py`** | 5 | **PASS** | BP, SpO2, Sugar, Temp device vitals standardization & out-of-range clinical alerts, Mental health scoring & Tele-MANAS (14416) helpline referral |
 | **`tests/test_progress_tracker.py`** | 3 | **PASS** | Treatment recovery scoring (0-100%), doctor follow-up advice logic, 3-question observational questionnaire structure |
 | **`tests/test_health_issue_service.py`** | 3 | **PASS** | Side-effect & adverse symptom logging, automated severe reaction detection, doctor notification formatting & WhatsApp URL encoding |
@@ -34,7 +35,7 @@
 - [x] **Periodic Health Progress Questionnaire & Tracker:** 3-question recovery test, recovery percentage meter, historical trend tracking, and doctor escalation trigger.
 - [x] **Treatment Health Issue Logging & Doctor Notification:** Adverse reaction recording, automated severe reaction warning, and 1-tap WhatsApp doctor notification report.
 - [x] **Emergency Helplines Integration:** Direct native dialer links (`tel:108`, `tel:112`, `tel:104`, `tel:102`) for zero-friction emergency calling on any mobile phone.
-- [x] **Requirement 1 (Accessibility):** Large-font styling, mobile-first responsive container, and error recovery without resetting user inputs.
+- [x] **Requirement 1 (Accessibility & Mistake Recovery):** Large-font styling, mobile-first responsive container, and full discard/recovery capabilities (discard entire scanned draft, discard individual extracted medicines, discard inactive schedules, and delete erroneous vitals/issue logs).
 - [x] **Requirement 2 (Image Quality):** Heuristics for bright, dark, or invalid images; 3-step photography guidance.
 - [x] **Requirement 3 (Confirmed Records & Traceability):** New prescriptions do not overwrite previous schedules; conflicting dosages trigger automated warnings.
 - [x] **Requirement 4 (Offline-Friendly):** Local JSON persistence loads saved reminders without external network calls.
