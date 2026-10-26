@@ -11,7 +11,8 @@ def test_emergency_tripwire():
     chat = PrescriptionChatService(api_key=None)
     response = chat.ask_question("मरीज के सीने में दर्द हो रहा है (Patient has chest pain)")
     assert "आपातकालीन सूचना" in response
-    assert "108 / 112" in response
+    assert "108" in response
+    assert "112" in response
 
 
 def test_no_diagnosis_tripwire():

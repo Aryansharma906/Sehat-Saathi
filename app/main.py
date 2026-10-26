@@ -25,6 +25,7 @@ from services.medicine_reference import MedicineReferenceService
 from services.reminder_service import ReminderService
 from services.chat_service import PrescriptionChatService
 from services.prevention_and_facilities import PreventionAndFacilitiesService
+from services.emergency_service import EmergencyService
 from storage.persistence import LocalStorageAdapter
 
 
@@ -133,6 +134,24 @@ st.markdown("""
     यह किसी डॉक्टर या फार्मासिस्ट का विकल्प नहीं है। किसी भी संदेह में तुरंत डॉक्टर से पूछें।
 </div>
 """, unsafe_allow_html=True)
+
+# Persistent 1-Tap Emergency Calling Bar (India Emergency Agencies)
+with st.expander("🚨 आपातकाल में तुरंत मदद (Emergency Call 108 / 112)", expanded=False):
+    st.markdown("⚠️ **यदि मरीज को तेज दर्द, सांस लेने में तकलीफ, या बेहोशी हो, तो ऐप छोड़ें और तुरंत कॉल करें:**")
+    agencies = EmergencyService.get_emergency_numbers()
+    col_em1, col_em2 = st.columns(2)
+    for idx, ag in enumerate(agencies):
+        target_col = col_em1 if idx % 2 == 0 else col_em2
+        with target_col:
+            tel_link = EmergencyService.build_tel_link(ag["number"])
+            st.markdown(
+                f'<a href="{tel_link}" style="text-decoration:none;">'
+                f'<div style="background-color:{ag["color"]}; color:white; padding:10px 12px; border-radius:10px; margin-bottom:6px; font-weight:bold; text-align:center;">'
+                f'{ag["icon"]} कॉल {ag["number"]} : {ag["name_hindi"]}'
+                f'</div></a>',
+                unsafe_allow_html=True
+            )
+            st.caption(ag["desc_hindi"])
 
 
 # Top Navigation
