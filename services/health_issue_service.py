@@ -10,7 +10,8 @@ import urllib.parse
 from models.health_issue import TreatmentIssueLog
 
 
-DEFAULT_ISSUES_FILE = Path("data/treatment_issues.json")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_ISSUES_FILE = PROJECT_ROOT / "data" / "treatment_issues.json"
 
 COMMON_ISSUE_TYPES = [
     "त्वचा पर लाल चकत्ते / खुजली (Skin Rash / Itching)",

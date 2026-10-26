@@ -11,7 +11,8 @@ from typing import List, Optional, Dict, Any
 from models.vitals_and_mental_health import DeviceVitalsReading
 
 
-DEFAULT_VITALS_FILE = Path("data/device_vitals.json")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_VITALS_FILE = PROJECT_ROOT / "data" / "device_vitals.json"
 
 
 class DeviceDataService:

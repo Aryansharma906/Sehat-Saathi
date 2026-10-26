@@ -10,7 +10,8 @@ from typing import List, Dict, Any, Optional
 from models.progress_tracker import ProgressCheckIn
 
 
-DEFAULT_PROGRESS_FILE = Path("data/progress_records.json")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_PROGRESS_FILE = PROJECT_ROOT / "data" / "progress_records.json"
 
 
 QUESTIONNAIRE_ITEMS = [

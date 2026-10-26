@@ -3,18 +3,23 @@ Sehat Saathi (सेहत साथी) — Main Streamlit Application
 AI-assisted prescription reader and medication companion for rural India.
 """
 
-import streamlit as st
 import os
-import io
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
-from PIL import Image
 
-# Ensure project root is always at the top of sys.path regardless of working directory
+# 1. Ensure project root is always at the top of sys.path regardless of working directory
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+
+# 2. Prevent Streamlit telemetry permission errors in sandboxed/restricted environments
+os.environ.setdefault("STREAMLIT_BROWSER_GATHER_USAGE_STATS", "false")
+os.environ.setdefault("STREAMLIT_CONFIG_DIR", "/tmp/.streamlit")
+
+import io
+from dotenv import load_dotenv
+from PIL import Image
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
@@ -322,7 +327,8 @@ with tab_scan:
                         if api_key and not st.session_state.demo_mode:
                             extractor = GeminiMultimodalExtractor(api_key=api_key)
                         else:
-                            extractor = MockPrescriptionExtractor(scenario="ambiguous" if "ambiguous" in uploaded_file.name.lower() else "clean")
+                            is_ambig = hasattr(uploaded_file, "name") and uploaded_file.name and "ambiguous" in uploaded_file.name.lower()
+                            extractor = MockPrescriptionExtractor(scenario="ambiguous" if is_ambig else "clean")
                         
                         st.session_state.prescription = extractor.extract_from_image(file_bytes)
                         st.rerun()
@@ -835,55 +841,59 @@ with tab_vitals:
             bp_seq_str = st.text_input("दैनिक बीपी क्रम (उदा. 125, 130, 142):", value="125, 130, 138", key="ml_bp_seq")
 
         if st.button("🔮 जटिलता जोखिम की जांच करें (Predict Complication Risk)", key="btn_run_ml_predict"):
-            pred_input = ComplicationPredictionInput(
-                age=int(inp_age),
-                systolic_bp=float(inp_sys),
-                diastolic_bp=float(inp_dia),
-                blood_sugar=float(inp_sugar),
-                spo2=float(inp_spo2),
-                adherence_percentage=float(inp_adh),
-                active_medications_count=len(all_reminders) if 'all_reminders' in locals() and all_reminders else 2
-            )
-            
-            res = ComplicationPredictionService.predict_complication_risk(pred_input)
-
-            # Display Risk Tier & Score
-            tier_badge = "🟢" if res.risk_tier == RiskTier.LOW else ("🟡" if res.risk_tier == RiskTier.MODERATE else "🔴")
-            st.markdown(f"### {tier_badge} जोखिम स्कोर: **{res.risk_score_percentage}%** — {res.risk_tier.value}")
-            st.progress(res.risk_score_percentage / 100.0)
-
-            st.markdown(res.clinical_guidance_hindi)
-
-            st.markdown("#### 🔍 संभावित स्वास्थ्य जटिलताएं (Potential Complications):")
-            for c in res.potential_complications_hindi:
-                st.markdown(f"• **{c}**")
-
-            if res.key_risk_factors:
-                st.markdown("#### 📊 मुख्य जोखिम कारक (Key Contributing Drivers):")
-                for rf in res.key_risk_factors:
-                    badge = "⚠️" if rf.impact_level == "चिंताजनक" else "🚨"
-                    st.caption(f"{badge} **{rf.feature_name}** ({rf.observed_value}): {rf.explanation_hindi}")
-
-            # Check Deep Learning sequence trajectory
             try:
-                trend_vals = [float(x.strip()) for x in bp_seq_str.split(",") if x.strip()]
-                if len(trend_vals) >= 2:
-                    t_res = ComplicationPredictionService.predict_temporal_trajectory(trend_vals)
-                    st.markdown("---")
-                    st.markdown(f"📈 **समय-श्रृंखला रुझान (Trajectory):** {t_res['trend_direction']}")
-                    st.caption(t_res['warning_message_hindi'])
-            except Exception:
-                pass
+                active_meds_count = len(reminder_service.get_all_reminders())
+                pred_input = ComplicationPredictionInput(
+                    age=int(inp_age),
+                    systolic_bp=float(inp_sys),
+                    diastolic_bp=float(inp_dia),
+                    blood_sugar=float(inp_sugar),
+                    spo2=float(inp_spo2),
+                    adherence_percentage=float(inp_adh),
+                    active_medications_count=active_meds_count if active_meds_count > 0 else 2
+                )
+                
+                res = ComplicationPredictionService.predict_complication_risk(pred_input)
 
-            if res.emergency_dial_advised:
-                st.markdown("""
-                <div style="background-color:#ffebee; border-left:6px solid #d32f2f; padding:12px; border-radius:8px; margin-top:10px;">
-                    🚨 <b>आपातकालीन चेतावनी:</b> महत्वपूर्ण संकेतक संकट सीमा में हैं। 
-                    तुरंत <a href="tel:108" style="color:#d32f2f; font-weight:bold;">108 एम्बुलेंस</a> या नजदीकी अस्पताल से संपर्क करें!
-                </div>
-                """, unsafe_allow_html=True)
+                # Display Risk Tier & Score
+                tier_badge = "🟢" if res.risk_tier == RiskTier.LOW else ("🟡" if res.risk_tier == RiskTier.MODERATE else "🔴")
+                st.markdown(f"### {tier_badge} जोखिम स्कोर: **{res.risk_score_percentage}%** — {res.risk_tier.value}")
+                st.progress(res.risk_score_percentage / 100.0)
 
-            st.caption(f"🔬 *मॉडल: {res.model_name}* | {res.disclaimer}")
+                st.markdown(res.clinical_guidance_hindi)
+
+                st.markdown("#### 🔍 संभावित स्वास्थ्य जटिलताएं (Potential Complications):")
+                for c in res.potential_complications_hindi:
+                    st.markdown(f"• **{c}**")
+
+                if res.key_risk_factors:
+                    st.markdown("#### 📊 मुख्य जोखिम कारक (Key Contributing Drivers):")
+                    for rf in res.key_risk_factors:
+                        badge = "⚠️" if rf.impact_level == "चिंताजनक" else "🚨"
+                        st.caption(f"{badge} **{rf.feature_name}** ({rf.observed_value}): {rf.explanation_hindi}")
+
+                # Check Deep Learning sequence trajectory
+                try:
+                    trend_vals = [float(x.strip()) for x in bp_seq_str.split(",") if x.strip()]
+                    if len(trend_vals) >= 2:
+                        t_res = ComplicationPredictionService.predict_temporal_trajectory(trend_vals)
+                        st.markdown("---")
+                        st.markdown(f"📈 **समय-श्रृंखला रुझान (Trajectory):** {t_res['trend_direction']}")
+                        st.caption(t_res['warning_message_hindi'])
+                except Exception:
+                    pass
+
+                if res.emergency_dial_advised:
+                    st.markdown("""
+                    <div style="background-color:#ffebee; border-left:6px solid #d32f2f; padding:12px; border-radius:8px; margin-top:10px;">
+                        🚨 <b>आपातकालीन चेतावनी:</b> महत्वपूर्ण संकेतक संकट सीमा में हैं। 
+                        तुरंत <a href="tel:108" style="color:#d32f2f; font-weight:bold;">108 एम्बुलेंस</a> या नजदीकी अस्पताल से संपर्क करें!
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                st.caption(f"🔬 *मॉडल: {res.model_name}* | {res.disclaimer}")
+            except Exception as e:
+                st.error(f"गणना में त्रुटि: कृपया सही मान भरें ({str(e)})")
 
 
 # -------------------------------------------------------------

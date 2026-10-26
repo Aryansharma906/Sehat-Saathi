@@ -11,7 +11,8 @@ from typing import List, Optional
 from models.reminder import Reminder, ReminderSchedule
 
 
-DEFAULT_DATA_DIR = Path("data")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
 DEFAULT_SCHEDULES_FILE = DEFAULT_DATA_DIR / "saved_schedules.json"
 
 

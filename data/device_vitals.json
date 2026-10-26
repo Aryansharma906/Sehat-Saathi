@@ -1,0 +1,13 @@
+[
+  {
+    "id": "fa88950d-2a36-40cc-bb7c-ad410d34da82",
+    "timestamp": "2026-10-26 08:49 PM",
+    "device_type": "Pulse Oximeter",
+    "metric_name": "SpO2",
+    "value": "89",
+    "unit": "%",
+    "sync_source": "उपकरण से दर्ज (Device Reading)",
+    "status_flag": "गंभीर (Critical Alert)",
+    "alert_message": "⚠️ ऑक्सीजन का स्तर (SpO2) 92% से कम है। कृपया तुरंत डॉक्टर या 108 एम्बुलेंस से संपर्क करें।"
+  }
+]
