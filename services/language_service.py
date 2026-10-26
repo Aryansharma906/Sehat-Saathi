@@ -28,7 +28,8 @@ class BaseLanguageService(ABC):
 
 class SimpleHindiLanguageService(BaseLanguageService):
     """
-    Generates plain-language Hindi explanations and audio for low-literacy users.
+    Generates plain-language Hindi explanations and audio for low-literacy users,
+    grounded in Indian National List of Essential Medicines (NLEM) & Jan Aushadhi standards.
     """
 
     def explain_medicine(self, medicine: MedicineInstruction) -> str:
@@ -41,11 +42,23 @@ class SimpleHindiLanguageService(BaseLanguageService):
         timing = medicine.timing_raw or "खाने के बाद या डॉक्टर के निर्देशानुसार"
         duration = f"{medicine.duration_raw} तक" if medicine.duration_raw else "जितने दिन डॉक्टर ने कहा है"
 
-        # Look up supporting reference information
+        # Look up supporting reference information from Indian Healthcare Database
         ref = MedicineReferenceService.lookup_medicine(name)
         ref_explanation = ""
         if ref:
-            ref_explanation = f"\n\nℹ️ **सामान्य जानकारी (General Reference):** {ref['purpose_hindi']}\n⚠️ **सावधानी:** {ref['standard_cautions_hindi']}"
+            generic_name = ref.get("generic_name", name)
+            nlem_badge = "✅ **राष्ट्रीय आवश्यक दवा (NLEM Essential)**" if ref.get("nlem_listed") else ""
+            jan_badge = "💡 **जन औषधि केंद्र पर उपलब्ध (Affordable Generic)**" if ref.get("jan_aushadhi_available") else ""
+            
+            ref_explanation = (
+                f"\n\n---"
+                f"\n🏛️ **सामान्य जानकारी (General Reference):** [India NLEM & Jan Aushadhi Catalog]"
+                f"\n🔹 **मूल जेनेरिक दवा (Active Salt):** {generic_name}"
+                f"\n🔹 **उपयोग (Purpose):** {ref['purpose_hindi']}"
+                f"\n⚠️ **जरूरी सावधानी (Caution):** {ref['standard_cautions_hindi']}"
+            )
+            if nlem_badge or jan_badge:
+                ref_explanation += f"\n\n{nlem_badge} {jan_badge}"
 
         explanation = (
             f"💊 **दवा का नाम:** {name}\n"
@@ -71,7 +84,12 @@ class SimpleHindiLanguageService(BaseLanguageService):
             name = med.candidate_medicine_name or med.raw_medicine_name
             timing = med.timing_raw or "निर्देशानुसार"
             freq = med.frequency_raw or "नियमित"
-            lines.append(f"{i}. **{name}** — {freq}, {timing}")
+            
+            # Check Indian Database for generic salt
+            ref = MedicineReferenceService.lookup_medicine(name)
+            salt_info = f" *(मूल दवा: {ref['generic_name']})*" if ref else ""
+            
+            lines.append(f"{i}. **{name}**{salt_info} — {freq}, {timing}")
 
         lines.append(
             "\n⚠️ **महत्वपूर्ण सूचना:** यह केवल आपके समझने के लिए सरल सारांश है। "
@@ -95,8 +113,12 @@ class SimpleHindiLanguageService(BaseLanguageService):
             .replace("📅", "दिन ")
             .replace("⚠️", "चेतावनी ")
             .replace("ℹ️", "जानकारी ")
+            .replace("🏛️", "")
+            .replace("💡", "")
+            .replace("✅", "")
             .replace("#", "")
             .replace("🔹", "")
+            .replace("---", "")
         )
 
         try:
@@ -107,5 +129,4 @@ class SimpleHindiLanguageService(BaseLanguageService):
             fp.seek(0)
             return fp.read()
         except Exception:
-            # Graceful fallback: speech synthesis failure does not break the UI
             return None

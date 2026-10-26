@@ -21,6 +21,7 @@ from services.prescription_extractor import (
     BasePrescriptionExtractor
 )
 from services.language_service import SimpleHindiLanguageService
+from services.medicine_reference import MedicineReferenceService
 from services.reminder_service import ReminderService
 from services.chat_service import PrescriptionChatService
 from storage.persistence import LocalStorageAdapter
@@ -246,6 +247,17 @@ with tab_scan:
 
                 if med.is_uncertain:
                     st.warning(f"⚠️ अस्पष्टता का कारण: {med.uncertainty_reason or 'हैंडराइटिंग अस्पष्ट'}")
+
+                # Indian Healthcare & Drug Database Grounding (NLEM & Jan Aushadhi)
+                ref_info = MedicineReferenceService.lookup_medicine(med.candidate_medicine_name or med.raw_medicine_name)
+                if ref_info:
+                    with st.expander("🏛️ भारतीय स्वास्थ्य संदर्भ (Indian NLEM / Jan Aushadhi)", expanded=False):
+                        st.caption(f"🔹 **मूल जेनेरिक दवा:** {ref_info['generic_name']}")
+                        st.caption(f"🔹 **काम:** {ref_info['purpose_hindi']}")
+                        if ref_info.get('nlem_listed'):
+                            st.caption("✅ भारत सरकार की राष्ट्रीय आवश्यक दवा सूची (NLEM) में शामिल।")
+                        if ref_info.get('jan_aushadhi_available'):
+                            st.caption("💡 यह दवा प्रधानमंत्री जन औषधि केंद्र पर किफायती दर पर भी मिलती है।")
 
                 med.user_confirmed = st.checkbox(
                     f"☑️ मैंने दवा #{idx+1} ({med.candidate_medicine_name}) की जानकारी पर्चे से जांच ली है",
