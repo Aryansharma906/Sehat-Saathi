@@ -11,9 +11,9 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+from services.storage_config import get_data_dir
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "sehat_saathi.db"
+DEFAULT_DB_PATH = get_data_dir() / "sehat_saathi.db"
 
 
 class ClinicalDatabaseService:

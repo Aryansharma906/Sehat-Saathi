@@ -33,6 +33,15 @@ def test_overview_and_resources_are_serializable():
         assert resources.json()["medicines"]
 
 
+def test_local_data_directory_can_be_redirected_without_touching_repo_data(tmp_path, monkeypatch):
+    from services.storage_config import get_data_dir
+
+    target = tmp_path / "isolated-health-data"
+    monkeypatch.setenv("SEHAT_DATA_DIR", str(target))
+    assert get_data_dir() == target.resolve()
+    assert not target.exists()
+
+
 def test_demo_prescriptions_keep_the_ambiguity_flags():
     with client() as c:
         clear = c.post("/api/prescriptions/demo", json={"scenario": "clean"})

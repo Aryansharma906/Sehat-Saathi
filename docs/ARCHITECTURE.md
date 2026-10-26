@@ -56,6 +56,8 @@
 
 ---
 
+Local JSON services and the SQLite clinical database use the directory configured by `SEHAT_DATA_DIR`; when unset, the repository's `data/` directory is used. The Vercel public demo forces its own temporary directory and remains read-only.
+
 ## 2. Core Pydantic Schemas
 
 ### `MedicineInstruction`

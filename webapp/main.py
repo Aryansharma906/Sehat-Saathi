@@ -35,10 +35,11 @@ from services.proximity_service import ProximityLocationService  # noqa: E402
 from services.reminder_service import ReminderService  # noqa: E402
 from services.medicine_reference import MedicineReferenceService  # noqa: E402
 from storage.persistence import LocalStorageAdapter  # noqa: E402
+from services.storage_config import get_data_dir  # noqa: E402
 
 APP_MODE = os.environ.get("SEHAT_ENV", "development").strip().lower()
 PUBLIC_DEMO = APP_MODE == "demo"
-DATA_DIR = Path(tempfile.gettempdir()) / "sehat-saathi-public-demo" if PUBLIC_DEMO else ROOT / "data"
+DATA_DIR = Path(tempfile.gettempdir()) / "sehat-saathi-public-demo" if PUBLIC_DEMO else get_data_dir()
 
 
 @asynccontextmanager

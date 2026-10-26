@@ -9,10 +9,10 @@ import json
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from models.vitals_and_mental_health import DeviceVitalsReading
+from services.storage_config import get_data_dir
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_VITALS_FILE = PROJECT_ROOT / "data" / "device_vitals.json"
+DEFAULT_VITALS_FILE = get_data_dir() / "device_vitals.json"
 
 
 class DeviceDataService:

@@ -137,6 +137,12 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The server binds to your co
 
 The new interface uses the project's existing Python services and local data stores. Prescription scans require `GEMINI_API_KEY`; the two sample prescriptions are available in demo mode without an API key. Photos are processed in memory. A reminder can only be saved after reviewing and confirming its medicine name, dose, frequency, and timing.
 
+For isolated local testing, set `SEHAT_DATA_DIR` to a disposable directory before starting the server. Otherwise, the app uses `data/` in the repository. For example, on macOS/Linux:
+
+```bash
+SEHAT_DATA_DIR=/tmp/sehat-saathi-local-data uvicorn webapp.main:app --host 127.0.0.1 --port 8000
+```
+
 ---
 
 ## 🧪 Running Automated Tests

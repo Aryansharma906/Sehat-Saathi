@@ -8,10 +8,10 @@ import json
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from models.progress_tracker import ProgressCheckIn
+from services.storage_config import get_data_dir
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_PROGRESS_FILE = PROJECT_ROOT / "data" / "progress_records.json"
+DEFAULT_PROGRESS_FILE = get_data_dir() / "progress_records.json"
 
 
 QUESTIONNAIRE_ITEMS = [

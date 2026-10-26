@@ -8,10 +8,10 @@ import json
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from models.vitals_and_mental_health import MentalHealthCheckIn
+from services.storage_config import get_data_dir
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_MENTAL_HEALTH_FILE = PROJECT_ROOT / "data" / "mental_health_records.json"
+DEFAULT_MENTAL_HEALTH_FILE = get_data_dir() / "mental_health_records.json"
 
 TELE_MANAS_HELPLINE = "14416"
 TELE_MANAS_TOLLFREE = "1800-891-4416"

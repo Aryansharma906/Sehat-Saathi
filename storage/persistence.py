@@ -9,10 +9,10 @@ import os
 from pathlib import Path
 from typing import List, Optional
 from models.reminder import Reminder, ReminderSchedule
+from services.storage_config import get_data_dir
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
+DEFAULT_DATA_DIR = get_data_dir()
 DEFAULT_SCHEDULES_FILE = DEFAULT_DATA_DIR / "saved_schedules.json"
 
 
