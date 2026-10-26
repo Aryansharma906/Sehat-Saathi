@@ -1,0 +1,133 @@
+"""
+Reminder and Scheduling Service
+Transforms user-confirmed medicine instructions into actionable medication reminders.
+Enforces Medical Safety Invariants (Rule 3, 11).
+"""
+
+from typing import List, Optional
+from datetime import datetime, time
+from models.prescription import MedicineInstruction
+from models.reminder import Reminder
+from storage.persistence import LocalStorageAdapter
+
+
+DEFAULT_TIME_MORNING = "08:00"
+DEFAULT_TIME_AFTERNOON = "13:00"
+DEFAULT_TIME_NIGHT = "20:00"
+
+
+class ReminderService:
+    def __init__(self, storage_adapter: Optional[LocalStorageAdapter] = None):
+        self.storage = storage_adapter or LocalStorageAdapter()
+
+    def create_reminders_from_instruction(
+        self,
+        medicine: MedicineInstruction,
+        custom_times: Optional[List[str]] = None
+    ) -> List[Reminder]:
+        """
+        Creates reminder objects for a confirmed medicine instruction.
+        CRITICAL SAFETY RULE 3: medicine.user_confirmed MUST be True!
+        """
+        if not medicine.user_confirmed:
+            raise ValueError(
+                f"Cannot create reminders for unconfirmed medicine: {medicine.raw_medicine_name}. "
+                "User must verify and confirm the instruction first."
+            )
+
+        name = medicine.candidate_medicine_name or medicine.raw_medicine_name
+        dose = medicine.dose_instruction_raw or "1 खुराक (1 dose)"
+        food = medicine.timing_raw or "खाने के बाद (After Food)"
+
+        created_reminders = []
+
+        if custom_times:
+            for t_str in custom_times:
+                r = Reminder(
+                    medicine_instruction_id=medicine.id,
+                    medicine_name=name,
+                    dosage=dose,
+                    timing_label="समय (Custom Time)",
+                    reminder_time=t_str,
+                    food_relation=food,
+                    user_confirmed=True
+                )
+                created_reminders.append(r)
+        else:
+            freq_lower = (medicine.frequency_raw or "").lower()
+            
+            # Map common medical frequency abbreviations to standard schedule times
+            if "tds" in freq_lower or "tid" in freq_lower or "3 बार" in freq_lower or "तीन बार" in freq_lower:
+                times = [
+                    ("सुबह (Morning)", DEFAULT_TIME_MORNING),
+                    ("दोपहर (Afternoon)", DEFAULT_TIME_AFTERNOON),
+                    ("रात (Night)", DEFAULT_TIME_NIGHT),
+                ]
+            elif "bd" in freq_lower or "bid" in freq_lower or "2 बार" in freq_lower or "दो बार" in freq_lower:
+                times = [
+                    ("सुबह (Morning)", DEFAULT_TIME_MORNING),
+                    ("रात (Night)", DEFAULT_TIME_NIGHT),
+                ]
+            elif "od" in freq_lower or "दिन में 1 बार" in freq_lower or "एक बार" in freq_lower:
+                times = [
+                    ("सुबह (Morning)", DEFAULT_TIME_MORNING)
+                ]
+            else:
+                # Default to morning if frequency is unspecified or SOS
+                times = [
+                    ("निर्धारित समय (Default)", DEFAULT_TIME_MORNING)
+                ]
+
+            for label, t_str in times:
+                r = Reminder(
+                    medicine_instruction_id=medicine.id,
+                    medicine_name=name,
+                    dosage=dose,
+                    timing_label=label,
+                    reminder_time=t_str,
+                    food_relation=food,
+                    user_confirmed=True
+                )
+                created_reminders.append(r)
+
+        # Save to storage
+        for r in created_reminders:
+            self.storage.add_reminder(r)
+
+        return created_reminders
+
+    def get_all_reminders(self) -> List[Reminder]:
+        return self.storage.load_all_reminders()
+
+    def toggle_reminder(self, reminder_id: str) -> Optional[bool]:
+        return self.storage.toggle_reminder(reminder_id)
+
+    def delete_reminder(self, reminder_id: str) -> bool:
+        return self.storage.delete_reminder(reminder_id)
+
+    def mark_as_taken(self, reminder_id: str, taken: bool = True) -> bool:
+        """
+        Rule 11: Marks medicine as taken strictly on explicit user action.
+        """
+        reminders = self.storage.load_all_reminders()
+        for r in reminders:
+            if r.id == reminder_id:
+                r.taken_today = taken
+                return self.storage.update_reminder(r)
+        return False
+
+    def is_due_now(self, reminder: Reminder, current_dt: Optional[datetime] = None) -> bool:
+        """
+        Determines if a reminder is due within a +/- 60-minute window of current time.
+        """
+        now = current_dt or datetime.now()
+        try:
+            parts = reminder.reminder_time.split(":")
+            rem_time = time(int(parts[0]), int(parts[1]))
+            # Compare minutes from midnight
+            now_minutes = now.hour * 60 + now.minute
+            rem_minutes = rem_time.hour * 60 + rem_time.minute
+            diff = abs(now_minutes - rem_minutes)
+            return diff <= 60 and not reminder.taken_today
+        except Exception:
+            return False
