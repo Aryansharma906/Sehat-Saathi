@@ -1,66 +1,46 @@
-# UX & Accessibility Specification
+# UX & Accessibility Specification (Rural & Older Adults Edition)
 
 **Project:** Sehat Saathi (सेहत साथी)  
 **Lead:** Agent 4 (UX and Accessibility)  
-**Target Audience:** Rural India, users with low digital literacy, family caregivers  
+**Target Audience:** Older adults, rural families, users with limited literacy, family caregivers  
 **Primary Language:** Simple Hindi (सरल हिंदी) with bilingual English subtext  
 
 ---
 
-## 1. Design & Accessibility Principles
+## 1. Accessibility for Older Adults & Low-Literacy Users
 
-1. **Mobile-First Responsive Layout**: Optimized for vertical handheld screens (360px - 480px width).
-2. **Large, High-Contrast Touch Targets**: Minimum 48px touch targets, high contrast green/blue primary actions, amber warning badges.
-3. **Short, Simple Hindi Sentences**: Avoid medical jargon (e.g. use "दिन में दो बार - सुबह और शाम" instead of "b.i.d." or "twice daily administration").
-4. **Icons Paired with Text**: Every primary button pairs an intuitive icon with clear text (e.g., 📸 फोटो खींचें / अपलोड करें).
-5. **No Cluttered Dashboards**: Single sequential task flow:
-   - **होम (Home)** ➔ **अपलोड (Scan/Upload)** ➔ **जांचें (Review & Confirm)** ➔ **समझें (Explanation & Voice)** ➔ **रिमाइंडर (Reminders)**.
-6. **Prominent Uncertainty Flags**: Ambiguous or uncertain text is rendered with an amber warning card and exclamation mark.
-7. **Graceful Voice Assistance**: Optional audio read-aloud button (🔊 बोलकर सुनाएं) for low-literacy users.
+1. **Large Font Toggle (बड़े अक्षर मोड):**
+   - A 1-tap switch at the top right increases base font sizes to 1.18rem and button touch-targets to 1.3rem with 1.6 line height for easy reading without glasses.
+2. **Photography Guidance for Rural Conditions:**
+   - 3 clear visual rules displayed right above the camera/upload control:
+     - 📄 **पर्ची को सीधा और समतल रखें** (Keep prescription flat).
+     - 💡 **अच्छी रोशनी में रखें** (Avoid harsh shadows).
+     - 📐 **चारों कोने दिखने चाहिए** (Keep all four corners in frame).
+3. **Recovery Without Losing Work:**
+   - Uploaded images, extracted fields, and manual edits are persisted in `st.session_state`. If a user accidentally switches tabs or edits a field, their work is not wiped out.
+4. **Icons Paired with Text:**
+   - Icons never appear alone. Every primary touchpoint pairs an intuitive symbol with clear words:
+     - 📸 पर्ची पढ़ें (Scan)
+     - ⏰ रिमाइंडर (Reminders)
+     - 🔊 आवाज में सुनें (Listen)
+     - 💊 दवा ले ली (Mark Taken)
+     - 🗑️ हटाएं (Delete)
 
 ---
 
-## 2. Screen-by-Screen Journey
+## 2. Trust, Transparency & Segregation
 
-### Screen 1: Home (होम स्क्रीन)
-- **Title:** सेहत साथी (Sehat Saathi) — आपका दवा साथी
-- **Safety Badge:** ℹ️ यह ऐप केवल आपकी सहायता के लिए है। यह डॉक्टर या फार्मासिस्ट का विकल्प नहीं है।
-- **Two Big Action Cards:**
-  1. 📸 **नई पर्ची पढ़ें (Scan / Upload Prescription)** [Primary Button]
-  2. ⏰ **मेरी दवाओं के रिमाइंडर देखें (View My Medication Reminders)** [Secondary Button]
-- **Sample Mode Option:** "बिना पर्ची के डेमो देखें (Try Demo Sample)" for instant testing without camera.
+To avoid confusion, the interface strictly separates 4 tiers of information:
+- **स्तर 1 (Tier 1 - Raw Document):** Exact raw words read from the photograph: `पर्ची पर लिखा शब्द: [raw_medicine_name]`.
+- **स्तर 2 (Tier 2 - AI Interpretation):** Editable text boxes labeled with candidate medicine name, strength, and frequency.
+- **स्तर 3 (Tier 3 - User Confirmation):** Explicit green/amber checkboxes: `☑️ मैंने दवा की जानकारी पर्चे से जांच ली है`.
+- **स्तर 4 (Tier 4 - External Reference):** Collapsible box labeled `🏛️ भारतीय स्वास्थ्य संदर्भ (NLEM / Jan Aushadhi)` showing active generic salt and affordable generic options.
 
-### Screen 2: Prescription Upload & Quality Check (पर्ची की तस्वीर)
-- Camera capture (`st.camera_input`) or file uploader (`st.file_uploader`) accepting JPG/PNG.
-- Image quality helper:
-  - If image is blurry or very low contrast: *"तस्वीर धुंधली लग रही है। कृपया अच्छी रोशनी में दोबारा फोटो लें।"*
-  - Preview card with option to retake/replace.
-- Single green button: 🚀 **पर्ची से जानकारी निकालें (Extract Details)**
+---
 
-### Screen 3: Review & Confirmation (जांचें और सही करें)
-- **Status header:** "कंप्यूटर ने यह पढ़ा है। कृपया नीचे दी गई जानकारी को अपनी पर्ची से मिलाकर जांच लें।"
-- **For each medicine found:**
-  - Card with:
-    - **Original text read from image:** `पर्ची पर लिखा शब्द: [raw_medicine_name]`
-    - **Editable Medicine Name:** [Text Input]
-    - **Editable Dosage & Strength:** [Text Input]
-    - **Timing & Frequency:** [Selectbox / Radio: सुबह, दोपहर, रात / खाने के पहले या बाद]
-    - **Uncertainty Warning (if any):** ⚠️ *"यह लिखावट पूरी तरह स्पष्ट नहीं है। कृपया पुष्टि करें।"*
-  - Explicit Confirmation checkbox: ☑️ **"मैंने इस दवा के नाम और समय की पुष्टि कर ली है।"**
-- Action Button: 💾 **पुष्टि करें और समझाएं (Confirm & Explain)** (Disabled until user confirms or edits).
+## 3. Caregiver Assistance & Traceability Flow
 
-### Screen 4: Explanation & Audio (दवा को आसान भाषा में समझें)
-- Simple Hindi summary breakdown:
-  - 💊 **दवा का नाम:** क्या काम आती है (सामान्य जानकारी)
-  - 🕒 **कब लेनी है:** स्पष्ट समय (जैसे: सुबह 8:00 बजे, नाश्ते के बाद)
-  - 📅 **कितने दिन लेनी है:** (जैसे: 5 दिन तक)
-- 🔊 **बोलकर सुनाएं (Read Aloud Button)**
-- Educational reference section (clearly demarcated: *"यह सामान्य ज्ञान है, डॉक्टर की पर्ची नहीं"*).
-
-### Screen 5: Reminders & Questions (रिमाइंडर और सवाल)
-- List of confirmed active reminders with toggle switch (चालू / बंद).
-- Status indicator: **समय पर (Due)**, **आगामी (Upcoming)**.
-- Button to mark as taken: 💊 **दवा ले ली (Mark as Taken)**.
-- 💬 **पर्ची के बारे में सवाल पूछें (Ask Questions Chatbot)**:
-  - Constrained Q&A only regarding the confirmed prescription.
-  - Safe boundary alert if user asks for diagnosis or dosage changes.
+- **Caregiver Assistance:** A family member can photograph and verify the prescription for an elderly patient on any smartphone without registering an account.
+- **1-Tap WhatsApp Schedule Share:** Once confirmed, a green button formats a clean Hindi WhatsApp message to send to the elder or other caregivers:
+  - *“माताजी की दवाओं का समय: 1. Pan-D (सुबह 8:00 बजे खाली पेट), 2. Dolo 650 (रात 8:00 बजे खाने के बाद)。”*
+- **Prescription Traceability:** Every saved reminder records the originating prescription date and raw handwritten snippet so caregivers can cross-verify against physical paper.

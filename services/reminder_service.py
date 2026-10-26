@@ -23,11 +23,14 @@ class ReminderService:
     def create_reminders_from_instruction(
         self,
         medicine: MedicineInstruction,
-        custom_times: Optional[List[str]] = None
+        custom_times: Optional[List[str]] = None,
+        prescription_id: Optional[str] = None,
+        prescription_date: Optional[str] = None
     ) -> List[Reminder]:
         """
         Creates reminder objects for a confirmed medicine instruction.
         CRITICAL SAFETY RULE 3: medicine.user_confirmed MUST be True!
+        Preserves source prescription association (Accessible Rural Healthcare Requirement 3).
         """
         if not medicine.user_confirmed:
             raise ValueError(
@@ -45,6 +48,9 @@ class ReminderService:
             for t_str in custom_times:
                 r = Reminder(
                     medicine_instruction_id=medicine.id,
+                    source_prescription_id=prescription_id,
+                    source_prescription_date=prescription_date,
+                    source_raw_text=medicine.raw_medicine_name,
                     medicine_name=name,
                     dosage=dose,
                     timing_label="समय (Custom Time)",
@@ -81,6 +87,9 @@ class ReminderService:
             for label, t_str in times:
                 r = Reminder(
                     medicine_instruction_id=medicine.id,
+                    source_prescription_id=prescription_id,
+                    source_prescription_date=prescription_date,
+                    source_raw_text=medicine.raw_medicine_name,
                     medicine_name=name,
                     dosage=dose,
                     timing_label=label,
@@ -90,11 +99,34 @@ class ReminderService:
                 )
                 created_reminders.append(r)
 
-        # Save to storage
+        # Non-destructive save: appends/merges without wiping existing schedules
         for r in created_reminders:
             self.storage.add_reminder(r)
 
         return created_reminders
+
+    def check_potential_conflicts(self, medicine: MedicineInstruction) -> List[dict]:
+        """
+        Requirement 3: Flag conflicting instructions for professional clarification.
+        Detects if an active saved reminder exists with a similar name but different dosage.
+        """
+        conflicts = []
+        name_clean = (medicine.candidate_medicine_name or medicine.raw_medicine_name).strip().lower()
+        active = [r for r in self.storage.load_all_reminders() if r.enabled]
+
+        for rem in active:
+            rem_name_clean = rem.medicine_name.strip().lower()
+            if name_clean in rem_name_clean or rem_name_clean in name_clean:
+                # Same medicine name, check if dosage or timing differs
+                if medicine.dose_instruction_raw and rem.dosage and medicine.dose_instruction_raw.strip() != rem.dosage.strip():
+                    conflicts.append({
+                        "existing_reminder_id": rem.id,
+                        "medicine_name": rem.medicine_name,
+                        "existing_dosage": rem.dosage,
+                        "new_dosage": medicine.dose_instruction_raw,
+                        "reason": f"पहले से सहेजी गई खुराक '{rem.dosage}' है, जबकि नए पर्चे में '{medicine.dose_instruction_raw}' लिखी है।"
+                    })
+        return conflicts
 
     def get_all_reminders(self) -> List[Reminder]:
         return self.storage.load_all_reminders()

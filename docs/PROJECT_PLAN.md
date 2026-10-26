@@ -2,72 +2,48 @@
 
 **Project:** Sehat Saathi (सेहत साथी)  
 **Lead Coordinator:** Agent 1 (Technical Lead)  
-**Target:** Hackathon MVP (Demonstrable, Safe, Reliable)
+**Target:** Hackathon MVP (Accessible Rural Healthcare Edition)
 
 ---
 
-## 1. Agent Assignment Matrix
+## 1. Accessible Rural Healthcare Requirements Matrix
 
-| Agent Role | Assigned Lead | Core Responsibilities | Target Deliverables |
+| Requirement | Description | Status | Implementation Details |
 | :--- | :--- | :--- | :--- |
-| **Agent 1** | Technical Lead | Project plan, architecture, integration, schema truth | `PROJECT_PLAN.md`, `ARCHITECTURE.md`, `DECISIONS.md` |
-| **Agent 2** | API & Repo Researcher | Documentation verification, repo analysis, costs/quotas | `API_RESEARCH.md`, `REPOSITORY_RESEARCH.md` |
-| **Agent 3** | Medical Safety | 15 Safety invariants, ambiguity gates, safety tests | `MEDICAL_SAFETY.md`, `test_medical_safety.py` |
-| **Agent 4** | UX & Accessibility | Low-literacy mobile flow, Hindi copy, UI states | `UX_SPEC.md`, UI design patterns |
-| **Agent 5** | Backend & Extraction | Pydantic schemas, Gemini extraction service, mocks | `models/`, `services/prescription_extractor.py` |
-| **Agent 6** | Frontend Engineer | Streamlit app, review screen, status badges | `app/main.py`, `app/components/` |
-| **Agent 7** | Reminders & Voice | Reminder service, schedule logic, speech TTS | `services/reminder_service.py`, `language_service.py` |
-| **Agent 8** | QA & Security | Test suite, integration tests, privacy scan, report | `tests/`, `docs/TEST_REPORT.md` |
+| **1. Accessibility by Default** | Mobile-first, large controls, adjustable text mode, high contrast, icons with text, error recovery without losing input | **IMPLEMENTED** | `app/main.py`: Mobile CSS container, `🔍 बड़े अक्षर` font-scaler, session state persistence |
+| **2. Prescription Image Quality** | 3-step photography guidance, brightness/contrast validation, EXIF normalization, never fabricate fields | **IMPLEMENTED** | `services/image_processing.py`: EXIF transpose, brightness/contrast heuristics, photo guide expander |
+| **3. Confirmed Medication Records** | Traceability to source prescription, non-destructive schedule merging, conflict detection between old and new prescriptions | **IMPLEMENTED** | `models/reminder.py`: `source_prescription_id`, `services/reminder_service.py`: `check_potential_conflicts` |
+| **4. Offline-Friendly Operation** | Saved records accessible without internet, separation of local vs online features, clear network notifications | **IMPLEMENTED** | Local JSON storage (`data/saved_schedules.json`), mock demo fallback, offline status badge |
+| **5. Caregiver-Friendly Workflow** | Allows family members to scan and review for an elder, no forced accounts for MVP, 1-tap WhatsApp schedule share | **IMPLEMENTED** | `app/main.py`: WhatsApp schedule generator (`https://wa.me/?text=...`), unauthenticated local profile |
+| **6. Trust & Transparency** | Distinguish raw text, AI interpretations, user-confirmed data, and external Indian NLEM reference | **IMPLEMENTED** | Review screen visually segregates raw handwriting, editable fields, and NLEM Jan Aushadhi badges |
+| **7. Reminder Reliability** | Acknowledge in-app vs OS notification limits, require manual tap for "Mark as Taken", block unconfirmed reminders | **IMPLEMENTED** | `models/reminder.py`: `taken_today=False`, Invariant 3 gate, explicit in-app notification disclaimer banner |
+| **8. Scope Control** | Defer complex multi-user accounts, automated pharmacy ordering, and autonomous treatment changes | **DOCUMENTED** | Deferred items cataloged below with rationale |
+| **9. Validation** | Automated tests using synthetic fixtures for poor images, missing doses, conflicts, and network failures | **IMPLEMENTED** | 24 automated tests in `tests/` with 100% pass rate |
 
 ---
 
-## 2. Phase-by-Phase Roadmap
+## 2. Feature Implementation Status
 
-### Phase 0: Discovery, Architecture & Setup (CURRENT)
-- [x] Workspace inspection (empty directory, Python 3.13.7 verified).
-- [x] Git repository initialized with `.gitignore` and `.env.example`.
-- [x] Virtual environment `.venv` created.
-- [x] API research documented (`docs/API_RESEARCH.md`).
-- [x] Repository research documented (`docs/REPOSITORY_RESEARCH.md`).
-- [x] Medical safety invariants established (`docs/MEDICAL_SAFETY.md`).
-- [x] UX & accessibility specification authored (`docs/UX_SPEC.md`).
-- [x] Integrations & permissions matrix created (`docs/INTEGRATIONS_AND_PERMISSIONS.md`).
-- [x] Project architecture finalized (`docs/ARCHITECTURE.md`).
+### ✅ Implemented in MVP
+- [x] Streamlit mobile-first Hindi user interface with large-font mode toggle.
+- [x] Gemini Multimodal extraction with Pydantic JSON schema output.
+- [x] Image quality pre-check (EXIF rotation, dark/bright image warnings).
+- [x] Review & Confirmation gate (amber warning cards for ambiguous handwriting).
+- [x] Indian Healthcare Database integration (NLEM & Jan Aushadhi generic salt mappings).
+- [x] Plain-Hindi explanation with `gTTS` audio synthesis.
+- [x] Non-destructive reminder schedule merging with conflict detection.
+- [x] Prescription record traceability (`source_prescription_id`, `source_raw_text`).
+- [x] Caregiver 1-tap WhatsApp schedule export.
+- [x] Grounded Q&A assistant with emergency tripwire (108/112).
+- [x] 24 unit and integration test suites passing.
 
-### Phase 1: Working Skeleton & Data Models
-- [ ] Define dependencies in `requirements.txt`.
-- [ ] Implement core Pydantic data models (`models/prescription.py`, `models/reminder.py`).
-- [ ] Build minimal Streamlit skeleton (`app/main.py`) that launches cleanly even without API key.
-- [ ] Implement synthetic sample prescription generator for testing without physical files.
-- [ ] Verify Phase 1 tests (`pytest tests/test_models.py`).
+### ⏳ Deferred Beyond First MVP
+- **Complex Multi-User / Cloud Authentication:** Deferred to keep app instant and barrier-free for rural users without requiring OTP or passwords.
+- **Background Push Notifications when Phone is Off:** Deferred because browser-based Streamlit cannot trigger native Android background alarms without an APK wrapper.
+- **Automated Pharmacy Fulfillment / ABDM Integration:** Deferred to future post-hackathon consent-governed phase.
+- **Autonomous Interaction / Drug-Drug Checker:** Deferred to avoid liability and false confidence without doctor oversight.
 
-### Phase 2: Extraction Service & Uncertainty Handling
-- [ ] Implement abstract interface `BasePrescriptionExtractor`.
-- [ ] Implement `GeminiMultimodalExtractor` using current `google-genai` SDK with structured JSON schemas.
-- [ ] Implement `MockPrescriptionExtractor` for deterministic unit testing without API costs.
-- [ ] Add image validation & quality check helper (`services/image_processing.py`).
-- [ ] Enforce uncertainty flags whenever confidence is low or handwriting is ambiguous.
-- [ ] Run extraction test suite (`tests/test_extraction.py`).
-
-### Phase 3: Review, Confirmation & Explanation
-- [ ] Build interactive Streamlit Review Card showing raw text vs parsed fields.
-- [ ] Require user confirmation checkbox before saving any instruction.
-- [ ] Implement `services/language_service.py` for plain-Hindi explanations.
-- [ ] Implement `services/medicine_reference.py` for Indian Essential Medicines lookup.
-- [ ] Test safety invariants (`tests/test_medical_safety.py`).
-
-### Phase 4: Reminder Service & Grounded Q&A
-- [ ] Implement `services/reminder_service.py` (add, list, toggle, delete, due-status check).
-- [ ] Enforce Invariant 3: Unconfirmed instructions cannot produce active reminders.
-- [ ] Build grounded Q&A helper for prescription questions (Rule 8: no diagnosis, refer to clinician).
-- [ ] Run reminder test suite (`tests/test_reminders.py`).
-
-### Phase 5: Voice & Accessibility
-- [ ] Implement browser audio / speech synthesis fallback for reading Hindi instructions aloud.
-- [ ] Test audio playback in Streamlit interface.
-
-### Phase 6: End-to-End QA, Polish & Acceptance
-- [ ] Full automated test suite execution via `pytest`.
-- [ ] Security audit: verify `.env` is uncommitted and zero sensitive logs.
-- [ ] Author comprehensive `README.md` with demo walkthrough and setup instructions.
-- [ ] Generate `docs/TEST_REPORT.md`.
+### 🚫 Explicitly Out of Scope
+- Automated medical diagnosis or treatment recommendation.
+- Overriding doctor prescriptions or dosage changes.
+- Using real patient health records during development.

@@ -99,16 +99,31 @@ if "confirmed_medicines" not in st.session_state:
     st.session_state.confirmed_medicines = []
 if "demo_mode" not in st.session_state:
     st.session_state.demo_mode = True  # Defaults to true so app works immediately
+if "large_font_mode" not in st.session_state:
+    st.session_state.large_font_mode = False
 
 
-# Services
-reminder_service = ReminderService()
-language_service = SimpleHindiLanguageService()
+# Top Controls: Accessibility Mode for Older Adults
+col_title, col_a11y = st.columns([3, 1])
+with col_title:
+    st.title("💊 सेहत साथी (Sehat Saathi)")
+    st.caption("बुजुर्गों और ग्रामीण भारत के लिए सरल AI पर्ची वाचक और दवा साथी")
+with col_a11y:
+    st.session_state.large_font_mode = st.toggle("🔍 बड़े अक्षर", value=st.session_state.large_font_mode, help="बुजुर्गों के लिए बड़े और स्पष्ट अक्षर")
 
-
-# Top Header
-st.title("💊 सेहत साथी (Sehat Saathi)")
-st.caption("ग्रामीण भारत के लिए सरल AI पर्ची वाचक और दवा साथी")
+if st.session_state.large_font_mode:
+    st.markdown("""
+    <style>
+        .main p, .main span, .main label, .main div {
+            font-size: 1.18rem !important;
+            line-height: 1.6 !important;
+        }
+        .stButton>button {
+            font-size: 1.3rem !important;
+            padding: 0.85rem 1.2rem !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Safety Disclaimer (Rule 12)
 st.markdown("""
@@ -133,6 +148,16 @@ tab_scan, tab_reminders, tab_chat, tab_settings = st.tabs([
 # -------------------------------------------------------------
 with tab_scan:
     st.subheader("1. पर्ची की फोटो लें या अपलोड करें")
+
+    # Accessible Photo Guidance for Rural Users
+    with st.expander("📸 साफ और सही फोटो लेने के 3 सरल नियम (Photo Tips)", expanded=False):
+        st.markdown("""
+        1. 📄 **पर्ची को सीधा और समतल रखें:** मुड़ी हुई पर्ची को हाथ से सीधा करें।
+        2. 💡 **अच्छी रोशनी में रखें:** परछाई न पड़ने दें; खिड़की के पास या बल्ब के नीचे रखें।
+        3. 📐 **चारों कोने दिखने चाहिए:** फोन को पर्चे के ठीक ऊपर सीधा पकड़ें।
+        """)
+
+    st.caption("🟢 **ऑफ़लाइन तैयार:** आपके पुराने सहेजे गए रिमाइंडर बिना इंटरनेट के भी सुरक्षित हैं। नई पर्ची स्कैन करने के लिए नेटवर्क आवश्यक है।")
 
     # Demo quick-load buttons
     st.markdown("**बिना फोटो के तुरंत टेस्ट करें (Quick Demo):**")
@@ -288,13 +313,36 @@ with tab_scan:
 
             st.markdown("---")
             st.subheader("4. दवा रिमाइंडर सेट करें (Set Reminders)")
-            if st.button("⏰ पुष्टि की गई दवाओं के रिमाइंडर बनाएं (Create Reminders)", type="primary"):
+
+            # Requirement 3: Check for conflicting instructions with existing schedules
+            potential_conflicts = []
+            for med in presc.medicines:
+                conf = reminder_service.check_potential_conflicts(med)
+                if conf:
+                    potential_conflicts.extend(conf)
+
+            if potential_conflicts:
+                st.markdown("""
+                <div class="uncertain-card">
+                    ⚠️ <b>खुराक में अंतर मिला (Prescription Conflict Detected):</b><br>
+                    यह दवा आपके पहले से सहेजे गए शेड्यूल में अलग खुराक के साथ मौजूद है। 
+                    पुराने और नए पर्चे में अंतर होने पर कृपया अपने डॉक्टर या केमिस्ट से परामर्श लें।
+                </div>
+                """, unsafe_allow_html=True)
+                for c in potential_conflicts:
+                    st.caption(f"• **{c['medicine_name']}**: {c['reason']}")
+
+            if st.button("⏰ पुष्टि की गई दवाओं के रिमाइंडर जोड़ें (Save Reminders)", type="primary"):
                 created_count = 0
                 for med in presc.medicines:
                     if med.user_confirmed:
-                        created = reminder_service.create_reminders_from_instruction(med)
+                        created = reminder_service.create_reminders_from_instruction(
+                            med,
+                            prescription_id=presc.id,
+                            prescription_date=presc.prescription_date
+                        )
                         created_count += len(created)
-                st.success(f"🎉 कुल {created_count} रिमाइंडर सफलतापूर्वक सेट किए गए! 'रिमाइंडर' टैब में देखें।")
+                st.success(f"🎉 कुल {created_count} रिमाइंडर सफलतापूर्वक जोड़े गए! पुराने शेड्यूल सुरक्षित हैं।")
         else:
             st.warning("⚠️ रिमाइंडर बनाने के लिए कृपया ऊपर दी गई सभी दवाओं की पुष्टि (चेकबॉक्स टिक) करें।")
 
@@ -311,15 +359,35 @@ with tab_reminders:
     if not all_reminders:
         st.info("फिलहाल कोई रिमाइंडर सेट नहीं है। 'पर्ची पढ़ें' टैब से पर्चा स्कैन करके रिमाइंडर जोड़ें।")
     else:
+        # Caregiver helper: 1-Tap WhatsApp share (Requirement 5)
+        import urllib.parse
+        share_lines = ["*💊 सेहत साथी - परिवार/मरीज की दवाओं का शेड्यूल:*"]
+        for r in all_reminders:
+            if r.enabled:
+                share_lines.append(f"• {r.medicine_name}: {r.timing_label} ({r.reminder_time} बजे) - {r.food_relation}")
+        encoded_text = urllib.parse.quote("\n".join(share_lines))
+        st.markdown(
+            f'<a href="https://api.whatsapp.com/send?text={encoded_text}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background-color:#25D366; color:white; text-align:center; padding:10px; border-radius:10px; font-weight:bold; margin-bottom:15px;">'
+            f'📲 व्हाट्सएप पर परिवार/केयरगिवर को शेड्यूल भेजें (Share on WhatsApp)'
+            f'</div></a>',
+            unsafe_allow_html=True
+        )
+
         for rem in all_reminders:
             is_due = reminder_service.is_due_now(rem)
-            with st.expander(f"💊 {rem.medicine_name} — {rem.timing_label} ({rem.reminder_time})", expanded=is_due):
+            status_symbol = "🟢" if rem.enabled else "⚪ (निष्क्रिय / Inactive)"
+            with st.expander(f"{status_symbol} 💊 {rem.medicine_name} — {rem.timing_label} ({rem.reminder_time})", expanded=is_due):
                 if is_due:
                     st.markdown('<span class="due-badge">🔔 अभी लेने का समय है (Due Now)</span>', unsafe_allow_html=True)
 
                 st.write(f"🔹 **मात्रा:** {rem.dosage or '1 खुराक'}")
                 st.write(f"🔹 **समय निर्देश:** {rem.food_relation}")
                 st.write(f"🔹 **निर्धारित समय:** {rem.reminder_time} बजे")
+                
+                # Traceability (Requirement 3)
+                if rem.source_prescription_date or rem.source_raw_text:
+                    st.caption(f"📄 **पर्चे का संदर्भ:** तारीख: {rem.source_prescription_date or 'पूर्व रिकॉर्ड'} | पर्चे में लिखा शब्द: '{rem.source_raw_text or rem.medicine_name}'")
 
                 col_t1, col_t2 = st.columns(2)
                 with col_t1:
@@ -331,9 +399,16 @@ with tab_reminders:
                             st.rerun()
 
                 with col_t2:
-                    if st.button(f"🗑️ हटाएं (Delete)", key=f"del_{rem.id}"):
-                        reminder_service.delete_reminder(rem.id)
-                        st.rerun()
+                    col_sub1, col_sub2 = st.columns(2)
+                    with col_sub1:
+                        toggle_lbl = "बंद करें" if rem.enabled else "चालू करें"
+                        if st.button(toggle_lbl, key=f"tog_{rem.id}"):
+                            reminder_service.toggle_reminder(rem.id)
+                            st.rerun()
+                    with col_sub2:
+                        if st.button(f"🗑️ हटाएं", key=f"del_{rem.id}"):
+                            reminder_service.delete_reminder(rem.id)
+                            st.rerun()
 
     st.markdown("---")
     st.info("ℹ️ **सूचना:** यह वेब ऐप आपके ब्राउज़र के भीतर रिमाइंडर प्रदर्शित करता है। फोन पूरी तरह लॉक या बंद होने पर सिस्टम पुश नोटिफिकेशन नहीं भेजेगा।")

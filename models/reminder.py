@@ -16,6 +16,9 @@ class Reminder(BaseModel):
     """
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     medicine_instruction_id: str = Field(..., description="Foreign key linking to confirmed MedicineInstruction")
+    source_prescription_id: Optional[str] = Field(default=None, description="Linked prescription ID for medical record traceability")
+    source_prescription_date: Optional[str] = Field(default=None, description="Date of source prescription")
+    source_raw_text: Optional[str] = Field(default=None, description="Exact raw text extracted from original prescription")
     medicine_name: str = Field(..., description="Confirmed medicine name")
     dosage: Optional[str] = Field(default=None, description="Confirmed dosage (e.g. '1 गोली (1 tablet)')")
     timing_label: str = Field(
