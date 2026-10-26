@@ -48,51 +48,58 @@ st.markdown("""
 <style>
     /* Mobile-first viewport and typography */
     .main {
-        max-width: 600px;
+        max-width: 620px;
         margin: 0 auto;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
+    /* Large Accessible Touch Targets */
     .stButton>button {
         width: 100%;
-        border-radius: 12px;
-        font-size: 1.15rem;
-        padding: 0.65rem 1rem;
-        font-weight: 600;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
+        border-radius: 14px;
+        font-size: 1.25rem;
+        padding: 0.85rem 1.2rem;
+        font-weight: 700;
+        margin-top: 0.4rem;
+        margin-bottom: 0.4rem;
+        min-height: 52px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        transition: all 0.2s ease-in-out;
     }
-    .big-primary-btn button {
-        background-color: #0b8043 !important;
-        color: white !important;
+    .stButton>button:active {
+        transform: scale(0.98);
     }
+    /* High contrast alert cards */
     .uncertain-card {
         background-color: #fff8e1;
-        border-left: 6px solid #fbc02d;
-        padding: 14px 18px;
-        border-radius: 8px;
-        margin-bottom: 12px;
+        border-left: 8px solid #fbc02d;
+        padding: 16px 18px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+        font-size: 1.1rem;
     }
     .confirmed-card {
         background-color: #e8f5e9;
-        border-left: 6px solid #4caf50;
-        padding: 14px 18px;
-        border-radius: 8px;
-        margin-bottom: 12px;
+        border-left: 8px solid #4caf50;
+        padding: 16px 18px;
+        border-radius: 12px;
+        margin-bottom: 14px;
+        font-size: 1.1rem;
     }
     .disclaimer-banner {
         background-color: #e3f2fd;
         border-left: 6px solid #1976d2;
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 0.92rem;
-        margin-bottom: 15px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 1rem;
+        margin-bottom: 16px;
     }
     .due-badge {
-        background-color: #ffebee;
-        color: #c62828;
-        padding: 4px 8px;
-        border-radius: 4px;
+        background-color: #d32f2f;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 6px;
         font-weight: bold;
+        font-size: 0.95rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -108,14 +115,14 @@ if "confirmed_medicines" not in st.session_state:
 if "demo_mode" not in st.session_state:
     st.session_state.demo_mode = True  # Defaults to true so app works immediately
 if "large_font_mode" not in st.session_state:
-    st.session_state.large_font_mode = False
+    st.session_state.large_font_mode = True  # Enabled by default for easy reading!
 
 
 # Top Controls: Accessibility Mode for Older Adults
 col_title, col_a11y = st.columns([3, 1])
 with col_title:
     st.title("💊 सेहत साथी (Sehat Saathi)")
-    st.caption("बुजुर्गों और ग्रामीण भारत के लिए सरल AI पर्ची वाचक और दवा साथी")
+    st.caption("बुजुर्गों और ग्रामीण भारत के लिए सरल व सुरक्षित AI स्वास्थ्य साथी")
 with col_a11y:
     st.session_state.large_font_mode = st.toggle("🔍 बड़े अक्षर", value=st.session_state.large_font_mode, help="बुजुर्गों के लिए बड़े और स्पष्ट अक्षर")
 
@@ -123,15 +130,41 @@ if st.session_state.large_font_mode:
     st.markdown("""
     <style>
         .main p, .main span, .main label, .main div {
-            font-size: 1.18rem !important;
-            line-height: 1.6 !important;
+            font-size: 1.22rem !important;
+            line-height: 1.65 !important;
         }
         .stButton>button {
-            font-size: 1.3rem !important;
-            padding: 0.85rem 1.2rem !important;
+            font-size: 1.35rem !important;
+            padding: 0.95rem 1.3rem !important;
         }
     </style>
     """, unsafe_allow_html=True)
+
+# 4 Big Visual Action Cards (Visual Home Hub for Seniors)
+st.markdown("""
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+    <div style="background: linear-gradient(135deg, #1b5e20, #2e7d32); color:white; padding:12px; border-radius:12px; text-align:center;">
+        <div style="font-size: 1.6rem;">📸</div>
+        <div style="font-size: 1.05rem; font-weight: bold; margin-top:2px;">1. पर्ची पढ़ें</div>
+        <div style="font-size: 0.8rem; opacity:0.9;">फोटो खींचें या अपलोड करें</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #0d47a1, #1565c0); color:white; padding:12px; border-radius:12px; text-align:center;">
+        <div style="font-size: 1.6rem;">⏰</div>
+        <div style="font-size: 1.05rem; font-weight: bold; margin-top:2px;">2. मेरी दवाएं</div>
+        <div style="font-size: 0.8rem; opacity:0.9;">आज का शेड्यूल व खुराक</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #004d40, #00695c); color:white; padding:12px; border-radius:12px; text-align:center;">
+        <div style="font-size: 1.6rem;">🩺</div>
+        <div style="font-size: 1.05rem; font-weight: bold; margin-top:2px;">3. स्वास्थ्य जांच</div>
+        <div style="font-size: 0.8rem; opacity:0.9;">बीपी, शुगर व ऑक्सीजन</div>
+    </div>
+    <div style="background: linear-gradient(135deg, #b71c1c, #c62828); color:white; padding:12px; border-radius:12px; text-align:center;">
+        <div style="font-size: 1.6rem;">🚨</div>
+        <div style="font-size: 1.05rem; font-weight: bold; margin-top:2px;">4. मदद 108</div>
+        <div style="font-size: 0.8rem; opacity:0.9;">एम्बुलेंस व डॉक्टर कॉल</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # Safety Disclaimer (Rule 12)
 st.markdown("""
@@ -342,18 +375,23 @@ with tab_scan:
         if confirmed_all and presc.medicines:
             st.success("✅ सभी दवाओं की पुष्टि हो चुकी है!")
 
-            st.subheader("3. सरल हिंदी में समझें (Plain Hindi Explanation)")
-            summary_text = language_service.explain_prescription_summary(presc)
-            st.markdown(summary_text)
+            col_sum_head, col_sum_voice = st.columns([2, 1])
+            with col_sum_head:
+                st.subheader("3. सरल हिंदी में समझें")
+            with col_sum_voice:
+                play_audio = st.button("🔊 आवाज में सुनें", key="btn_listen_audio")
 
-            # Voice Read Aloud (Feature H)
-            if st.button("🔊 आवाज में सुनें (Listen in Hindi Audio)"):
+            summary_text = language_service.explain_prescription_summary(presc)
+
+            if play_audio:
                 with st.spinner("आवाज तैयार हो रही है..."):
                     audio_bytes = language_service.generate_speech_audio(summary_text)
                     if audio_bytes:
-                        st.audio(audio_bytes, format="audio/mp3")
+                        st.audio(audio_bytes, format="audio/mp3", autoplay=True)
                     else:
-                        st.info("आवाज सेवा वर्तमान में अनुपलब्ध है। कृपया ऊपर लिखा विवरण पढ़ें।")
+                        st.info("आवाज सेवा वर्तमान में अनुपलब्ध है। कृपया नीचे लिखा विवरण पढ़ें।")
+
+            st.markdown(summary_text)
 
             st.markdown("---")
             st.subheader("4. दवा रिमाइंडर सेट करें (Set Reminders)")
@@ -436,39 +474,61 @@ with tab_reminders:
 
         for rem in all_reminders:
             is_due = reminder_service.is_due_now(rem)
-            status_symbol = "🟢" if rem.enabled else "⚪ (निष्क्रिय / Inactive)"
-            with st.expander(f"{status_symbol} 💊 {rem.medicine_name} — {rem.timing_label} ({rem.reminder_time})", expanded=is_due):
-                if is_due:
-                    st.markdown('<span class="due-badge">🔔 अभी लेने का समय है (Due Now)</span>', unsafe_allow_html=True)
+            
+            # Visual time-of-day theme
+            t_label = rem.timing_label.lower()
+            if "सुबह" in t_label or "morning" in t_label:
+                icon_time = "☀️ सुबह (Morning)"
+                card_border = "#ffe082"
+                card_bg = "#fffde7"
+            elif "दोपहर" in t_label or "afternoon" in t_label:
+                icon_time = "⛅ दोपहर (Afternoon)"
+                card_border = "#ffcc80"
+                card_bg = "#fff8e1"
+            elif "रात" in t_label or "night" in t_label:
+                icon_time = "🌙 रात (Night)"
+                card_border = "#c5cae9"
+                card_bg = "#f3f5ff"
+            else:
+                icon_time = "⏰ निर्धारित समय"
+                card_border = "#cfd8dc"
+                card_bg = "#f8f9fa"
 
-                st.write(f"🔹 **मात्रा:** {rem.dosage or '1 खुराक'}")
-                st.write(f"🔹 **समय निर्देश:** {rem.food_relation}")
-                st.write(f"🔹 **निर्धारित समय:** {rem.reminder_time} बजे")
-                
-                # Traceability (Requirement 3)
-                if rem.source_prescription_date or rem.source_raw_text:
-                    st.caption(f"📄 **पर्चे का संदर्भ:** तारीख: {rem.source_prescription_date or 'पूर्व रिकॉर्ड'} | पर्चे में लिखा शब्द: '{rem.source_raw_text or rem.medicine_name}'")
+            if is_due:
+                card_border = "#f57c00"
+                card_bg = "#fff3e0"
 
-                col_t1, col_t2 = st.columns(2)
-                with col_t1:
-                    if rem.taken_today:
-                        st.success("✅ आज दवा ले ली गई है")
-                    else:
-                        if st.button(f"💊 दवा ले ली (Mark Taken)", key=f"taken_{rem.id}"):
-                            reminder_service.mark_as_taken(rem.id, True)
-                            st.rerun()
+            st.markdown(f"""
+            <div style="background-color:{card_bg}; border: 2px solid {card_border}; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-weight:bold; font-size:1.05rem; color:#37474f;">{icon_time} — {rem.reminder_time} बजे</span>
+                    <span>{"<span style='background:#d32f2f; color:white; padding:3px 8px; border-radius:6px; font-weight:bold; font-size:0.85rem;'>🔔 अभी का समय</span>" if is_due else ""}</span>
+                </div>
+                <div style="font-size: 1.35rem; font-weight: 800; color: #1a237e; margin-top: 4px;">💊 {rem.medicine_name}</div>
+                <div style="font-size: 1.05rem; color: #424242; margin-top: 2px;">🥄 {rem.dosage or '1 खुराक'} • {rem.food_relation}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-                with col_t2:
-                    col_sub1, col_sub2 = st.columns(2)
-                    with col_sub1:
-                        toggle_lbl = "बंद करें" if rem.enabled else "चालू करें"
-                        if st.button(toggle_lbl, key=f"tog_{rem.id}"):
-                            reminder_service.toggle_reminder(rem.id)
-                            st.rerun()
-                    with col_sub2:
-                        if st.button(f"🗑️ हटाएं", key=f"del_{rem.id}"):
-                            reminder_service.delete_reminder(rem.id)
-                            st.rerun()
+            col_t1, col_t2 = st.columns([3, 1])
+            with col_t1:
+                if rem.taken_today:
+                    st.success(f"✅ आज दवा ले ली गई है ({rem.medicine_name})")
+                else:
+                    if st.button(f"💊 दवा ले ली (Mark Taken)", key=f"taken_{rem.id}", type="primary"):
+                        reminder_service.mark_as_taken(rem.id, True)
+                        st.rerun()
+
+            with col_t2:
+                with st.popover("⚙️ सेटिंग", help="रिमाइंडर चालू/बंद या हटाएं"):
+                    toggle_lbl = "बंद करें (Deactivate)" if rem.enabled else "चालू करें (Activate)"
+                    if st.button(toggle_lbl, key=f"tog_{rem.id}"):
+                        reminder_service.toggle_reminder(rem.id)
+                        st.rerun()
+                    if st.button(f"🗑️ हटाएं (Delete)", key=f"del_{rem.id}"):
+                        reminder_service.delete_reminder(rem.id)
+                        st.rerun()
+                    if rem.source_prescription_date or rem.source_raw_text:
+                        st.caption(f"तारीख: {rem.source_prescription_date or 'पूर्व रिकॉर्ड'} | लिखा शब्द: '{rem.source_raw_text or rem.medicine_name}'")
 
     st.markdown("---")
     
