@@ -4,7 +4,7 @@
 **QA Lead:** Agent 8 (QA, Security & Integration)  
 **Test Suite:** Pytest 9.1.1, Python 3.13.7  
 **Execution Date:** 2026-10-26  
-**Status:** **30 / 30 TESTS PASSED (100% Pass Rate)**
+**Status:** **33 / 33 TESTS PASSED (100% Pass Rate)**
 
 ---
 
@@ -12,6 +12,7 @@
 
 | Test Module | Tests Run | Result | Coverage Area |
 | :--- | :--- | :--- | :--- |
+| **`tests/test_health_issue_service.py`** | 3 | **PASS** | Side-effect & adverse symptom logging, automated severe reaction detection, doctor notification formatting & WhatsApp URL encoding |
 | **`tests/test_emergency_service.py`** | 2 | **PASS** | Official Indian emergency numbers (108, 112, 104, 102), `tel:` link creation for direct smartphone dialing |
 | **`tests/test_models.py`** | 4 | **PASS** | Non-empty raw names, `null` preservation for unwritten fields, Safety Invariant 3 gate on unconfirmed models, time validation |
 | **`tests/test_extraction.py`** | 4 | **PASS** | Mock clean extraction, ambiguous handwriting uncertainty flagging, failure handling, graceful handling of missing Gemini API key |
@@ -26,6 +27,7 @@
 
 ## 2. Accessible Rural Healthcare Requirements Audit
 
+- [x] **Treatment Health Issue Logging & Doctor Notification:** Adverse reaction recording, automated severe reaction warning, and 1-tap WhatsApp doctor notification report.
 - [x] **Emergency Helplines Integration:** Direct native dialer links (`tel:108`, `tel:112`, `tel:104`, `tel:102`) for zero-friction emergency calling on any mobile phone.
 - [x] **Requirement 1 (Accessibility):** Large-font styling, mobile-first responsive container, and error recovery without resetting user inputs.
 - [x] **Requirement 2 (Image Quality):** Heuristics for bright, dark, or invalid images; 3-step photography guidance.

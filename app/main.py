@@ -26,6 +26,7 @@ from services.reminder_service import ReminderService
 from services.chat_service import PrescriptionChatService
 from services.prevention_and_facilities import PreventionAndFacilitiesService
 from services.emergency_service import EmergencyService
+from services.health_issue_service import HealthIssueService, COMMON_ISSUE_TYPES
 from storage.persistence import LocalStorageAdapter
 
 
@@ -430,6 +431,62 @@ with tab_reminders:
                         if st.button(f"🗑️ हटाएं", key=f"del_{rem.id}"):
                             reminder_service.delete_reminder(rem.id)
                             st.rerun()
+
+    st.markdown("---")
+    
+    # Treatment Issue Logging & Doctor Notification (Requirement: Record health problems & notify doctor)
+    issue_service = HealthIssueService()
+    with st.expander("📝 दवा के दौरान होने वाली परेशानी दर्ज करें व डॉक्टर को बताएं (Report Issue to Doctor)", expanded=False):
+        st.markdown("दवा लेने के बाद यदि कोई नई परेशानी, चकत्ते, उल्टी या बेचैनी हो, तो यहां दर्ज करें:")
+
+        # Options for medicine
+        med_options = [r.medicine_name for r in all_reminders] + ["अन्य दवा / सामान्य"]
+        selected_med = st.selectbox("किस दवा से परेशानी महसूस हुई?", options=med_options, key="issue_med_select")
+        
+        selected_issue = st.selectbox("क्या समस्या हुई?", options=COMMON_ISSUE_TYPES, key="issue_type_select")
+        selected_sev = st.radio("समस्या की गंभीरता (Severity):", ["सामान्य (Mild)", "मध्यम (Moderate)", "गंभीर (Severe)"], horizontal=True, key="issue_sev_radio")
+        issue_notes = st.text_input("अन्य विवरण (वैकल्पिक):", placeholder="उदा. दवा लेने के 1 घंटे बाद खुजली शुरू हुई", key="issue_notes_input")
+
+        dr_phone = st.text_input("डॉक्टर / केमिस्ट का मोबाइल नंबर (वैकल्पिक):", placeholder="उदा. 9876543210 (व्हाट्सएप के लिए)", key="dr_phone_input")
+
+        if st.button("💾 परेशानी दर्ज करें और डॉक्टर को सूचित करें (Log & Notify Doctor)", key="btn_save_issue"):
+            logged = issue_service.log_issue(
+                medicine_name=selected_med,
+                issue_type=selected_issue,
+                severity=selected_sev,
+                notes=issue_notes
+            )
+            st.success("✅ परेशानी सफलतापूर्वक दर्ज कर ली गई है!")
+
+            if logged.is_severe_alert:
+                st.markdown("""
+                <div style="background-color:#ffebee; border-left:6px solid #d32f2f; padding:12px; border-radius:8px; margin-top:10px;">
+                    🚨 <b>अति-आवश्यक चेतावनी (Severe Reaction Alert):</b><br>
+                    यह गंभीर एलर्जी या सांस से संबंधित लक्षण हो सकते हैं। 
+                    <b>दवा की अगली खुराक तुरंत रोकें</b> और अपने डॉक्टर या 
+                    <a href="tel:108" style="color:#d32f2f; font-weight:bold;">108 एम्बुलेंस</a> पर तुरंत संपर्क करें!
+                </div>
+                """, unsafe_allow_html=True)
+
+            # 1-Tap WhatsApp share to Doctor / Chemist
+            patient_name_val = st.session_state.prescription.patient_name if st.session_state.prescription else None
+            wa_url = HealthIssueService.generate_whatsapp_share_url(logged, patient_name=patient_name_val, doctor_phone=dr_phone)
+            st.markdown(
+                f'<a href="{wa_url}" target="_blank" style="text-decoration:none;">'
+                f'<div style="background-color:#25D366; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-top:10px;">'
+                f'📲 डॉक्टर / केमिस्ट को व्हाट्सएप पर सूचना भेजें (Send to Doctor)'
+                f'</div></a>',
+                unsafe_allow_html=True
+            )
+
+        # Show previously recorded issues
+        past_issues = issue_service.get_all_issues()
+        if past_issues:
+            st.markdown("---")
+            st.markdown("#### 📋 पहले दर्ज की गई समस्याएं (Past Recorded Issues):")
+            for pi in past_issues[:5]:  # Show top 5
+                alert_icon = "🚨" if pi.is_severe_alert else "🔹"
+                st.caption(f"{alert_icon} **{pi.timestamp}** | {pi.medicine_name} — *{pi.issue_type}* ({pi.severity})")
 
     st.markdown("---")
     st.info("ℹ️ **सूचना:** यह वेब ऐप आपके ब्राउज़र के भीतर रिमाइंडर प्रदर्शित करता है। फोन पूरी तरह लॉक या बंद होने पर सिस्टम पुश नोटिफिकेशन नहीं भेजेगा।")
