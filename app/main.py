@@ -24,6 +24,7 @@ from services.language_service import SimpleHindiLanguageService
 from services.medicine_reference import MedicineReferenceService
 from services.reminder_service import ReminderService
 from services.chat_service import PrescriptionChatService
+from services.prevention_and_facilities import PreventionAndFacilitiesService
 from storage.persistence import LocalStorageAdapter
 
 
@@ -135,9 +136,10 @@ st.markdown("""
 
 
 # Top Navigation
-tab_scan, tab_reminders, tab_chat, tab_settings = st.tabs([
+tab_scan, tab_reminders, tab_facilities, tab_chat, tab_settings = st.tabs([
     "📸 पर्ची पढ़ें (Scan)",
     "⏰ रिमाइंडर (Reminders)",
+    "🏥 अस्पताल व बचाव (Clinics & Prevention)",
     "💬 सवाल पूछें (Ask)",
     "⚙️ सेटिंग्स (Settings)"
 ])
@@ -415,7 +417,86 @@ with tab_reminders:
 
 
 # -------------------------------------------------------------
-# TAB 3: CHAT / QUESTIONS
+# TAB 3: NEARBY CLINICS, DOCTORS & DISEASE PREVENTION
+# -------------------------------------------------------------
+with tab_facilities:
+    st.subheader("🏥 नजदीकी अस्पताल, क्लीनिक और डॉक्टर खोजें")
+    st.caption("अपने फोन के नक्शे (Map) पर एक क्लिक में नजदीकी स्वास्थ्य केंद्र और डॉक्टरों का रास्ता देखें:")
+
+    user_locality = st.text_input("📍 अपना गांव, शहर या कस्बा (वैकल्पिक):", placeholder="उदा. नीमराना, बहराइच, या खाली छोड़ें")
+
+    col_map1, col_map2 = st.columns(2)
+    with col_map1:
+        phc_url = PreventionAndFacilitiesService.build_maps_search_url("Primary Health Centre PHC Hospital", user_locality)
+        st.markdown(
+            f'<a href="{phc_url}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background-color:#1b5e20; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
+            f'🏥 सरकारी अस्पताल / PHC का रास्ता (Directions)'
+            f'</div></a>',
+            unsafe_allow_html=True
+        )
+
+        dr_url = PreventionAndFacilitiesService.build_maps_search_url("Doctor Clinic", user_locality)
+        st.markdown(
+            f'<a href="{dr_url}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background-color:#0277bd; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
+            f'🩺 नजदीकी डॉक्टर व क्लीनिक (Doctor Clinic)'
+            f'</div></a>',
+            unsafe_allow_html=True
+        )
+
+    with col_map2:
+        ja_url = PreventionAndFacilitiesService.build_maps_search_url("Pradhan Mantri Jan Aushadhi Kendra", user_locality)
+        st.markdown(
+            f'<a href="{ja_url}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background-color:#e65100; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
+            f'💊 जन औषधि केंद्र (Generic Medicine Store)'
+            f'</div></a>',
+            unsafe_allow_html=True
+        )
+
+        chc_url = PreventionAndFacilitiesService.build_maps_search_url("Community Health Centre CHC", user_locality)
+        st.markdown(
+            f'<a href="{chc_url}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background-color:#4a148c; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
+            f'🚑 24 घंटे इमरजेंसी अस्पताल (CHC)'
+            f'</div></a>',
+            unsafe_allow_html=True
+        )
+
+    # Interactive Facility Map Preview
+    import pandas as pd
+    sample_facs = PreventionAndFacilitiesService.get_sample_facilities()
+    df_map = pd.DataFrame([{"lat": f["latitude"], "lon": f["longitude"]} for f in sample_facs])
+    with st.expander("🗺️ स्वास्थ्य केंद्र नक्शा पूर्वावलोकन (Interactive Map Preview)", expanded=False):
+        st.map(df_map)
+        for f in sample_facs:
+            st.caption(f"🔹 **{f['name']}** ({f['type']}) — *{f['timing']}*")
+
+    st.markdown("---")
+    st.subheader("🌿 स्वच्छ पर्यावरण और बीमारियों से बचाव (Disease Prevention)")
+    st.caption("राष्ट्रीय स्वास्थ्य मिशन (NHM) के दिशा-निर्देशों पर आधारित ग्रामीण स्वास्थ्य और स्वच्छता सलाह:")
+
+    topics = PreventionAndFacilitiesService.get_prevention_topics()
+    for topic in topics:
+        with st.expander(f"{topic['icon']} {topic['title_hindi']}", expanded=False):
+            st.markdown(f"**💡 मुख्य बात:** {topic['subtitle']}")
+            for pt in topic["action_points"]:
+                st.write(f"• {pt}")
+            
+            # Audio Read Aloud for low-literacy users
+            if st.button(f"🔊 यह सलाह बोलकर सुनें", key=f"audio_prev_{topic['id']}"):
+                with st.spinner("सलाह तैयार हो रही है..."):
+                    audio_text = f"{topic['title_hindi']}। {topic['subtitle']}। " + " ".join(topic["action_points"])
+                    aud = language_service.generate_speech_audio(audio_text)
+                    if aud:
+                        st.audio(aud, format="audio/mp3")
+                    else:
+                        st.info("आवाज वर्तमान में अनुपलब्ध है।")
+
+
+# -------------------------------------------------------------
+# TAB 4: CHAT / QUESTIONS
 # -------------------------------------------------------------
 with tab_chat:
     st.subheader("💬 पर्ची के बारे में सवाल पूछें")
