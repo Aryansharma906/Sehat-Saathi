@@ -27,6 +27,7 @@ from services.chat_service import PrescriptionChatService
 from services.prevention_and_facilities import PreventionAndFacilitiesService
 from services.emergency_service import EmergencyService
 from services.health_issue_service import HealthIssueService, COMMON_ISSUE_TYPES
+from services.progress_tracker_service import ProgressTrackerService
 from storage.persistence import LocalStorageAdapter
 
 
@@ -434,6 +435,41 @@ with tab_reminders:
 
     st.markdown("---")
     
+    # Progress Tracker & Frequent Health Questionnaire (Requirement: Questionnaire & test to track progress)
+    tracker_service = ProgressTrackerService()
+    with st.expander("📊 स्वास्थ्य सुधार जांच प्रश्नावली (Progress Tracker & Check-in)", expanded=False):
+        st.markdown("दवा का असर और आपकी सेहत में सुधार जानने के लिए 3 आसान सवालों के जवाब दें:")
+        q_items = ProgressTrackerService.get_questionnaire_items()
+        
+        ans_feeling = st.radio(q_items[0]["question_hindi"], q_items[0]["options"], key="prog_q_feeling")
+        ans_adherence = st.radio(q_items[1]["question_hindi"], q_items[1]["options"], key="prog_q_adherence")
+        ans_symptoms = st.radio(q_items[2]["question_hindi"], q_items[2]["options"], key="prog_q_symptoms")
+
+        if st.button("📈 सुधार की जांच करें (Check My Progress)", key="btn_submit_progress"):
+            checkin_res = tracker_service.evaluate_checkin(ans_feeling, ans_adherence, ans_symptoms)
+            
+            st.markdown(f"### आपकी सुधार प्रगति: **{checkin_res.recovery_score}%**")
+            st.progress(checkin_res.recovery_score / 100.0)
+
+            if checkin_res.doctor_visit_advised:
+                st.markdown(f"""
+                <div style="background-color:#fff3e0; border-left:6px solid #f57c00; padding:12px; border-radius:8px; margin-top:10px;">
+                    {checkin_res.recommendation_hindi}<br><br>
+                    👉 <a href="tel:104" style="color:#d32f2f; font-weight:bold;">📞 104 सरकारी स्वास्थ्य हेल्पलाइन पर डॉक्टर से बात करें</a>
+                </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.success(checkin_res.recommendation_hindi)
+
+        past_checkins = tracker_service.get_all_checkins()
+        if past_checkins:
+            st.markdown("---")
+            st.markdown("#### 🕒 पिछली जांच का रिकॉर्ड (Past Progress Records):")
+            for pc in past_checkins[:3]:
+                st.caption(f"📅 **{pc.timestamp}** — प्रगति: **{pc.recovery_score}%** | *{pc.overall_feeling.split('(')[0]}*")
+
+    st.markdown("---")
+
     # Treatment Issue Logging & Doctor Notification (Requirement: Record health problems & notify doctor)
     issue_service = HealthIssueService()
     with st.expander("📝 दवा के दौरान होने वाली परेशानी दर्ज करें व डॉक्टर को बताएं (Report Issue to Doctor)", expanded=False):
