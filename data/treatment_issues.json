@@ -1,5 +1,23 @@
 [
   {
+    "id": "9a2e1b25-50af-42a9-b0b4-06bca42ebf47",
+    "timestamp": "2026-10-26 08:48 PM",
+    "medicine_name": "Pan-D",
+    "issue_type": "त्वचा पर लाल चकत्ते / खुजली",
+    "severity": "सामान्य (Mild)",
+    "notes": "दवा लेने के 1 घंटे बाद हाथ पर चकत्ते दिखे",
+    "is_severe_alert": false
+  },
+  {
+    "id": "de49fb98-144f-4fbd-ba9d-3a57e873d5f9",
+    "timestamp": "2026-10-26 08:48 PM",
+    "medicine_name": "Pan-D",
+    "issue_type": "त्वचा पर लाल चकत्ते / खुजली",
+    "severity": "सामान्य (Mild)",
+    "notes": "दवा लेने के 1 घंटे बाद हाथ पर चकत्ते दिखे",
+    "is_severe_alert": false
+  },
+  {
     "id": "671dc010-2ace-4761-a743-6f7fa83a62cd",
     "timestamp": "2026-10-26 08:47 PM",
     "medicine_name": "Pan-D",

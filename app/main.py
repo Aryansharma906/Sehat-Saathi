@@ -6,9 +6,15 @@ AI-assisted prescription reader and medication companion for rural India.
 import streamlit as st
 import os
 import io
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from PIL import Image
+
+# Ensure project root is always at the top of sys.path regardless of working directory
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 # Load environment variables
 load_dotenv()
@@ -33,6 +39,10 @@ from services.device_data_service import DeviceDataService
 from services.complication_prediction_service import ComplicationPredictionService
 from models.complication_prediction import ComplicationPredictionInput, RiskTier
 from storage.persistence import LocalStorageAdapter
+
+# Instantiate core services
+language_service = SimpleHindiLanguageService()
+reminder_service = ReminderService()
 
 
 # Streamlit Page Configuration
