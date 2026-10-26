@@ -401,7 +401,8 @@ st.markdown("""
 # -------------------------------------------------------------
 # TOP NAVBAR: Apple Glassmorphic Header + User Identity + Language Selection
 # -------------------------------------------------------------
-u_role_badge = "👨‍⚕️ डॉक्टर" if curr_u.role == "doctor" else ("🏥 स्टाफ" if curr_u.role == "staff" else "👤 मरीज")
+lang = st.session_state.app_lang
+u_role_badge = t("role_doctor", lang) if curr_u.role == "doctor" else (t("role_staff", lang) if curr_u.role == "staff" else t("role_patient", lang))
 st.markdown(f"""
 <div class="apple-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
     <div style="display: flex; align-items: center; gap: 14px;">
@@ -413,18 +414,18 @@ st.markdown(f"""
                 <h1 style="margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: #1d1d1f;">Sehat Saathi</h1>
                 <span style="font-size: 1.15rem; color: #86868b; font-weight: 500;">| सेहत साथी</span>
             </div>
-            <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #86868b; font-weight: 400;">Intelligent & Accessible Health Companion • Rural Healthcare</p>
+            <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #86868b; font-weight: 400;">{t('app_tagline', lang)}</p>
         </div>
     </div>
     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
         <a href="tel:108" style="background:#ff3b30; color:white; padding:6px 14px; border-radius:980px; font-size:0.82rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 10px rgba(255,59,48,0.25); transition:all 0.2s ease;">
-            🚨 108 Emergency
+            {t('btn_emergency_108', lang)}
         </a>
         <span style="background: #f5f5f7; border: 1px solid #e5e5ea; padding: 5px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #1d1d1f;">
             {u_role_badge}: {curr_u.name.split('(')[0].strip()}
         </span>
         <span style="background: #eafaf1; border: 1px solid #b7ebd0; padding: 5px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #19692c;">
-            🟢 Active
+            {t('status_active', lang)}
         </span>
     </div>
 </div>
@@ -434,9 +435,9 @@ st.markdown(f"""
 col_user_bar, col_lang, col_a11y = st.columns([3, 2, 2])
 
 with col_user_bar:
-    with st.popover("🔑 लॉगिन / साइन इन (Account)", help="Google Sign-In, ABHA ID or Switch Profile"):
-        st.markdown("#### 🔐 उपयोगकर्ता पहचान (User Sign-In)")
-        st.caption("डॉक्टर, अस्पताल स्टाफ और मरीज अपने इलाज रिकॉर्ड सुरक्षित रखने के लिए साइन-इन करें:")
+    with st.popover(t("account_popover_btn", lang), help="Google Sign-In, ABHA ID or Switch Profile"):
+        st.markdown(f"#### {t('user_signin_title', lang)}")
+        st.caption(t("user_signin_caption", lang))
         
         # Google Sign-in button
         google_auth_url = AuthService.get_google_auth_url(redirect_uri="http://localhost:8501")
@@ -444,36 +445,36 @@ with col_user_bar:
         <a href="{google_auth_url}" target="_blank" style="text-decoration:none;">
             <div style="background-color:#ffffff; border:1.5px solid #dadce0; border-radius:12px; padding:10px 14px; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.08);">
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" />
-                <span style="color:#3c4043; font-weight:600; font-size:0.95rem;">Google खाते से साइन इन करें (Google Sign-In)</span>
+                <span style="color:#3c4043; font-weight:600; font-size:0.95rem;">{t('btn_google_signin', lang)}</span>
             </div>
         </a>
         """, unsafe_allow_html=True)
 
-        st.markdown("**तुरंत भूमिका चुनें (1-Click Test Role):**")
+        st.markdown(f"**{t('quick_role_select', lang)}**")
         col_r1, col_r2, col_r3 = st.columns(3)
         with col_r1:
-            if st.button("👤 मरीज (Patient)", key="btn_role_pat"):
+            if st.button(t("btn_role_pat", lang), key="btn_role_pat"):
                 st.session_state.current_user = AuthService.create_google_demo_user("patient")
                 st.rerun()
         with col_r2:
-            if st.button("👨‍⚕️ डॉक्टर (Doctor)", key="btn_role_doc"):
+            if st.button(t("btn_role_doc", lang), key="btn_role_doc"):
                 st.session_state.current_user = AuthService.create_google_demo_user("doctor")
                 st.rerun()
         with col_r3:
-            if st.button("🏥 स्टाफ (Staff)", key="btn_role_staff"):
+            if st.button(t("btn_role_staff", lang), key="btn_role_staff"):
                 st.session_state.current_user = AuthService.create_google_demo_user("staff")
                 st.rerun()
 
         st.markdown("---")
-        st.markdown("**मोबाइल नंबर या आभा (ABHA) आईडी से लॉगिन:**")
-        c_name = st.text_input("मरीज का नाम:", value=curr_u.name, key="inp_login_name")
-        c_phone = st.text_input("मोबाइल नंबर (वैकल्पिक):", value=curr_u.phone or "", key="inp_login_phone")
-        c_abha = st.text_input("ABHA ID (वैकल्पिक):", value=curr_u.abha_id or "", placeholder="उदा. 91-1234-5678-9012", key="inp_login_abha")
-        if st.button("💾 प्रोफ़ाइल अपडेट करें (Save Profile)", key="btn_save_user_prof"):
+        st.markdown(f"**{t('login_mobile_abha_header', lang)}**")
+        c_name = st.text_input(t("lbl_patient_name", lang), value=curr_u.name, key="inp_login_name")
+        c_phone = st.text_input(t("lbl_mobile_optional", lang), value=curr_u.phone or "", key="inp_login_phone")
+        c_abha = st.text_input(t("lbl_abha_optional", lang), value=curr_u.abha_id or "", placeholder="उदा. 91-1234-5678-9012" if lang != "en" else "e.g. 91-1234-5678-9012", key="inp_login_abha")
+        if st.button(t("btn_save_profile", lang), key="btn_save_user_prof"):
             new_u = AuthService.create_custom_user(c_name, curr_u.email, c_phone, c_abha, role=curr_u.role)
             st.session_state.current_user = new_u
             clinical_db.upsert_user(new_u.model_dump())
-            st.success("प्रोफ़ाइल सफलतापूर्वक सहेजी गई!")
+            st.success(t("msg_profile_saved", lang))
             st.rerun()
 
 with col_lang:
@@ -485,19 +486,19 @@ with col_lang:
         current_index = 2
 
     chosen_lang_display = st.selectbox(
-        "🌐 भाषा / Language:",
+        t("lang_picker_label", lang),
         LANG_DISPLAY,
         index=current_index,
         key="lang_selector_widget"
     )
-    if "हिन्दी" in chosen_lang_display:
-        st.session_state.app_lang = "hi"
-    elif "English" in chosen_lang_display:
-        st.session_state.app_lang = "en"
+    new_lang = "hi"
+    if "English" in chosen_lang_display:
+        new_lang = "en"
     elif "Hinglish" in chosen_lang_display:
-        st.session_state.app_lang = "hinglish"
-
-lang = st.session_state.app_lang
+        new_lang = "hinglish"
+    if new_lang != st.session_state.app_lang:
+        st.session_state.app_lang = new_lang
+        st.rerun()
 
 with col_a11y:
     st.write("")
@@ -573,24 +574,24 @@ adh_pct_str = f"{adh_stat['percentage']}%"
 st.markdown(f"""
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
     <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">💓 Blood Pressure</div>
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_bp_title', lang)}</div>
         <div style="font-size:1.35rem; font-weight:700; color:#1d1d1f; letter-spacing:-0.03em; margin:2px 0;">{bp_val}</div>
-        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">🟢 Stable / स्थिर</div>
+        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">{t('tile_bp_status', lang)}</div>
     </div>
     <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">🫁 Oxygen SpO2</div>
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_spo2_title', lang)}</div>
         <div style="font-size:1.35rem; font-weight:700; color:#30b0c7; letter-spacing:-0.03em; margin:2px 0;">{spo2_val}</div>
-        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">✅ Optimal / उत्तम</div>
+        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">{t('tile_spo2_status', lang)}</div>
     </div>
     <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">🩸 Blood Sugar</div>
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_sugar_title', lang)}</div>
         <div style="font-size:1.35rem; font-weight:700; color:#1d1d1f; letter-spacing:-0.03em; margin:2px 0;">{sugar_val}</div>
-        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">🟢 Controlled / नियंत्रित</div>
+        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">{t('tile_sugar_status', lang)}</div>
     </div>
     <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">💊 Adherence</div>
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">{t('tile_adherence_title', lang)}</div>
         <div style="font-size:1.35rem; font-weight:700; color:#0071e3; letter-spacing:-0.03em; margin:2px 0;">{adh_pct_str}</div>
-        <div style="font-size:0.72rem; color:#0071e3; font-weight:600;">⭐ {adh_stat['total_taken']} Doses Taken</div>
+        <div style="font-size:0.72rem; color:#0071e3; font-weight:600;">⭐ {adh_stat['total_taken']} {t('tile_doses_taken', lang)}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -683,9 +684,9 @@ with tab_scan:
     uploaded_file = None
 
     if input_method == input_options[0]:
-        uploaded_file = st.file_uploader("JPG, PNG, WebP", type=["jpg", "jpeg", "png", "webp"])
+        uploaded_file = st.file_uploader(t("file_uploader_label", lang), type=["jpg", "jpeg", "png", "webp"])
     else:
-        uploaded_file = st.camera_input("Camera")
+        uploaded_file = st.camera_input(t("camera_input_label", lang))
 
     if uploaded_file is not None:
         file_bytes = uploaded_file.getvalue()
@@ -699,13 +700,13 @@ with tab_scan:
             if load_err:
                 st.error(load_err)
             elif img:
-                st.image(img, caption="Preview", use_container_width=True)
+                st.image(img, caption=t("preview_caption", lang), use_container_width=True)
                 quality_ok, quality_warning = ImageProcessingService.assess_quality(img)
                 if not quality_ok:
                     st.warning(quality_warning)
 
                 if st.button(t("extract_btn", lang), key="btn_extract"):
-                    with st.spinner("AI analyzing prescription..."):
+                    with st.spinner(t("spinner_analyzing", lang)):
                         api_key = os.environ.get("GEMINI_API_KEY")
                         if api_key and not st.session_state.demo_mode:
                             extractor = GeminiMultimodalExtractor(api_key=api_key)
@@ -734,10 +735,9 @@ with tab_scan:
             st.info(f"👤 **{presc.patient_name}** | 📅 {presc.prescription_date or 'Recent'}")
 
         if presc.has_uncertain_critical_fields():
-            st.markdown("""
+            st.markdown(f"""
             <div class="uncertain-card">
-                ⚠️ <b>Attention / ध्यान दें:</b> Some medicine names or dosages were unclear on the handwritten prescription. 
-                Please cross-check and confirm below.
+                {t('alert_unclear_handwriting', lang)}
             </div>
             """, unsafe_allow_html=True)
 
@@ -752,58 +752,58 @@ with tab_scan:
                 col_a, col_b = st.columns(2)
                 with col_a:
                     med.candidate_medicine_name = st.text_input(
-                        f"Medicine #{idx+1}",
+                        f"{t('lbl_medicine_field', lang)} #{idx+1}",
                         value=med.candidate_medicine_name or med.raw_medicine_name,
                         key=f"med_name_{idx}"
                     )
                     med.strength = st.text_input(
-                        f"Strength #{idx+1}",
+                        f"{t('lbl_strength_field', lang)} #{idx+1}",
                         value=med.strength or "",
-                        placeholder="e.g. 500mg",
+                        placeholder="e.g. 500mg" if lang == "en" else "उदा. 500mg",
                         key=f"med_strength_{idx}"
                     )
                 with col_b:
                     med.dose_instruction_raw = st.text_input(
-                        f"Dose #{idx+1}",
-                        value=med.dose_instruction_raw or "1 tablet",
+                        f"{t('lbl_dose_field', lang)} #{idx+1}",
+                        value=med.dose_instruction_raw or ("1 tablet" if lang == "en" else "1 गोली"),
                         key=f"med_dose_{idx}"
                     )
                     med.frequency_raw = st.text_input(
-                        f"Frequency #{idx+1}",
-                        value=med.frequency_raw or "Twice daily (BD)",
+                        f"{t('lbl_frequency_field', lang)} #{idx+1}",
+                        value=med.frequency_raw or ("Twice daily (BD)" if lang == "en" else "दिन में 2 बार"),
                         key=f"med_freq_{idx}"
                     )
 
                 timing_opts = [
-                    "खाने के बाद (After Food)",
-                    "खाने से पहले (Before Food)",
-                    "खाली पेट (Empty Stomach)",
-                    "रात को सोते समय (At Bedtime)"
+                    t("opt_timing_after_food", lang),
+                    t("opt_timing_before_food", lang),
+                    t("opt_timing_empty_stomach", lang),
+                    t("opt_timing_bedtime", lang)
                 ]
                 med.timing_raw = st.selectbox(
-                    f"Timing #{idx+1}",
+                    f"{t('lbl_timing_field', lang)} #{idx+1}",
                     options=timing_opts,
                     index=0,
                     key=f"med_timing_{idx}"
                 )
 
                 if med.is_uncertain:
-                    st.warning(f"⚠️ {med.uncertainty_reason or 'Unclear handwriting'}")
+                    st.warning(f"⚠️ {med.uncertainty_reason or t('alert_unclear_handwriting', lang)}")
 
                 ref_info = MedicineReferenceService.lookup_medicine(med.candidate_medicine_name or med.raw_medicine_name)
                 if ref_info:
-                    with st.expander("🏛️ Indian NLEM & Jan Aushadhi Reference", expanded=False):
-                        st.caption(f"🔹 **Generic Salt:** {ref_info['generic_name']}")
-                        st.caption(f"🔹 **Purpose:** {ref_info['purpose_hindi']}")
+                    with st.expander(t("ref_title", lang), expanded=False):
+                        st.caption(f"{t('ref_generic_salt', lang)} **{ref_info['generic_name']}**")
+                        st.caption(f"{t('ref_purpose', lang)} {ref_info['purpose_hindi']}")
                         if ref_info.get('nlem_listed'):
-                            st.caption("✅ Listed on National List of Essential Medicines (NLEM).")
+                            st.caption(t("ref_nlem", lang))
                         if ref_info.get('jan_aushadhi_available'):
-                            st.caption("💡 Available at Pradhan Mantri Jan Aushadhi Kendras at affordable price.")
+                            st.caption(t("ref_jan_aushadhi", lang))
 
                 col_conf, col_discard_med = st.columns([3, 1])
                 with col_conf:
                     med.user_confirmed = st.checkbox(
-                        f"☑️ Verified #{idx+1} ({med.candidate_medicine_name})",
+                        f"{t('chk_verified_medicine', lang)} #{idx+1} ({med.candidate_medicine_name})",
                         value=med.user_confirmed,
                         key=f"confirm_{idx}"
                     )
@@ -821,18 +821,18 @@ with tab_scan:
 
         # Step 3: Explanation & Reminder Setup (Syncs to Clinical Database)
         if confirmed_all and presc.medicines:
-            st.success("✅ All medicines verified!")
+            st.success(t("msg_all_verified", lang))
 
             col_sum_head, col_sum_voice = st.columns([2, 1])
             with col_sum_head:
-                st.subheader("3. Prescription Summary")
+                st.subheader(t("heading_summary", lang))
             with col_sum_voice:
                 play_audio = st.button(t("listen_audio_btn", lang), key="btn_listen_audio")
 
             summary_text = language_service.explain_prescription_summary(presc, lang=lang)
 
             if play_audio:
-                with st.spinner("Generating speech audio..."):
+                with st.spinner(t("spinner_generating_audio", lang)):
                     audio_bytes = language_service.generate_speech_audio(summary_text, lang=lang)
                     if audio_bytes:
                         st.audio(audio_bytes, format="audio/mp3", autoplay=True)
@@ -842,7 +842,7 @@ with tab_scan:
             st.markdown(summary_text)
 
             st.markdown("---")
-            st.subheader("4. Set Reminders & Sync to Treatment Database")
+            st.subheader(t("heading_set_reminders", lang))
 
             potential_conflicts = []
             for med in presc.medicines:
@@ -851,10 +851,9 @@ with tab_scan:
                     potential_conflicts.extend(conf)
 
             if potential_conflicts:
-                st.markdown("""
+                st.markdown(f"""
                 <div class="uncertain-card">
-                    ⚠️ <b>Prescription Conflict Detected:</b><br>
-                    This medication exists in your saved schedule with a different dosage or frequency.
+                    {t('conflict_alert', lang)}
                 </div>
                 """, unsafe_allow_html=True)
                 for c in potential_conflicts:
@@ -890,9 +889,9 @@ with tab_scan:
                     verified_medicines=verified_med_dicts
                 )
 
-                st.success(f"🎉 {created_count} reminders saved & synced to your treatment record!")
+                st.success(f"🎉 {created_count} {t('msg_reminders_saved', lang)}")
         else:
-            st.warning("⚠️ Please verify all medicines above to activate reminders.")
+            st.warning(t("msg_verify_required", lang))
 
 
 # -------------------------------------------------------------
@@ -915,7 +914,7 @@ with tab_reminders:
         st.markdown(f"""
         <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:12px 16px; margin-bottom:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="font-weight:bold; color:#166534;">📊 Today's Progress / आज की खुराक प्रगति</span>
+                <span style="font-weight:bold; color:#166534;">{t('todays_progress', lang)}</span>
                 <span style="font-weight:800; color:#15803d;">{taken_count} / {len(total_enabled)} ({pct}%)</span>
             </div>
         </div>
@@ -923,7 +922,7 @@ with tab_reminders:
         st.progress(pct / 100.0)
 
         # 1-Tap WhatsApp share for caregivers
-        share_lines = ["*💊 Sehat Saathi - Medication Schedule:*"]
+        share_lines = [f"*💊 Sehat Saathi - {t('reminders_heading', lang)}:*"]
         for r in all_reminders:
             if r.enabled:
                 share_lines.append(f"• {r.medicine_name}: {r.timing_label} ({r.reminder_time}) - {r.food_relation}")
@@ -936,17 +935,17 @@ with tab_reminders:
             unsafe_allow_html=True
         )
 
-        with st.expander("🗑️ Discard / Clear Reminders", expanded=False):
+        with st.expander(t("expander_clear_reminders", lang), expanded=False):
             col_disc1, col_disc2 = st.columns(2)
             with col_disc1:
-                if st.button("🗑️ Discard Inactive Reminders", key="btn_discard_inactive"):
+                if st.button(t("btn_discard_inactive", lang), key="btn_discard_inactive"):
                     count = reminder_service.discard_inactive_reminders()
                     st.success(f"{count} inactive reminders removed.")
                     st.rerun()
             with col_disc2:
-                confirm_all = st.checkbox("Confirm: Delete all reminders", key="confirm_clear_all_rem")
+                confirm_all = st.checkbox(t("chk_confirm_delete_all", lang), key="confirm_clear_all_rem")
                 if confirm_all:
-                    if st.button("⚠️ Delete All Reminders", type="primary", key="btn_discard_all_rem"):
+                    if st.button(t("btn_delete_all_reminders", lang), type="primary", key="btn_discard_all_rem"):
                         reminder_service.delete_all_reminders()
                         st.success("All reminders cleared.")
                         st.rerun()
@@ -956,19 +955,19 @@ with tab_reminders:
             
             t_label = rem.timing_label.lower()
             if "सुबह" in t_label or "morning" in t_label:
-                icon_time = "☀️ Morning / सुबह"
+                icon_time = t("lbl_morning", lang)
                 card_border = "#fde68a"
                 card_bg = "#fefce8"
             elif "दोपहर" in t_label or "afternoon" in t_label:
-                icon_time = "⛅ Afternoon / दोपहर"
+                icon_time = t("lbl_afternoon", lang)
                 card_border = "#fed7aa"
                 card_bg = "#fff7ed"
             elif "रात" in t_label or "night" in t_label:
-                icon_time = "🌙 Night / रात"
+                icon_time = t("lbl_night", lang)
                 card_border = "#c7d2fe"
                 card_bg = "#eef2ff"
             else:
-                icon_time = "⏰ Scheduled / निर्धारित"
+                icon_time = t("lbl_scheduled", lang)
                 card_border = "#e2e8f0"
                 card_bg = "#f8fafc"
 
@@ -976,11 +975,12 @@ with tab_reminders:
                 card_border = "#f97316"
                 card_bg = "#fff7ed"
 
+            due_tag = f"<span class='due-badge'>{t('lbl_due_now', lang)}</span>" if is_due else ""
             st.markdown(f"""
             <div style="background-color:{card_bg}; border: 1.5px solid {card_border}; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-weight:bold; font-size:1rem; color:#334155;">{icon_time} — {rem.reminder_time}</span>
-                    <span>{"<span class='due-badge'>🔔 DUE NOW</span>" if is_due else ""}</span>
+                    <span>{due_tag}</span>
                 </div>
                 <div style="font-size: 1.3rem; font-weight: 800; color: #1e3a8a; margin-top: 4px;">💊 {rem.medicine_name}</div>
                 <div style="font-size: 0.98rem; color: #475569; margin-top: 2px;">🥄 {rem.dosage or '1 dose'} • {rem.food_relation}</div>
@@ -1008,28 +1008,32 @@ with tab_reminders:
 
             with col_t2:
                 with st.popover("⚙️", help="Options"):
-                    toggle_lbl = "Deactivate" if rem.enabled else "Activate"
+                    toggle_lbl = t("btn_deactivate", lang) if rem.enabled else t("btn_activate", lang)
                     if st.button(toggle_lbl, key=f"tog_{rem.id}"):
                         reminder_service.toggle_reminder(rem.id)
                         st.rerun()
-                    if st.button("Delete", key=f"del_{rem.id}"):
+                    if st.button(t("btn_delete", lang), key=f"del_{rem.id}"):
                         reminder_service.delete_reminder(rem.id)
                         st.rerun()
 
     st.markdown("---")
     
     # Progress Tracker Questionnaire
-    with st.expander("📊 Health Progress Tracker (Check-in)", expanded=False):
-        st.markdown("Answer 3 simple questions to check treatment recovery:")
+    with st.expander(t("expander_progress_tracker", lang), expanded=False):
+        st.markdown(t("progress_tracker_intro", lang))
         q_items = ProgressTrackerService.get_questionnaire_items()
         
-        ans_feeling = st.radio(q_items[0]["question_hindi"], q_items[0]["options"], key="prog_q_feeling")
-        ans_adherence = st.radio(q_items[1]["question_hindi"], q_items[1]["options"], key="prog_q_adherence")
-        ans_symptoms = st.radio(q_items[2]["question_hindi"], q_items[2]["options"], key="prog_q_symptoms")
+        q1_label = q_items[0]["question_hindi"] if lang == "hi" else ("1. How do you feel after starting this medication?" if lang == "en" else "1. Dawai shuru karne ke baad kaisa feel ho raha hai?")
+        q2_label = q_items[1]["question_hindi"] if lang == "hi" else ("2. Have you taken all prescribed doses on time?" if lang == "en" else "2. Kya sabhi dawaiyan time par li hain?")
+        q3_label = q_items[2]["question_hindi"] if lang == "hi" else ("3. How much relief in your fever, pain, or main symptoms?" if lang == "en" else "3. Bukhaar, dard ya symptoms me kitna aaram hai?")
 
-        if st.button("📈 Check Progress", key="btn_submit_progress"):
-            checkin_res = tracker_service.evaluate_checkin(ans_feeling, ans_adherence, ans_symptoms)
-            st.markdown(f"### Recovery Score: **{checkin_res.recovery_score}%**")
+        ans_feeling = st.radio(q1_label, q_items[0]["options"], key="prog_q_feeling")
+        ans_adherence = st.radio(q2_label, q_items[1]["options"], key="prog_q_adherence")
+        ans_symptoms = st.radio(q3_label, q_items[2]["options"], key="prog_q_symptoms")
+
+        if st.button(t("btn_check_progress", lang), key="btn_submit_progress"):
+            checkin_res = tracker_service.evaluate_checkin(ans_feeling, ans_adherence, ans_symptoms, lang=lang)
+            st.markdown(f"### {t('lbl_recovery_score', lang)}: **{checkin_res.recovery_score}%**")
             st.progress(checkin_res.recovery_score / 100.0)
 
             if checkin_res.doctor_visit_advised:
@@ -1038,24 +1042,25 @@ with tab_reminders:
                 st.success(checkin_res.recommendation_hindi)
 
     # Treatment Issue Logging
-    with st.expander("📝 Report Medicine Issue / Side Effect", expanded=False):
-        med_options = [r.medicine_name for r in all_reminders] + ["Other / General"]
-        selected_med = st.selectbox("Medicine:", options=med_options, key="issue_med_select")
-        selected_issue = st.selectbox("Issue:", options=COMMON_ISSUE_TYPES, key="issue_type_select")
-        selected_sev = st.radio("Severity:", ["Mild", "Moderate", "Severe"], horizontal=True, key="issue_sev_radio")
-        issue_notes = st.text_input("Notes (optional):", key="issue_notes_input")
-        dr_phone = st.text_input("Doctor's phone for WhatsApp alert (optional):", key="dr_phone_input")
+    with st.expander(t("expander_report_issue", lang), expanded=False):
+        med_options = [r.medicine_name for r in all_reminders] + (["Other / General"] if lang == "en" else ["अन्य / सामान्य"])
+        selected_med = st.selectbox(t("lbl_select_medicine", lang), options=med_options, key="issue_med_select")
+        selected_issue = st.selectbox(t("lbl_select_issue", lang), options=COMMON_ISSUE_TYPES, key="issue_type_select")
+        sev_opts = [t("lbl_mild", lang), t("lbl_moderate", lang), t("lbl_severe", lang)]
+        selected_sev = st.radio(t("lbl_severity", lang), sev_opts, horizontal=True, key="issue_sev_radio")
+        issue_notes = st.text_input(t("lbl_notes_optional", lang), key="issue_notes_input")
+        dr_phone = st.text_input(t("lbl_doctor_phone_optional", lang), key="dr_phone_input")
 
-        if st.button("💾 Log Issue", key="btn_save_issue"):
+        if st.button(t("btn_log_issue", lang), key="btn_save_issue"):
             logged = issue_service.log_issue(
                 medicine_name=selected_med,
                 issue_type=selected_issue,
-                severity=selected_sev,
+                severity="Severe" if ("Severe" in selected_sev or "गंभीर" in selected_sev) else ("Moderate" if ("Moderate" in selected_sev or "मध्यम" in selected_sev) else "Mild"),
                 notes=issue_notes
             )
-            st.success("Issue logged successfully.")
+            st.success(t("msg_issue_logged", lang))
             if logged.is_severe_alert:
-                st.error("🚨 Severe reaction reported. Please contact emergency services (108).")
+                st.error(t("msg_severe_alert", lang))
 
 
 # -------------------------------------------------------------
@@ -1063,32 +1068,33 @@ with tab_reminders:
 # -------------------------------------------------------------
 with tab_vitals:
     st.subheader(t("vitals_heading", lang))
-    st.caption("Record digital health device readings and evaluate multi-day health risks:")
+    st.caption(t("vitals_sub", lang))
 
     # Part A: Health Devices Vitals Recorder (Syncs to Clinical DB)
-    with st.expander("🩺 Health Device Vitals Recorder", expanded=True):
+    with st.expander(t("expander_vitals_recorder", lang), expanded=True):
+        dev_opts = [
+            t("dev_oximeter", lang),
+            t("dev_bp", lang),
+            t("dev_glucometer", lang),
+            t("dev_thermometer", lang)
+        ]
         dev_choice = st.selectbox(
-            "Select Device:",
-            [
-                "🩺 Pulse Oximeter (SpO2 / Pulse)",
-                "🩸 Digital BP Monitor (Blood Pressure)",
-                "🍬 Digital Glucometer (Blood Sugar)",
-                "🌡️ Digital Thermometer (Temperature)"
-            ],
+            t("lbl_select_device", lang),
+            dev_opts,
             key="dev_choice_select"
         )
 
         col_val1, col_val2 = st.columns(2)
         with col_val1:
-            if "Oximeter" in dev_choice:
+            if "Oximeter" in dev_choice or "ऑक्सीमीटर" in dev_choice:
                 v_metric = "SpO2"
                 v_unit = "%"
                 v_hint = "e.g. 98"
-            elif "BP" in dev_choice:
+            elif "BP" in dev_choice or "रक्तचाप" in dev_choice:
                 v_metric = "Blood Pressure"
                 v_unit = "mmHg"
                 v_hint = "e.g. 120/80"
-            elif "Glucometer" in dev_choice:
+            elif "Glucometer" in dev_choice or "ग्लूकोमीटर" in dev_choice or "शुगर" in dev_choice:
                 v_metric = "Blood Sugar"
                 v_unit = "mg/dL"
                 v_hint = "e.g. 110"
@@ -1097,13 +1103,13 @@ with tab_vitals:
                 v_unit = "°F"
                 v_hint = "e.g. 98.6"
 
-            val_input = st.text_input(f"Reading ({v_metric}):", placeholder=v_hint, key="vital_val_input")
+            val_input = st.text_input(f"{t('lbl_enter_reading', lang)} ({v_metric}):", placeholder=v_hint, key="vital_val_input")
 
         with col_val2:
-            st.caption(f"Unit: **{v_unit}**")
+            st.caption(f"{t('lbl_unit', lang)} **{v_unit}**")
             st.caption("Standard digital device input")
 
-        if st.button("💾 Save Reading", key="btn_save_vital"):
+        if st.button(t("btn_save_reading", lang), key="btn_save_vital"):
             if val_input.strip():
                 dev_clean = dev_choice.split("(")[0].strip()
                 rec = device_service.record_reading(
@@ -1123,7 +1129,7 @@ with tab_vitals:
                     status_flag=rec.status_flag,
                     alert_message=rec.alert_message
                 )
-                st.success(f"✅ Saved to treatment database: {val_input} {v_unit}")
+                st.success(f"✅ {t('msg_reading_saved', lang)} {val_input} {v_unit}")
                 if rec.alert_message:
                     st.warning(rec.alert_message)
             else:
@@ -1133,7 +1139,7 @@ with tab_vitals:
         all_readings = device_service.get_all_readings()
         if all_readings:
             st.markdown("---")
-            st.markdown("#### 📋 Recent Vitals:")
+            st.markdown(t("lbl_recent_vitals", lang))
             for r in all_readings[:4]:
                 col_r_txt, col_r_del = st.columns([4, 1])
                 with col_r_txt:
@@ -1146,20 +1152,20 @@ with tab_vitals:
     st.markdown("---")
 
     # Part B: AI / ML Health Complication Risk Prediction (Syncs to Clinical DB)
-    with st.expander("🤖 AI / ML Health Complication Risk Predictor", expanded=True):
-        st.markdown("Predict potential complications based on vital trends and adherence:")
+    with st.expander(t("expander_ai_risk", lang), expanded=True):
+        st.markdown(t("ai_risk_sub", lang))
 
         col_cp1, col_cp2 = st.columns(2)
         with col_cp1:
-            inp_age = st.number_input("Patient Age:", min_value=1, max_value=110, value=58, key="ml_age")
-            inp_sys = st.number_input("Systolic BP (mmHg):", min_value=60, max_value=240, value=135, key="ml_sys")
-            inp_dia = st.number_input("Diastolic BP (mmHg):", min_value=40, max_value=140, value=88, key="ml_dia")
+            inp_age = st.number_input(t("lbl_patient_age", lang), min_value=1, max_value=110, value=58, key="ml_age")
+            inp_sys = st.number_input(t("lbl_systolic_bp", lang), min_value=60, max_value=240, value=135, key="ml_sys")
+            inp_dia = st.number_input(t("lbl_diastolic_bp", lang), min_value=40, max_value=140, value=88, key="ml_dia")
         with col_cp2:
-            inp_sugar = st.number_input("Blood Sugar (mg/dL):", min_value=40, max_value=500, value=130, key="ml_sugar")
-            inp_spo2 = st.number_input("SpO2 (%):", min_value=60, max_value=100, value=97, key="ml_spo2")
-            inp_adh = st.slider("Medication Adherence (%):", min_value=0, max_value=100, value=90, key="ml_adh")
+            inp_sugar = st.number_input(t("lbl_blood_sugar", lang), min_value=40, max_value=500, value=130, key="ml_sugar")
+            inp_spo2 = st.number_input(t("lbl_spo2", lang), min_value=60, max_value=100, value=97, key="ml_spo2")
+            inp_adh = st.slider(t("lbl_adherence_slider", lang), min_value=0, max_value=100, value=90, key="ml_adh")
 
-        bp_seq_str = st.text_input("Multi-day systolic BP trend (comma separated):", value="125, 130, 138", key="ml_bp_seq")
+        bp_seq_str = st.text_input(t("lbl_bp_trend_input", lang), value="125, 130, 138", key="ml_bp_seq")
 
         if st.button(t("predict_btn", lang), key="btn_run_ml_predict"):
             try:
@@ -1174,33 +1180,33 @@ with tab_vitals:
                     active_medications_count=active_meds_count if active_meds_count > 0 else 2
                 )
                 
-                res = ComplicationPredictionService.predict_complication_risk(pred_input)
+                res = ComplicationPredictionService.predict_complication_risk(pred_input, lang=lang)
 
                 tier_badge = "🟢" if res.risk_tier == RiskTier.LOW else ("🟡" if res.risk_tier == RiskTier.MODERATE else "🔴")
-                st.markdown(f"### {tier_badge} Risk Score: **{res.risk_score_percentage}%** — {res.risk_tier.value}")
+                st.markdown(f"### {tier_badge} {t('lbl_risk_score', lang)}: **{res.risk_score_percentage}%** — {res.risk_tier.value}")
                 st.progress(res.risk_score_percentage / 100.0)
 
                 st.markdown(res.clinical_guidance_hindi)
 
-                st.markdown("#### 🔍 Potential Health Complications:")
+                st.markdown(t("lbl_potential_complications", lang))
                 for c in res.potential_complications_hindi:
                     st.markdown(f"• **{c}**")
 
                 if res.key_risk_factors:
-                    st.markdown("#### 📊 Key Contributing Risk Factors:")
+                    st.markdown(t("lbl_key_risk_factors", lang))
                     for rf in res.key_risk_factors:
                         badge = "⚠️" if rf.impact_level == "चिंताजनक" else "🚨"
                         st.caption(f"{badge} **{rf.feature_name}** ({rf.observed_value}): {rf.explanation_hindi}")
 
                 # Deep Learning sequence trajectory
-                trajectory_label = "स्थिर (Stable)"
+                trajectory_label = "स्थिर (Stable)" if lang != "en" else "Stable"
                 try:
                     trend_vals = [float(x.strip()) for x in bp_seq_str.split(",") if x.strip()]
                     if len(trend_vals) >= 2:
-                        t_res = ComplicationPredictionService.predict_temporal_trajectory(trend_vals)
+                        t_res = ComplicationPredictionService.predict_temporal_trajectory(trend_vals, lang=lang)
                         trajectory_label = t_res['trend_direction']
                         st.markdown("---")
-                        st.markdown(f"📈 **Trajectory:** {trajectory_label}")
+                        st.markdown(f"{t('lbl_trajectory', lang)} **{trajectory_label}**")
                         st.caption(t_res['warning_message_hindi'])
                 except Exception:
                     pass
@@ -1221,7 +1227,7 @@ with tab_vitals:
                 )
 
                 if res.emergency_dial_advised:
-                    st.error("🚨 Critical indicators detected. Please contact 108 Emergency immediately.")
+                    st.error(t("msg_emergency_detected", lang))
 
                 st.caption(f"🔬 *Model: {res.model_name}* | {res.disclaimer}")
             except Exception as e:
@@ -1231,24 +1237,28 @@ with tab_vitals:
 
     # Part C: Mental Wellness Screener (Tele-MANAS 14416)
     with st.expander(t("mental_wellness_title", lang), expanded=False):
-        st.markdown("Check sleep quality and stress levels:")
-        m_sleep = st.radio("1. Sleep quality:", ["Good Sleep", "Disturbed", "Insomnia / Sleepless"], key="m_sleep_radio")
-        m_stress = st.radio("2. Worry / Stress levels:", ["Normal", "Mild Worry", "Severe Anxiety"], key="m_stress_radio")
-        m_mood = st.radio("3. Overall mood:", ["Positive", "Neutral", "Low / Sad"], key="m_mood_radio")
+        st.markdown(t("mental_wellness_sub", lang))
+        sleep_opts = ["अच्छी नींद (Good Sleep)", "परेशानी (Disturbed)", "अनिद्रा (Insomnia)"] if lang != "en" else ["Good Sleep", "Disturbed Sleep", "Insomnia / Sleepless"]
+        stress_opts = ["सामान्य (Normal)", "हल्का तनाव (Mild Worry)", "गंभीर चिंता (Severe Anxiety)"] if lang != "en" else ["Normal", "Mild Worry", "Severe Anxiety"]
+        mood_opts = ["प्रसन्न (Positive)", "सामान्य (Neutral)", "उदास (Low / Sad)"] if lang != "en" else ["Positive", "Neutral", "Low / Sad"]
 
-        if st.button("🌸 Check Wellness", key="btn_check_mental"):
-            m_res = mental_service.evaluate_mental_wellness(m_sleep, m_stress, m_mood)
-            st.markdown(f"### Wellness Score: **{m_res.wellness_score}%**")
+        m_sleep = st.radio(t("lbl_sleep_quality", lang), sleep_opts, key="m_sleep_radio")
+        m_stress = st.radio(t("lbl_stress_level", lang), stress_opts, key="m_stress_radio")
+        m_mood = st.radio(t("lbl_mood", lang), mood_opts, key="m_mood_radio")
+
+        if st.button(t("btn_check_wellness", lang), key="btn_check_mental"):
+            m_res = mental_service.evaluate_mental_wellness(m_sleep, m_stress, m_mood, lang=lang)
+            st.markdown(f"### {t('lbl_wellness_score', lang)}: **{m_res.wellness_score}%**")
             st.progress(m_res.wellness_score / 100.0)
             st.info(m_res.supportive_advice_hindi)
 
             if m_res.tele_manas_recommended:
-                st.markdown("""
+                st.markdown(f"""
                 <div style="background-color:#fce4ec; border-left:6px solid #c2185b; padding:12px; border-radius:12px; margin-top:10px;">
-                    🌸 <b>National Mental Health Helpline (Tele-MANAS - MoHFW):</b><br>
-                    Talk confidentially to trained psychologists 24x7:<br><br>
+                    🌸 <b>{t('tele_manas_box_title', lang)}</b><br>
+                    {t('tele_manas_box_desc', lang)}<br><br>
                     👉 <a href="tel:14416" style="background-color:#c2185b; color:white; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:bold;">
-                    📞 Call 14416 (Tele-MANAS Toll-Free)
+                    {t('tele_manas_call_btn', lang)}
                     </a>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1259,9 +1269,9 @@ with tab_vitals:
 # -------------------------------------------------------------
 with tab_facilities:
     st.subheader(t("facilities_heading", lang))
-    st.caption("1-Tap Google Maps links for government hospitals, pharmacies, and clinics:")
+    st.caption(t("facilities_sub", lang))
 
-    user_locality = st.text_input("📍 Locality / Town / Village (optional):", placeholder="e.g. Behror, Neemrana")
+    user_locality = st.text_input(t("lbl_user_locality", lang), placeholder="e.g. Behror, Neemrana" if lang == "en" else "उदा. बहरोड़, नीमराना")
 
     col_map1, col_map2 = st.columns(2)
     with col_map1:
@@ -1303,18 +1313,19 @@ with tab_facilities:
         )
 
     st.markdown("---")
-    st.subheader("🌿 Rural Disease Prevention (National Health Mission)")
+    st.subheader(t("heading_rural_prevention", lang))
 
     topics = PreventionAndFacilitiesService.get_prevention_topics()
     for topic in topics:
-        with st.expander(f"{topic['icon']} {topic['title_hindi']}", expanded=False):
-            st.markdown(f"**💡 Key Advice:** {topic['subtitle']}")
-            for pt in topic["action_points"]:
+        p_title, p_sub, p_points = PreventionAndFacilitiesService.get_topic_display(topic, lang=lang)
+        with st.expander(f"{topic['icon']} {p_title}", expanded=False):
+            st.markdown(f"**{t('lbl_key_advice', lang)}** {p_sub}")
+            for pt in p_points:
                 st.write(f"• {pt}")
             
-            if st.button("🔊 Read Aloud", key=f"audio_prev_{topic['id']}"):
-                with st.spinner("Generating audio..."):
-                    audio_text = f"{topic['title_hindi']}. {topic['subtitle']}. " + " ".join(topic["action_points"])
+            if st.button(t("btn_read_aloud", lang), key=f"audio_prev_{topic['id']}"):
+                with st.spinner(t("spinner_generating_audio", lang)):
+                    audio_text = f"{p_title}. {p_sub}. " + " ".join(p_points)
                     aud = language_service.generate_speech_audio(audio_text, lang=lang)
                     if aud:
                         st.audio(aud, format="audio/mp3")
@@ -1325,88 +1336,103 @@ with tab_facilities:
 # -------------------------------------------------------------
 with tab_chat:
     st.subheader(t("chat_heading", lang))
-    st.caption("Ask questions about your confirmed prescription medications:")
+    st.caption(t("chat_sub", lang))
 
     chat_service = PrescriptionChatService()
 
-    sample_questions = [
-        "यह दवा खाने के पहले लेनी है या बाद में?",
-        "क्या मुझे यह दवा बुखार में लेनी चाहिए?",
-        "क्या यह दवा खाली पेट ले सकते हैं?",
-        "Can I take this medication before bedtime?"
-    ]
+    if lang == "en":
+        sample_questions = [
+            "Should I take this medicine before or after meals?",
+            "Can I take this medication on an empty stomach?",
+            "What should I do if I miss a scheduled dose?",
+            "Can I take this medicine at bedtime?"
+        ]
+    elif lang == "hinglish":
+        sample_questions = [
+            "Yeh dawai khane ke pehle leni hai ya baad me?",
+            "Kya yeh dawai khali pet le sakte hain?",
+            "Agar ek dose chhoot jaye toh kya karein?",
+            "Kya yeh dawai raat ko sote waqt le sakte hain?"
+        ]
+    else:
+        sample_questions = [
+            "यह दवा खाने के पहले लेनी है या बाद में?",
+            "क्या मुझे यह दवा बुखार में लेनी चाहिए?",
+            "क्या यह दवा खाली पेट ले सकते हैं?",
+            "क्या यह दवा रात को सोते समय ले सकते हैं?"
+        ]
 
-    selected_sample = st.selectbox("Sample questions:", ["-- Select or type below --"] + sample_questions)
-    user_input = st.text_input("Your question:")
-    query_to_send = user_input if user_input.strip() else (selected_sample if selected_sample != "-- Select or type below --" else "")
+    opt_default = t("opt_select_or_type", lang)
+    selected_sample = st.selectbox(t("lbl_sample_questions", lang), [opt_default] + sample_questions)
+    user_input = st.text_input(t("lbl_user_question", lang))
+    query_to_send = user_input if user_input.strip() else (selected_sample if selected_sample != opt_default else "")
 
     if st.button(t("chat_ask_btn", lang), key="btn_ask"):
         if not query_to_send:
-            st.warning("Please type a question.")
+            st.warning(t("msg_enter_question", lang))
         else:
-            with st.spinner("Preparing answer..."):
+            with st.spinner(t("spinner_chat_answer", lang)):
                 answer = chat_service.ask_question(query_to_send, st.session_state.prescription)
-                st.markdown(f"**Answer:**\n\n{answer}")
+                st.markdown(f"**{t('lbl_answer', lang)}**\n\n{answer}")
 
 
 # -------------------------------------------------------------
 # TAB 6: DOCTOR & HOSPITAL STAFF TREATMENT PORTAL
 # -------------------------------------------------------------
 with tab_portal:
-    st.subheader("👨‍⚕️ डॉक्टर और अस्पताल स्टाफ पोर्टल (Doctor & Hospital Staff Portal)")
-    st.caption("अस्पताल के डॉक्टर, नर्स और PHC स्टाफ के लिए मरीज का संपूर्ण इलाज डेटा और क्लिनिकल ट्राइएज प्रबंधन:")
+    st.subheader(t("portal_heading", lang))
+    st.caption(t("portal_sub", lang))
 
     # Notice of clinical purpose & consent
-    st.markdown("""
+    st.markdown(f"""
     <div style="background-color:#e0f2fe; border-left:6px solid #0284c7; padding:12px 16px; border-radius:12px; margin-bottom:14px;">
-        🏛️ <b>DISHA / ABDM क्लिनिकल डेटाबेस:</b> यह पोर्टल अधिकृत डॉक्टर व स्वास्थ्य स्टाफ को 
-        मरीज के पर्चे, उपकरण रीडिंग, दवा नियमितता और AI जोखिम पूर्वानुमान देखने और क्लिनिकल नोट्स जोड़ने की सुविधा देता है।
+        {t("portal_disha_notice", lang)}
     </div>
     """, unsafe_allow_html=True)
 
     # Patient Selector
     all_pats = clinical_db.list_all_patients()
     if not all_pats:
-        st.info("डेटाबेस में फिलहाल कोई मरीज पंजीकृत नहीं है।")
+        st.info("डेटाबेस में फिलहाल कोई मरीज पंजीकृत नहीं है।" if lang != "en" else "No patients currently registered in database.")
     else:
-        pat_display_map = {f"{p['name']} (उम्र: {p['age']}, ABHA: {p['id']})": p['id'] for p in all_pats}
-        selected_display = st.selectbox("मरीज चुनें (Select Patient for Treatment Review):", list(pat_display_map.keys()))
+        pat_display_map = {f"{p['name']} ({t('lbl_patient_age', lang).split('(')[0].strip()}: {p['age']}, ID: {p['id']})": p['id'] for p in all_pats}
+        selected_display = st.selectbox(t("lbl_select_patient", lang), list(pat_display_map.keys()))
         selected_pat_id = pat_display_map[selected_display]
         selected_pat = clinical_db.get_patient(selected_pat_id)
 
         if selected_pat:
             col_p_info1, col_p_info2 = st.columns(2)
             with col_p_info1:
-                st.markdown(f"👤 **मरीज का नाम:** {selected_pat['name']}")
-                st.markdown(f"🎂 **आयु / लिंग:** {selected_pat['age']} वर्ष | {selected_pat['gender']}")
-                st.markdown(f"🩸 **ब्लड ग्रुप:** {selected_pat['blood_group']}")
+                st.markdown(f"{t('lbl_patient_name_card', lang)} **{selected_pat['name']}**")
+                st.markdown(f"{t('lbl_age_gender', lang)} **{selected_pat['age']} | {selected_pat['gender']}**")
+                st.markdown(f"{t('lbl_blood_group', lang)} **{selected_pat['blood_group']}**")
             with col_p_info2:
-                consent_badge = "✅ मरीज द्वारा सहमति दी गई (Consent Granted)" if selected_pat['consent_shared_treatment'] else "❌ सहमति लंबित"
-                st.markdown(f"📋 **इलाज सहमति:** {consent_badge}")
-                st.markdown(f"📞 **इमरजेंसी संपर्क:** {selected_pat['emergency_contact']}")
-                st.markdown(f"🆔 **रिकॉर्ड आईडी:** `{selected_pat['id']}`")
+                consent_badge = t("lbl_consent_granted", lang) if selected_pat['consent_shared_treatment'] else t("lbl_consent_pending", lang)
+                st.markdown(f"{t('lbl_treatment_consent', lang)} **{consent_badge}**")
+                st.markdown(f"{t('lbl_emergency_contact', lang)} **{selected_pat['emergency_contact']}**")
+                st.markdown(f"{t('lbl_record_id', lang)} `{selected_pat['id']}`")
 
             st.markdown("---")
 
             # Section A: Prescriptions & Medications
-            st.markdown("#### 📋 मरीज के पर्चे और दवाएं (Prescription Records):")
+            st.markdown(t("heading_prescriptions", lang))
             pat_prescs = clinical_db.get_patient_prescriptions(selected_pat_id)
             if not pat_prescs:
-                st.caption("इस मरीज का कोई पर्चा दर्ज नहीं है।")
+                st.caption(t("lbl_no_prescriptions", lang))
             else:
                 for p in pat_prescs:
-                    with st.expander(f"📄 पर्चा दिनांक: {p['prescription_date']} — {p['clinic_name']} ({p['doctor_name']})", expanded=True):
-                        st.caption(f"मूल शब्द / Raw: {p['raw_text']}")
+                    with st.expander(f"📄 {p['prescription_date']} — {p['clinic_name']} ({p['doctor_name']})", expanded=True):
+                        st.caption(f"Raw: {p['raw_text']}")
                         for m in p.get("verified_medicines", []):
-                            st.markdown(f"• **{m.get('candidate_medicine_name', 'दवा')}** — {m.get('dose_instruction_raw', '')} | {m.get('frequency_raw', '')} ({m.get('timing_raw', '')})")
+                            st.markdown(f"• **{m.get('candidate_medicine_name', 'Medicine')}** — {m.get('dose_instruction_raw', '')} | {m.get('frequency_raw', '')} ({m.get('timing_raw', '')})")
 
             st.markdown("---")
 
             # Section B: Device Vitals
-            st.markdown("#### 🩺 स्वास्थ्य उपकरण रीडिंग (Device Vitals & Trends):")
+            st.markdown(t("heading_device_vitals", lang))
             pat_vitals = clinical_db.get_patient_vitals(selected_pat_id, limit=5)
             if not pat_vitals:
-                st.caption("कोई उपकरण रीडिंग उपलब्ध नहीं है।")
+                st.caption(t("lbl_no_vitals", lang))
             else:
                 col_v_a, col_v_b = st.columns(2)
                 for i, v in enumerate(pat_vitals):
@@ -1425,36 +1451,37 @@ with tab_portal:
             # Section C: Adherence Rate & AI Risk Summary
             col_sum_adh, col_sum_ai = st.columns(2)
             with col_sum_adh:
-                st.markdown("#### ⏰ दवा नियमितता (Adherence):")
+                st.markdown(t("heading_adherence_col", lang))
                 adh = clinical_db.get_patient_adherence_rate(selected_pat_id)
-                st.markdown(f"**नियमितता दर:** **{adh['percentage']}%** ({adh['total_taken']} / {adh['total_scheduled']} खुराक)")
+                st.markdown(f"**{t('lbl_adherence_rate', lang)}** **{adh['percentage']}%** ({adh['total_taken']} / {adh['total_scheduled']} {t('lbl_doses', lang)})")
                 st.progress(adh['percentage'] / 100.0)
 
             with col_sum_ai:
-                st.markdown("#### 🤖 AI जोखिम पूर्वानुमान:")
+                st.markdown(t("heading_ai_risk_col", lang))
                 pred = clinical_db.get_latest_complication_prediction(selected_pat_id)
                 if pred:
-                    st.markdown(f"**जोखिम स्कोर:** **{pred['risk_score']}%** ({pred['risk_tier']})")
-                    st.caption(f"ट्रेंड: {pred.get('trajectory', 'स्थिर')} | मॉडल: {pred.get('model_name')}")
+                    st.markdown(f"**{t('lbl_risk_score_field', lang)}** **{pred['risk_score']}%** ({pred['risk_tier']})")
+                    st.caption(f"{t('lbl_trend_field', lang)} {pred.get('trajectory', 'Stable')} | {t('lbl_model_field', lang)} {pred.get('model_name')}")
                 else:
-                    st.caption("जोखिम पूर्वानुमान अभी नहीं हुआ है।")
+                    st.caption(t("lbl_no_risk_yet", lang))
 
             st.markdown("---")
 
             # Section D: Doctor Clinical Note Input
-            st.markdown("#### ✍️ डॉक्टर / स्टाफ क्लिनिकल सलाह दर्ज करें (Add Treatment Note):")
-            doc_note_text = st.text_area("क्लिनिकल अवलोकन व दवा निर्देश (Clinical Observations & Advice):", placeholder="मरीज की स्थिति, दवा खुराक में बदलाव, या खानपान संबंधी निर्देश दर्ज करें...")
+            st.markdown(t("heading_add_clinical_note", lang))
+            doc_note_text = st.text_area(t("lbl_clinical_observations", lang), placeholder=t("ph_clinical_observations", lang))
             col_triage_stat, col_triage_rec = st.columns(2)
             with col_triage_stat:
-                doc_triage = st.selectbox("ट्राइएज स्थिति (Triage Priority):", [
-                    "🟢 सामान्य / स्थिर (Normal / Stable)",
-                    "🟡 फॉलो-अप आवश्यक (Follow-up Required)",
-                    "🔴 अति-आवश्यक ध्यान (Urgent Attention)"
-                ])
+                triage_options = [
+                    t("triage_normal", lang),
+                    t("triage_followup", lang),
+                    t("triage_urgent", lang)
+                ]
+                doc_triage = st.selectbox(t("lbl_triage_priority", lang), triage_options)
             with col_triage_rec:
-                doc_action = st.text_input("सिफारिश (Action):", placeholder="उदा. 7 दिन बाद दोबारा बीपी नापें")
+                doc_action = st.text_input(t("lbl_recommendation_action", lang), placeholder=t("ph_recommendation_action", lang))
 
-            if st.button("💾 क्लिनिकल सलाह सहेजें (Save Clinical Note)", type="primary", key="btn_save_doc_note"):
+            if st.button(t("btn_save_clinical_note", lang), type="primary", key="btn_save_doc_note"):
                 if doc_note_text.strip():
                     clinical_db.add_staff_clinical_note(
                         patient_id=selected_pat_id,
@@ -1465,21 +1492,21 @@ with tab_portal:
                         triage_status=doc_triage,
                         recommended_action=doc_action
                     )
-                    st.success("✅ क्लिनिकल सलाह सफलतापूर्वक डेटाबेस में सहेज ली गई!")
+                    st.success(t("msg_clinical_note_saved", lang))
                     st.rerun()
                 else:
-                    st.warning("कृपया क्लिनिकल अवलोकन दर्ज करें।")
+                    st.warning(t("msg_enter_clinical_note", lang))
 
             # Past Clinical Notes
             past_notes = clinical_db.get_staff_clinical_notes(selected_pat_id)
             if past_notes:
-                st.markdown("#### 🕒 पूर्व क्लिनिकल नोट्स (Past Staff Notes):")
+                st.markdown(t("heading_past_notes", lang))
                 for n in past_notes[:4]:
                     st.markdown(f"""
                     <div style="background:#fefce8; border-left:4px solid #ca8a04; border-radius:10px; padding:10px 14px; margin-bottom:8px;">
                         <div style="font-weight:bold; color:#854d0e;">{n['staff_name']} ({n['staff_role']}) — <span style="font-size:0.85rem; color:#713f12;">{n['created_at']}</span></div>
                         <div style="font-size:0.95rem; color:#1e293b; margin-top:3px;">{n['observation_notes']}</div>
-                        <div style="font-size:0.85rem; color:#475569; margin-top:2px;"><b>ट्राइएज:</b> {n['triage_status']} | <b>सलाह:</b> {n['recommended_action'] or 'निर्देशानुसार'}</div>
+                        <div style="font-size:0.85rem; color:#475569; margin-top:2px;"><b>{t('lbl_triage', lang)}</b> {n['triage_status']} | <b>{t('lbl_advice', lang)}</b> {n['recommended_action'] or 'As directed'}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -1488,7 +1515,7 @@ with tab_portal:
             # Section E: Export Clinical Summary Card (ABDM / PHC EHR JSON)
             summary_export = clinical_db.export_patient_clinical_summary(selected_pat_id)
             st.download_button(
-                label="📥 मरीज का हेल्थ कार्ड डाउनलोड करें (Export Patient Clinical Summary JSON)",
+                label=t("btn_export_clinical_summary", lang),
                 data=json.dumps(summary_export, ensure_ascii=False, indent=2),
                 file_name=f"SehatSaathi_Patient_{selected_pat_id}.json",
                 mime="application/json"
@@ -1502,61 +1529,86 @@ with tab_settings:
     st.subheader(t("settings_heading", lang))
 
     env_api_key = os.environ.get("GEMINI_API_KEY", "")
-    key_status = "✅ Configured" if env_api_key else "❌ Not configured"
-    st.write(f"**Gemini API Key:** {key_status}")
+    key_status = t("status_configured", lang) if env_api_key else t("status_not_configured", lang)
+    st.write(f"**{t('lbl_gemini_api_key', lang)}** {key_status}")
 
-    custom_key = st.text_input("Custom Gemini API Key (optional):", value=env_api_key, type="password")
+    custom_key = st.text_input(t("lbl_custom_api_key", lang), value=env_api_key, type="password")
     if custom_key:
         os.environ["GEMINI_API_KEY"] = custom_key
 
-    st.session_state.demo_mode = st.toggle("Use Mock / Demo Mode without API", value=st.session_state.demo_mode)
+    st.session_state.demo_mode = st.toggle(t("toggle_demo_mode", lang), value=st.session_state.demo_mode)
     if st.session_state.demo_mode:
-        st.info("Demo Mode Active: Synthetic medical data is used for safe, offline demonstration.")
+        st.info(t("info_demo_mode", lang))
 
     # Cross-Platform Installation Guide (iOS, Android, Desktop Web)
-    with st.expander("📱 Install App on Mobile & PC (PWA)", expanded=True):
-        st.markdown("""
-        **1. 🍏 iPhone / iPad (iOS Safari):**
-        - Tap the **Share icon (📤)** at the bottom of Safari.
-        - Scroll down and tap **'Add to Home Screen' (➕)**.
-        - Sehat Saathi will open like a native app without address bar.
+    with st.expander(t("expander_install_pwa", lang), expanded=True):
+        if lang == "en":
+            st.markdown("""
+            **1. 🍏 iPhone / iPad (iOS Safari):**
+            - Tap the **Share icon (📤)** at the bottom of Safari.
+            - Scroll down and tap **'Add to Home Screen' (➕)**.
+            - Sehat Saathi will open like a native app without address bar.
 
-        **2. 🤖 Android (Chrome / Samsung Internet):**
-        - Tap the **three dots menu (⋮)** in top-right corner.
-        - Tap **'Install App'** or **'Add to Home Screen'**.
+            **2. 🤖 Android (Chrome / Samsung Internet):**
+            - Tap the **three dots menu (⋮)** in top-right corner.
+            - Tap **'Install App'** or **'Add to Home Screen'**.
 
-        **3. 💻 PC / Mac (Chrome / Edge / Safari):**
-        - Click the **Install icon (⊕)** in the URL bar to run as a desktop app.
-        """)
+            **3. 💻 PC / Mac (Chrome / Edge / Safari):**
+            - Click the **Install icon (⊕)** in the URL bar to run as a desktop app.
+            """)
+        elif lang == "hinglish":
+            st.markdown("""
+            **1. 🍏 iPhone / iPad (iOS Safari):**
+            - Safari ke neeche **Share icon (📤)** par tap karein.
+            - Neeche scroll karke **'Add to Home Screen' (➕)** dabayein.
+            - Sehat Saathi native app ki tarah open ho jayega.
+
+            **2. 🤖 Android (Chrome / Samsung Internet):**
+            - Upar right corner me **three dots (⋮)** par tap karein.
+            - **'Install App'** ya **'Add to Home Screen'** choose karein.
+
+            **3. 💻 PC / Mac (Chrome / Edge / Safari):**
+            - URL bar me bane **Install icon (⊕)** par click karein.
+            """)
+        else:
+            st.markdown("""
+            **1. 🍏 iPhone / iPad (iOS Safari):**
+            - सफारी ब्राउज़र के नीचे **शेयर आइकन (📤)** पर टैप करें।
+            - नीचे स्क्रॉल करें और **'Add to Home Screen' (➕)** चुनें।
+            - सेहत साथी एक फोन ऐप की तरह बिना ब्राउज़र बार के खुलेगा।
+
+            **2. 🤖 Android (Chrome / Samsung Internet):**
+            - ऊपर दाईं ओर दिए गए **तीन बिंदुओं (⋮)** पर टैप करें।
+            - **'ऐप इंस्टॉल करें' (Install App)** या **'होम स्क्रीन पर जोड़ें'** दबाएं।
+
+            **3. 💻 PC / Mac (Chrome / Edge / Safari):**
+            - यूआरएल बार में **इंस्टॉल आइकन (⊕)** पर क्लिक करके कंप्यूटर ऐप की तरह चलाएं।
+            """)
 
     st.markdown("---")
-    if st.button("🗑️ Reset All Local Data"):
+    if st.button(t("btn_reset_all_data", lang)):
         LocalStorageAdapter().clear_all()
-        st.success("All reminders and schedules reset.")
+        st.success(t("msg_all_data_reset", lang))
         st.rerun()
 
 
 # -------------------------------------------------------------
 # APPLE-STYLE MINIMALIST FOOTER: Compliance & Helplines
 # -------------------------------------------------------------
-st.markdown("""
+st.markdown(f"""
 <div style="margin-top: 48px; padding: 24px 16px 18px 16px; border-top: 1px solid #e5e5ea; color: #86868b; font-size: 0.85rem; text-align: center; background: transparent;">
     <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.82rem; font-weight: 500;">
-        <span>National Health Mission (NHM)</span>
-        <span>•</span>
-        <span>Ayushman Bharat Digital Mission (ABDM)</span>
-        <span>•</span>
-        <span>DISHA Patient Consent & Privacy Compliant</span>
+        <span>{t('footer_compliance', lang)}</span>
     </div>
     <div style="margin-bottom: 10px; line-height: 1.6; font-size: 0.82rem;">
-        📞 <b>Emergency Helplines (24x7 Free):</b> 
-        <a href="tel:108" style="color:#ff3b30; font-weight:600; text-decoration:none;">108 Ambulance</a> &nbsp;•&nbsp; 
-        <a href="tel:112" style="color:#ff3b30; font-weight:600; text-decoration:none;">112 Emergency</a> &nbsp;•&nbsp; 
-        <a href="tel:104" style="color:#0071e3; font-weight:600; text-decoration:none;">104 Health Advice</a> &nbsp;•&nbsp; 
-        <a href="tel:14416" style="color:#ff2d55; font-weight:600; text-decoration:none;">14416 Tele-MANAS</a>
+        {t('footer_helplines', lang)} 
+        <a href="tel:108" style="color:#ff3b30; font-weight:600; text-decoration:none;">{t('footer_ambulance', lang)}</a> &nbsp;•&nbsp; 
+        <a href="tel:112" style="color:#ff3b30; font-weight:600; text-decoration:none;">{t('footer_emergency', lang)}</a> &nbsp;•&nbsp; 
+        <a href="tel:104" style="color:#0071e3; font-weight:600; text-decoration:none;">{t('footer_health_advice', lang)}</a> &nbsp;•&nbsp; 
+        <a href="tel:14416" style="color:#ff2d55; font-weight:600; text-decoration:none;">{t('footer_tele_manas', lang)}</a>
     </div>
     <div style="font-size: 0.76rem; color: #a1a1a6;">
-        Copyright © 2026 Sehat Saathi • Designed with Apple HIG principles for Rural India & Older Adults • PWA Offline Ready
+        {t('footer_copyright', lang)}
     </div>
 </div>
 """, unsafe_allow_html=True)

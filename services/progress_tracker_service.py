@@ -76,35 +76,37 @@ class ProgressTrackerService:
         self,
         feeling: str,
         adherence: str,
-        symptoms: str
+        symptoms: str,
+        lang: str = "hi"
     ) -> ProgressCheckIn:
         """
         Calculates recovery progress percentage and determines if clinician follow-up is warranted.
+        Supports multilingual feedback across Hindi, English, and Hinglish.
         """
         score = 0
         
         # Scoring Feeling
-        if "बहुत आराम" in feeling:
+        if "बहुत आराम" in feeling or "Much Better" in feeling:
             score += 40
-        elif "थोड़ा सुधार" in feeling:
+        elif "थोड़ा सुधार" in feeling or "Slight Improvement" in feeling:
             score += 25
-        elif "कोई सुधार नहीं" in feeling:
+        elif "कोई सुधार नहीं" in feeling or "No Change" in feeling:
             score += 10
         else:  # Feeling worse
             score += 0
 
         # Scoring Adherence
-        if "समय पर लीं" in adherence:
+        if "समय पर लीं" in adherence or "All Doses" in adherence:
             score += 30
-        elif "1-2 खुराक" in adherence:
+        elif "1-2 खुराक" in adherence or "Missed 1-2" in adherence:
             score += 15
         else:
             score += 5
 
         # Scoring Symptoms
-        if "खत्म" in symptoms:
+        if "खत्म" in symptoms or "Fully Relieved" in symptoms:
             score += 30
-        elif "थोड़ा कम" in symptoms:
+        elif "थोड़ा कम" in symptoms or "Partially Relieved" in symptoms:
             score += 15
         else:
             score += 0
@@ -112,12 +114,27 @@ class ProgressTrackerService:
         # Clinical Guidance Logic
         doctor_advised = False
         if score >= 75:
-            rec = "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।"
+            if lang == "en":
+                rec = "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor."
+            elif lang == "hinglish":
+                rec = "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein."
+            else:
+                rec = "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।"
         elif score >= 45:
-            rec = "👍 सुधार हो रहा है। दवाएं बिना भूले समय पर लेते रहें और भरपूर पानी व आराम लें।"
+            if lang == "en":
+                rec = "👍 Condition is improving. Continue taking medicines on time without missing, stay hydrated and rest."
+            elif lang == "hinglish":
+                rec = "👍 Sudhaar ho raha hai. Dawaiyan bina bhoole time par lete rahein aur hydration aur rest lein."
+            else:
+                rec = "👍 सुधार हो रहा है। दवाएं बिना भूले समय पर लेते रहें और भरपूर पानी व आराम लें।"
         else:
             doctor_advised = True
-            rec = "⚠️ तबीयत में अपेक्षित सुधार नहीं दिख रहा है। कृपया डॉक्टर से संपर्क करें या नजदीकी प्राथमिक स्वास्थ्य केंद्र (PHC) में दिखाएं।"
+            if lang == "en":
+                rec = "⚠️ Recovery is not progressing as expected. Please contact your doctor or visit your nearest Primary Health Centre (PHC)."
+            elif lang == "hinglish":
+                rec = "⚠️ Health me expected sudhaar nahi dikh raha hai. Kripya doctor se consult karein ya paas ke PHC jayein."
+            else:
+                rec = "⚠️ तबीयत में अपेक्षित सुधार नहीं दिख रहा है। कृपया डॉक्टर से संपर्क करें या नजदीकी प्राथमिक स्वास्थ्य केंद्र (PHC) में दिखाएं।"
 
         checkin = ProgressCheckIn(
             overall_feeling=feeling,

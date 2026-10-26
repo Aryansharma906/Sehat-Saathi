@@ -4,7 +4,7 @@ Provides MoHFW/NHM-aligned community disease prevention tips and navigation link
 Enforces Medical Safety Invariants (Rule 8: Educational prevention only, no diagnosis).
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import urllib.parse
 
 
@@ -14,54 +14,114 @@ PREVENTION_TOPICS: List[Dict[str, Any]] = [
         "id": "mosquito",
         "icon": "🦟",
         "title_hindi": "मच्छर जनित रोग (डेंगू, मलेरिया, चिकनगुनिया)",
+        "title_en": "Mosquito-Borne Diseases (Dengue, Malaria, Chikungunya)",
+        "title_hinglish": "Machhar Janit Rog (Dengue, Malaria, Chikungunya)",
         "subtitle": "पानी जमा न होने दें, मच्छरों से बचाव रखें",
+        "subtitle_en": "Prevent stagnant water, protect against mosquito bites",
+        "subtitle_hinglish": "Paani jama na hone dein, machharo se bachav rakhein",
         "action_points": [
             "घर के आसपास, कूलर, पुराने टायर या बर्तनों में 3 दिन से अधिक रुका हुआ पानी न रहने दें।",
             "सोते समय मच्छरदानी (Mosquito Net) का प्रयोग करें, विशेषकर बच्चों और बुजुर्गों के लिए।",
             "सुबह और शाम के समय पूरी बांह के कपड़े पहनें।",
             "यदि 2 दिन से अधिक तेज बुखार, ठंड लगना या आंखों के पीछे दर्द हो, तो तुरंत नजदीकी स्वास्थ्य केंद्र (PHC) में खून की जांच कराएं।"
+        ],
+        "action_points_en": [
+            "Do not allow stagnant water to accumulate in coolers, old tyres, or containers for more than 3 days.",
+            "Use mosquito nets while sleeping, especially for children and senior citizens.",
+            "Wear long-sleeved clothing during dawn and dusk hours.",
+            "If high fever, chills, or severe headache lasts for more than 2 days, visit your nearest PHC for a blood test immediately."
+        ],
+        "action_points_hinglish": [
+            "Ghar ke aas-paas, cooler ya purane tyres me 3 din se zyada paani na jama hone dein.",
+            "Sote waqt machhardani (Mosquito Net) ka use karein, especially bachho aur buzurgo ke liye.",
+            "Subah aur shaam poori baah ke kapde pehnein.",
+            "Agar 2 din se zyada tez bukhaar ya thand lage toh turant paas ke PHC jaakar blood test karwayein."
         ]
     },
     {
         "id": "waterborne",
         "icon": "💧",
         "title_hindi": "दूषित पानी और पेट के रोग (दस्त, टाइफाइड, हैजा, पीलिया)",
+        "title_en": "Waterborne & Gastrointestinal Infections (Diarrhea, Typhoid, Cholera)",
+        "title_hinglish": "Dooshit Paani aur Pet ke Rog (Dast, Typhoid, Cholera)",
         "subtitle": "स्वच्छ उबला पानी पिएं, डिहाइड्रेशन से बचें",
+        "subtitle_en": "Drink boiled/filtered water, prevent dehydration",
+        "subtitle_hinglish": "Saaf ubla paani piyein, dehydration se bachein",
         "action_points": [
             "पीने का पानी हमेशा उबालकर या साफ कपड़े/फिल्टर से छानकर पिएं।",
             "दस्त या उल्टी होने पर तुरंत ओआरएस (ORS) घोल या नमक-चीनी-नींबू पानी शुरू करें ताकि शरीर में पानी की कमी न हो।",
             "बासी या खुला रखा हुआ भोजन न खाएं, हमेशा ताजा और ढका हुआ खाना खाएं।",
             "पानी के मटके या बर्तन को हमेशा ढककर रखें और निकालने के लिए डंडी वाले लोटे का इस्तेमाल करें।"
+        ],
+        "action_points_en": [
+            "Always boil or properly filter drinking water before consumption.",
+            "In case of diarrhea or vomiting, start ORS solution immediately to prevent dangerous dehydration.",
+            "Do not consume stale or uncovered food; eat freshly prepared, covered meals.",
+            "Keep water storage containers covered and use a handled ladle to draw water."
+        ],
+        "action_points_hinglish": [
+            "Peene ka paani hamesha ubaalkar ya filter karke piyein.",
+            "Dast ya ulti hone par turant ORS ghol shuru karein taaki paani ki kami na ho.",
+            "Baasi ya khula khana na khayein, hamesha taaza aur dhaka khana lein.",
+            "Paani ke bartan ko hamesha dhakkar rakhein aur nikaalne ke liye dandi wale lote ka prayog karein."
         ]
     },
     {
         "id": "respiratory_clean_air",
         "icon": "🌬️",
         "title_hindi": "धुआं और फेफड़ों की सुरक्षा (खांसी, दमा, सांस की तकलीफ)",
+        "title_en": "Respiratory Health & Smoke Protection (Asthma, Cough, COPD)",
+        "title_hinglish": "Dhuen aur Phepdo ki Suraksha (Khansi, Asthma, Saans Takleef)",
         "subtitle": "चूल्हे के धुएं से बचाव और हवादार रसोई",
+        "subtitle_en": "Kitchen ventilation and protection from wood/biomass smoke",
+        "subtitle_hinglish": "Choolhe ke dhuen se bachav aur haawadaar rasoi",
         "action_points": [
             "रसोई में चूल्हा जलाते समय खिड़की खुली रखें ताकि धुआं आसानी से बाहर निकल सके।",
             "घर के अंदर बीड़ी, सिगरेट या तंबाकू का सेवन बिल्कुल न करें; इसका धुआं बच्चों और बुजुर्गों के फेफड़ों को नुकसान पहुंचाता है।",
             "खेतों में पराली या सूखा कचरा जलाने वाले धुएं से बुजुर्गों को दूर रखें।",
             "लगातार 2 हफ्ते से अधिक खांसी या बलगम होने पर टीबी (TB) की मुफ्त जांच के लिए सरकारी स्वास्थ्य केंद्र जाएं।"
+        ],
+        "action_points_en": [
+            "Ensure proper kitchen ventilation and open windows when cooking over biomass or wood stoves.",
+            "Strictly avoid smoking inside the home; secondhand smoke harms children and senior citizens.",
+            "Keep elders away from crop burning (parali) or garbage combustion smoke.",
+            "If cough or phlegm persists for more than 2 weeks, visit a government clinic for free TB screening."
+        ],
+        "action_points_hinglish": [
+            "Rasoi me choolha jalate waqt khidki khuli rakhein taaki dhuan bahar nikal sake.",
+            "Ghar ke andar smoking bilkul na karein; yeh bachho aur buzurgo ke phepdo ko nuksan pahunchata hai.",
+            "Khet me parali ya kachra jalane ke dhuen se buzurgo ko door rakhein.",
+            "Lagatar 2 hafte se zyada khansi hone par TB ki muft jaanch ke liye PHC jayein."
         ]
     },
     {
         "id": "hygiene",
         "icon": "🧼",
         "title_hindi": "व्यक्तिगत स्वच्छता (हाथ धोना और संक्रमण से बचाव)",
+        "title_en": "Personal Hygiene (Handwashing & Infection Prevention)",
+        "title_hinglish": "Personal Hygiene (Haath Dhona aur Infection se Bachav)",
         "subtitle": "बीमारियों को फैलने से रोकने का सबसे सरल उपाय",
+        "subtitle_en": "The most effective barrier against communicable illnesses",
+        "subtitle_hinglish": "Beemariyo ko rokne ka sabse saral tareeka",
         "action_points": [
             "शौच के बाद और भोजन करने या पकाने से पहले हमेशा साबुन और साफ पानी से कम से कम 20 सेकंड तक हाथ धोएं।",
             "बच्चों के नाखून छोटे और साफ रखें।",
             "घाव या खरोंच लगने पर उस पर गोबर या मिट्टी न लगाएं; साफ पानी से धोकर पट्टी बांधें और टिटनेस का टीका लगवाएं।"
+        ],
+        "action_points_en": [
+            "Always wash hands with soap and water for at least 20 seconds after using the toilet and before preparing food.",
+            "Keep fingernails trimmed and clean.",
+            "Never apply dung or mud to open wounds; wash with clean water, apply sterile bandage, and obtain a tetanus toxoid vaccine."
+        ],
+        "action_points_hinglish": [
+            "Shauch ke baad aur khana khane/pakane se pehle hamesha sabun se 20 second tak haath dhoyein.",
+            "Bachho ke naakhun chote aur saaf rakhein.",
+            "Ghaav par gobar ya mitti na lagayein; saaf paani se dhokar patti bandhein aur tetanus injection lagwayein."
         ]
     }
 ]
 
 
-# Default representative Primary Health Centre / Community Health Centre coordinates
-# Used for in-app map rendering and testing.
 SAMPLE_HEALTH_FACILITIES: List[Dict[str, Any]] = [
     {
         "name": "प्राथमिक स्वास्थ्य केंद्र (Primary Health Centre - PHC)",
@@ -98,7 +158,6 @@ SAMPLE_HEALTH_FACILITIES: List[Dict[str, Any]] = [
 ]
 
 
-# Guidance for safely purchasing medicines online in India (Drugs & Cosmetics Act compliant)
 ONLINE_ORDERING_STEPS: Dict[str, Any] = {
     "title_hindi": "घर बैठे ऑनलाइन दवा मंगवाने का सुरक्षित तरीका",
     "disclaimer_hindi": "⚠️ सेहत साथी खुद दवाइयां नहीं बेचता है। भारतीय दवा कानूनों (Drugs & Cosmetics Act) के अनुसार डॉक्टर के वैध पर्चे के बिना कोई भी ऐप या दुकान शेड्यूल H दवाएं नहीं बेच सकती।",
@@ -141,6 +200,25 @@ class PreventionAndFacilitiesService:
     @classmethod
     def get_prevention_topics(cls) -> List[Dict[str, Any]]:
         return PREVENTION_TOPICS
+
+    @classmethod
+    def get_topic_display(cls, topic: Dict[str, Any], lang: str = "hi") -> Tuple[str, str, List[str]]:
+        """
+        Returns localized (title, subtitle, action_points) for the given topic and language.
+        """
+        if lang == "en":
+            title = topic.get("title_en", topic["title_hindi"])
+            subtitle = topic.get("subtitle_en", topic["subtitle"])
+            actions = topic.get("action_points_en", topic["action_points"])
+        elif lang == "hinglish":
+            title = topic.get("title_hinglish", topic["title_hindi"])
+            subtitle = topic.get("subtitle_hinglish", topic["subtitle"])
+            actions = topic.get("action_points_hinglish", topic["action_points"])
+        else:
+            title = topic["title_hindi"]
+            subtitle = topic["subtitle"]
+            actions = topic["action_points"]
+        return title, subtitle, actions
 
     @classmethod
     def get_sample_facilities(cls) -> List[Dict[str, Any]]:

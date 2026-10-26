@@ -26,7 +26,7 @@ class ComplicationPredictionService:
     """
 
     @classmethod
-    def predict_complication_risk(cls, inp: ComplicationPredictionInput) -> ComplicationPredictionResult:
+    def predict_complication_risk(cls, inp: ComplicationPredictionInput, lang: str = "hi") -> ComplicationPredictionResult:
         """
         Executes ML Risk Stratification on the patient input features.
         Combines weighted clinical risk sub-models:
@@ -34,6 +34,7 @@ class ComplicationPredictionService:
         2. Metabolic / Glycemic Risk
         3. Respiratory / Hypoxia Risk
         4. Polypharmacy & Adverse Reaction Risk
+        Supports multilingual guidance across Hindi, English, and Hinglish.
         """
         risk_factors: List[ComplicationRiskFactor] = []
         potential_complications: List[str] = []
@@ -227,17 +228,32 @@ class ComplicationPredictionService:
             tier = RiskTier.HIGH
             doc_needed = True
             em_dial = any(s >= 90.0 for s in scores)
-            guidance = "🚨 **उच्च जोखिम की स्थिति:** आपके महत्वपूर्ण स्वास्थ्य संकेतकों में गंभीर असंतुलन देखा गया है। कृपया बिना देर किए अपने डॉक्टर से परामर्श लें या 108 एम्बुलेंस पर कॉल करें।"
+            if lang == "en":
+                guidance = "🚨 **High Risk Alert:** Significant instability observed across your vital indicators. Please consult your physician without delay or dial 108 Emergency immediately."
+            elif lang == "hinglish":
+                guidance = "🚨 **High Risk Alert:** Aapke health vitals me gambheer asantulan dekha gaya hai. Kripya bina der kiye doctor se consult karein ya 108 par call karein."
+            else:
+                guidance = "🚨 **उच्च जोखिम की स्थिति:** आपके महत्वपूर्ण स्वास्थ्य संकेतकों में गंभीर असंतुलन देखा गया है। कृपया बिना देर किए अपने डॉक्टर से परामर्श लें या 108 एम्बुलेंस पर कॉल करें।"
         elif final_score >= 35.0:
             tier = RiskTier.MODERATE
             doc_needed = True
             em_dial = False
-            guidance = "⚠️ **मध्यम जोखिम:** कुछ लक्षण या रीडिंग सामान्य स्तर से बाहर हैं। अपनी दवाएं समय पर लें, नमक/मीठा नियंत्रित रखें और अगले 24 घंटे में डॉक्टर या नजदीकी PHC से जांच कराएं।"
+            if lang == "en":
+                guidance = "⚠️ **Moderate Risk:** Some readings or symptoms are beyond normal thresholds. Take your medicines on schedule, manage salt/sugar intake, and schedule a doctor or PHC visit within 24 hours."
+            elif lang == "hinglish":
+                guidance = "⚠️ **Moderate Risk:** Kuch readings normal level se bahar hain. Dawaiyan time par lein, namak/meetha control karein aur 24 ghante me doctor/PHC dikhayein."
+            else:
+                guidance = "⚠️ **मध्यम जोखिम:** कुछ लक्षण या रीडिंग सामान्य स्तर से बाहर हैं। अपनी दवाएं समय पर लें, नमक/मीठा नियंत्रित रखें और अगले 24 घंटे में डॉक्टर या नजदीकी PHC से जांच कराएं।"
         else:
             tier = RiskTier.LOW
             doc_needed = False
             em_dial = False
-            guidance = "🟢 **सामान्य स्थिति:** आपके दर्ज किए गए सभी आंकड़े और दवा का शेड्यूल सामान्य सीमा में हैं। स्वस्थ दिनचर्या और समय पर दवा लेना जारी रखें।"
+            if lang == "en":
+                guidance = "🟢 **Normal Status:** All your recorded vitals and adherence logs are within safe reference ranges. Continue your healthy routine and timely medication."
+            elif lang == "hinglish":
+                guidance = "🟢 **Normal Status:** Aapke record kiye gaye sabhi vitals aur schedule normal range me hain. Healthy routine aur regular dawai jaari rakhein."
+            else:
+                guidance = "🟢 **सामान्य स्थिति:** आपके दर्ज किए गए सभी आंकड़े और दवा का शेड्यूल सामान्य सीमा में हैं। स्वस्थ दिनचर्या और समय पर दवा लेना जारी रखें।"
 
         if not potential_complications:
             potential_complications.append("वर्तमान में कोई जटिलता के लक्षण नहीं (No Immediate Complications Detected)")
@@ -253,7 +269,7 @@ class ComplicationPredictionService:
         )
 
     @classmethod
-    def predict_temporal_trajectory(cls, recent_systolic_trend: List[float]) -> Dict[str, Any]:
+    def predict_temporal_trajectory(cls, recent_systolic_trend: List[float], lang: str = "hi") -> Dict[str, Any]:
         """
         Deep Learning / Recurrent Sequence simulation:
         Analyzes the trajectory slope of multi-day vitals (e.g. 3-5 consecutive days)
@@ -261,7 +277,7 @@ class ComplicationPredictionService:
         """
         if not recent_systolic_trend or len(recent_systolic_trend) < 2:
             return {
-                "trend_direction": "स्थिर (Stable)",
+                "trend_direction": "स्थिर (Stable)" if lang == "hi" else "Stable",
                 "slope": 0.0,
                 "projected_next_day_bp": None,
                 "early_warning": False
@@ -282,16 +298,31 @@ class ComplicationPredictionService:
         early_warning = slope >= 8.0 or projected_next >= 160.0
 
         if slope > 3.0:
-            direction = "लगातार बढ़ रहा है (Rising Trend ↗️)"
+            direction = "लगातार बढ़ रहा है (Rising Trend ↗️)" if lang == "hi" else ("Rising Trend ↗️" if lang == "en" else "Lagatar badh raha hai (Rising ↗️)")
         elif slope < -3.0:
-            direction = "कम हो रहा है (Decreasing Trend ↘️)"
+            direction = "कम हो रहा है (Decreasing Trend ↘️)" if lang == "hi" else ("Decreasing Trend ↘️" if lang == "en" else "Kam ho raha hai (Decreasing ↘️)")
         else:
-            direction = "लगभग स्थिर (Stable ➡️)"
+            direction = "लगभग स्थिर (Stable ➡️)" if lang == "hi" else ("Stable ➡️" if lang == "en" else "Lagbhag sthir (Stable ➡️)")
+
+        if early_warning:
+            if lang == "en":
+                warn_msg = "⚠️ Consistent increase in systolic blood pressure observed over recent days. Contact your doctor for dose adjustment."
+            elif lang == "hinglish":
+                warn_msg = "⚠️ Pichhle kuch dino se BP lagatar badhta dikh raha hai. Doctor se dose adjustment ke liye consult karein."
+            else:
+                warn_msg = "⚠️ पिछले कुछ दिनों से रक्तचाप में लगातार वृद्धि देखी जा रही है। डॉक्टर से खुराक समायोजन (Dose Adjustment) के लिए संपर्क करें।"
+        else:
+            if lang == "en":
+                warn_msg = "Daily blood pressure fluctuations remain within normal reference limits."
+            elif lang == "hinglish":
+                warn_msg = "Daily BP ka utar-chadhav normal limit me hai."
+            else:
+                warn_msg = "दैनिक रक्तचाप का उतार-चढ़ाव सामान्य सीमा में है।"
 
         return {
             "trend_direction": direction,
             "slope": round(slope, 2),
             "projected_next_day_bp": round(projected_next, 1),
             "early_warning": early_warning,
-            "warning_message_hindi": "⚠️ पिछले कुछ दिनों से रक्तचाप में लगातार वृद्धि देखी जा रही है। डॉक्टर से खुराक समायोजन (Dose Adjustment) के लिए संपर्क करें।" if early_warning else "दैनिक रक्तचाप का उतार-चढ़ाव सामान्य सीमा में है।"
+            "warning_message_hindi": warn_msg
         }

@@ -47,45 +47,62 @@ class MentalHealthService:
         self,
         sleep: str,
         stress: str,
-        mood: str
+        mood: str,
+        lang: str = "hi"
     ) -> MentalHealthCheckIn:
         """
         Evaluates observational mental wellness and provides compassionate guidance.
+        Supports multilingual feedback across Hindi, English, and Hinglish.
         """
         score = 0
         
         # Sleep
-        if "अच्छी नींद" in sleep:
+        if "अच्छी नींद" in sleep or "Good Sleep" in sleep or "Achhi Neend" in sleep:
             score += 35
-        elif "कभी-कभी परेशानी" in sleep:
+        elif "कभी-कभी परेशानी" in sleep or "Disturbed" in sleep or "Pareshaani" in sleep:
             score += 20
         else:
             score += 5
 
         # Stress
-        if "सामान्य" in stress:
+        if "सामान्य" in stress or "Normal" in stress or "Samanya" in stress:
             score += 35
-        elif "हल्का तनाव" in stress:
+        elif "हल्का तनाव" in stress or "Mild" in stress or "Halka" in stress:
             score += 20
         else:
             score += 5
 
         # Mood
-        if "प्रसन्न" in mood:
+        if "प्रसन्न" in mood or "Positive" in mood or "Khush" in mood:
             score += 30
-        elif "सामान्य" in mood:
+        elif "सामान्य" in mood or "Neutral" in mood or "Theek" in mood:
             score += 20
         else:
             score += 5
 
         tele_manas = False
         if score >= 75:
-            advice = "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।"
+            if lang == "en":
+                advice = "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family."
+            elif lang == "hinglish":
+                advice = "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein."
+            else:
+                advice = "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।"
         elif score >= 45:
-            advice = "🌿 हल्का तनाव स्वाभाविक है। गहरी सांस लेने का अभ्यास करें, चाय/कैफीन कम करें और किसी अपने से मन की बात साझा करें।"
+            if lang == "en":
+                advice = "🌿 Mild stress is natural. Practice slow deep breathing, reduce tea/caffeine, and share your feelings with someone close."
+            elif lang == "hinglish":
+                advice = "🌿 Halka stress normal hai. Deep breathing karein, chai/caffeine kam karein aur apno se dil ki baat share karein."
+            else:
+                advice = "🌿 हल्का तनाव स्वाभाविक है। गहरी सांस लेने का अभ्यास करें, चाय/कैफीन कम करें और किसी अपने से मन की बात साझा करें।"
         else:
             tele_manas = True
-            advice = "🕊️ यदि आप लंबे समय से अत्यधिक चिंता, उदासी या नींद की कमी महसूस कर रहे हैं, तो संकोच न करें। सहायता हमेशा उपलब्ध है।"
+            if lang == "en":
+                advice = "🕊️ If you have been feeling persistent anxiety, sadness, or lack of sleep, please do not hesitate. Confidential free help is always available."
+            elif lang == "hinglish":
+                advice = "🕊️ Agar lagataar chinta, udaasi ya neend ki kami mehsoos ho rahi hai, toh bilkul na jhijhkein. Free aur confidential help hamesha uplabdh hai."
+            else:
+                advice = "🕊️ यदि आप लंबे समय से अत्यधिक चिंता, उदासी या नींद की कमी महसूस कर रहे हैं, तो संकोच न करें। सहायता हमेशा उपलब्ध है।"
 
         checkin = MentalHealthCheckIn(
             sleep_quality=sleep,
