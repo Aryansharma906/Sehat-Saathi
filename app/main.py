@@ -224,16 +224,44 @@ st.markdown("""
 </script>
 
 <style>
-    /* Google / Apple Clean Typography */
-    html, body, [class*="css"] {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Apple Human Interface Typography & Canvas */
+    :root {
+        --apple-bg: #f5f5f7;
+        --apple-card: #ffffff;
+        --apple-text: #1d1d1f;
+        --apple-subtext: #86868b;
+        --apple-blue: #0071e3;
+        --apple-green: #34c759;
+        --apple-red: #ff3b30;
+        --apple-orange: #ff9500;
+        --apple-border: rgba(0, 0, 0, 0.08);
     }
 
-    /* Responsive Viewport across iOS, Android & Desktop Web */
+    html, body, [class*="css"], .stApp {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+        background-color: #f5f5f7 !important;
+        color: #1d1d1f !important;
+        -webkit-font-smoothing: antialiased;
+        letter-spacing: -0.012em;
+    }
+
+    /* Apple-style floating main card */
+    @media (min-width: 769px) {
+        .main {
+            max-width: 940px !important;
+            margin: 24px auto !important;
+            background: #ffffff !important;
+            border-radius: 28px !important;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+            padding: 32px 38px !important;
+            border: 1px solid rgba(0, 0, 0, 0.06) !important;
+        }
+    }
     @media (max-width: 768px) {
         .main {
             max-width: 100% !important;
-            padding: 6px 12px !important;
+            padding: 10px 14px !important;
+            background: #ffffff !important;
         }
         body {
             padding-top: env(safe-area-inset-top);
@@ -242,148 +270,162 @@ st.markdown("""
             padding-right: env(safe-area-inset-right);
         }
     }
-    @media (min-width: 769px) {
-        .main {
-            max-width: 920px !important;
-            margin: 15px auto !important;
-            background: #ffffff;
-            border-radius: 24px;
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.06);
-            padding: 24px 32px !important;
-            border: 1px solid #f1f5f9;
-        }
+
+    /* Apple Glassmorphic Brand Header */
+    .apple-header {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 22px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        padding: 18px 22px;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
 
-    /* Sleek Streamlit Tabs */
+    /* Apple-style Segmented Control Tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 6px;
-        background-color: #f8fafc;
-        padding: 6px;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        margin-bottom: 18px;
+        gap: 4px;
+        background-color: #f5f5f7;
+        padding: 5px;
+        border-radius: 980px;
+        border: 1px solid #e5e5ea;
+        margin-bottom: 22px;
     }
     .stTabs [data-baseweb="tab"] {
-        height: 44px;
+        height: 42px;
         white-space: pre-wrap;
         background-color: transparent;
-        border-radius: 12px;
-        color: #475569;
+        border-radius: 980px;
+        color: #86868b;
         font-size: 0.94rem;
-        font-weight: 600;
-        padding: 6px 12px;
-        transition: all 0.15s ease-in-out;
+        font-weight: 500;
+        padding: 6px 16px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        border: none !important;
     }
     .stTabs [aria-selected="true"] {
         background-color: #ffffff !important;
-        color: #047857 !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        font-weight: 700 !important;
+        color: #1d1d1f !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08) !important;
+        font-weight: 600 !important;
     }
 
-    /* Buttons: Accessible, tactile touch targets */
+    /* Apple Pill Primary CTA Buttons */
     .stButton>button {
         width: 100%;
-        border-radius: 14px;
-        font-size: 1.15rem;
-        padding: 0.75rem 1.25rem;
-        font-weight: 700;
-        margin-top: 0.35rem;
-        margin-bottom: 0.35rem;
-        min-height: 48px;
-        border: none;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-        transition: all 0.18s ease-in-out;
+        border-radius: 980px !important;
+        font-size: 1.08rem !important;
+        padding: 0.72rem 1.4rem !important;
+        font-weight: 600 !important;
+        min-height: 48px !important;
+        border: none !important;
+        background: #0071e3 !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 8px rgba(0, 113, 227, 0.22) !important;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        letter-spacing: -0.01em;
     }
     .stButton>button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        background: #0077ed !important;
+        transform: scale(1.01) !important;
+        box-shadow: 0 6px 18px rgba(0, 113, 227, 0.32) !important;
     }
     .stButton>button:active {
-        transform: scale(0.98);
+        transform: scale(0.98) !important;
     }
 
-    /* Visual Hub Cards */
+    /* Apple Health Action Hub Cards */
     .hub-card {
-        border-radius: 16px;
-        padding: 14px;
-        color: white;
+        border-radius: 20px;
+        padding: 16px 14px;
+        color: #ffffff;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.07);
-        transition: transform 0.18s ease, box-shadow 0.18s ease;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+        transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .hub-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
 
-    /* High contrast alert cards */
+    /* Apple Subtle Alert & Notice Cards */
     .uncertain-card {
-        background-color: #fffbeb;
-        border-left: 6px solid #f59e0b;
-        padding: 14px 16px;
-        border-radius: 12px;
+        background-color: #fff9f0;
+        border-left: 5px solid #ff9500;
+        padding: 14px 18px;
+        border-radius: 16px;
         margin-bottom: 12px;
-        font-size: 1.05rem;
-        color: #92400e;
+        font-size: 1.02rem;
+        color: #9a4d00;
+        border-top: 1px solid rgba(255, 149, 0, 0.15);
+        border-right: 1px solid rgba(255, 149, 0, 0.15);
+        border-bottom: 1px solid rgba(255, 149, 0, 0.15);
     }
     .confirmed-card {
-        background-color: #f0fdf4;
-        border-left: 6px solid #10b981;
-        padding: 14px 16px;
-        border-radius: 12px;
+        background-color: #f6fcf8;
+        border-left: 5px solid #34c759;
+        padding: 14px 18px;
+        border-radius: 16px;
         margin-bottom: 12px;
-        font-size: 1.05rem;
-        color: #065f46;
+        font-size: 1.02rem;
+        color: #19692c;
+        border-top: 1px solid rgba(52, 199, 89, 0.15);
+        border-right: 1px solid rgba(52, 199, 89, 0.15);
+        border-bottom: 1px solid rgba(52, 199, 89, 0.15);
     }
     .disclaimer-banner {
-        background-color: #eff6ff;
-        border-left: 5px solid #3b82f6;
-        padding: 12px 16px;
-        border-radius: 12px;
+        background-color: #f5f8ff;
+        border-left: 5px solid #0071e3;
+        padding: 12px 18px;
+        border-radius: 16px;
         font-size: 0.95rem;
         margin-bottom: 14px;
-        color: #1e40af;
+        color: #004b99;
+        border-top: 1px solid rgba(0, 113, 227, 0.15);
+        border-right: 1px solid rgba(0, 113, 227, 0.15);
+        border-bottom: 1px solid rgba(0, 113, 227, 0.15);
     }
     .due-badge {
-        background-color: #dc2626;
+        background-color: #ff3b30;
         color: white;
-        padding: 4px 10px;
-        border-radius: 8px;
-        font-weight: bold;
-        font-size: 0.85rem;
+        padding: 3px 9px;
+        border-radius: 980px;
+        font-weight: 700;
+        font-size: 0.8rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
 
 # -------------------------------------------------------------
-# TOP NAVBAR: Brand Header + User Identity + Language Selection
+# TOP NAVBAR: Apple Glassmorphic Header + User Identity + Language Selection
 # -------------------------------------------------------------
 u_role_badge = "👨‍⚕️ डॉक्टर" if curr_u.role == "doctor" else ("🏥 स्टाफ" if curr_u.role == "staff" else "👤 मरीज")
 st.markdown(f"""
-<div style="background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%); padding: 18px 20px; border-radius: 20px; color: white; margin-bottom: 12px; box-shadow: 0 8px 20px -4px rgba(6, 78, 59, 0.25);">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="background: rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
-                💊
-            </div>
-            <div>
-                <h1 style="margin: 0; font-size: 1.55rem; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">Sehat Saathi | सेहत साथी</h1>
-                <p style="margin: 2px 0 0 0; font-size: 0.88rem; opacity: 0.92; color: #d1fae5;">AI Prescription Reader & Health Companion for Rural India</p>
-            </div>
+<div class="apple-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="background: linear-gradient(135deg, #34c759, #30b0c7); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; box-shadow: 0 4px 14px rgba(52, 199, 89, 0.28);">
+            💊
         </div>
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <a href="tel:108" style="background:#dc2626; color:white; padding:5px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 8px rgba(220,38,38,0.35);">
-                🚨 108 Call
-            </a>
-            <span style="background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; color: #ffffff;">
-                {u_role_badge}: {curr_u.name.split('(')[0].strip()}
-            </span>
-            <span style="background: rgba(255,255,255,0.18); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; color: #ffffff;">
-                🟢 DB Synced
-            </span>
+        <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <h1 style="margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.03em; color: #1d1d1f;">Sehat Saathi</h1>
+                <span style="font-size: 1.15rem; color: #86868b; font-weight: 500;">| सेहत साथी</span>
+            </div>
+            <p style="margin: 2px 0 0 0; font-size: 0.88rem; color: #86868b; font-weight: 400;">Intelligent & Accessible Health Companion • Rural Healthcare</p>
         </div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <a href="tel:108" style="background:#ff3b30; color:white; padding:6px 14px; border-radius:980px; font-size:0.82rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 10px rgba(255,59,48,0.25); transition:all 0.2s ease;">
+            🚨 108 Emergency
+        </a>
+        <span style="background: #f5f5f7; border: 1px solid #e5e5ea; padding: 5px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #1d1d1f;">
+            {u_role_badge}: {curr_u.name.split('(')[0].strip()}
+        </span>
+        <span style="background: #eafaf1; border: 1px solid #b7ebd0; padding: 5px 12px; border-radius: 980px; font-size: 0.82rem; font-weight: 600; color: #19692c;">
+            🟢 Active
+        </span>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -485,33 +527,33 @@ all_current_reminders = reminder_service.get_all_reminders()
 active_rem_count = len([r for r in all_current_reminders if r.enabled])
 recent_vitals_count = len(device_service.get_all_readings())
 
-# 4 Modern Visual Action Cards (Visual Home Hub)
+# 4 Apple Health-Style Action Cards (Visual Home Hub)
 st.markdown(f"""
-<div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-    <div class="hub-card" style="background: linear-gradient(135deg, #059669, #10b981);">
-        <div style="font-size: 1.6rem;">📸</div>
-        <div style="font-size: 1.05rem; font-weight: bold; margin-top: 2px;">{t('card_scan_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.92;">{t('card_scan_desc', lang)}</div>
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+    <div class="hub-card" style="background: linear-gradient(135deg, #34c759 0%, #30b0c7 100%);">
+        <div style="font-size: 1.8rem; margin-bottom: 4px;">📸</div>
+        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_scan_title', lang)}</div>
+        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{t('card_scan_desc', lang)}</div>
     </div>
-    <div class="hub-card" style="background: linear-gradient(135deg, #1d4ed8, #3b82f6);">
-        <div style="font-size: 1.6rem;">⏰</div>
-        <div style="font-size: 1.05rem; font-weight: bold; margin-top: 2px;">{t('card_reminders_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.92;">{active_rem_count} {t('card_reminders_desc', lang)}</div>
+    <div class="hub-card" style="background: linear-gradient(135deg, #0071e3 0%, #5856d6 100%);">
+        <div style="font-size: 1.8rem; margin-bottom: 4px;">⏰</div>
+        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_reminders_title', lang)}</div>
+        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{active_rem_count} {t('card_reminders_desc', lang)}</div>
     </div>
-    <div class="hub-card" style="background: linear-gradient(135deg, #0f766e, #14b8a6);">
-        <div style="font-size: 1.6rem;">🩺</div>
-        <div style="font-size: 1.05rem; font-weight: bold; margin-top: 2px;">{t('card_vitals_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.92;">{recent_vitals_count} {t('card_vitals_desc', lang)}</div>
+    <div class="hub-card" style="background: linear-gradient(135deg, #32ade6 0%, #0071e3 100%);">
+        <div style="font-size: 1.8rem; margin-bottom: 4px;">🩺</div>
+        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_vitals_title', lang)}</div>
+        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{recent_vitals_count} {t('card_vitals_desc', lang)}</div>
     </div>
-    <div class="hub-card" style="background: linear-gradient(135deg, #b91c1c, #ef4444);">
-        <div style="font-size: 1.6rem;">🚨</div>
-        <div style="font-size: 1.05rem; font-weight: bold; margin-top: 2px;">{t('card_emergency_title', lang)}</div>
-        <div style="font-size: 0.82rem; opacity: 0.92;">{t('card_emergency_desc', lang)}</div>
+    <div class="hub-card" style="background: linear-gradient(135deg, #ff3b30 0%, #ff2d55 100%);">
+        <div style="font-size: 1.8rem; margin-bottom: 4px;">🚨</div>
+        <div style="font-size: 1.08rem; font-weight: 700; letter-spacing: -0.02em;">{t('card_emergency_title', lang)}</div>
+        <div style="font-size: 0.82rem; opacity: 0.94; margin-top: 2px;">{t('card_emergency_desc', lang)}</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Feature: Interactive Health At-a-Glance Stat Banner
+# Feature: Apple Health-Style Summary Tile Banner
 target_pat_id = f"pat_{curr_u.id}"
 pat_vitals_summary = clinical_db.get_patient_vitals(target_pat_id, limit=4)
 bp_val = "136/86 mmHg"
@@ -530,25 +572,25 @@ adh_pct_str = f"{adh_stat['percentage']}%"
 
 st.markdown(f"""
 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
-        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">💓 रक्तचाप (BP)</div>
-        <div style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:2px 0;">{bp_val}</div>
-        <div style="font-size:0.72rem; color:#047857; font-weight:700;">🟢 स्थिर (Normal-High)</div>
+    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">💓 Blood Pressure</div>
+        <div style="font-size:1.35rem; font-weight:700; color:#1d1d1f; letter-spacing:-0.03em; margin:2px 0;">{bp_val}</div>
+        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">🟢 Stable / स्थिर</div>
     </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
-        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">🫁 ऑक्सीजन (SpO2)</div>
-        <div style="font-size:1.15rem; font-weight:800; color:#047857; margin:2px 0;">{spo2_val}</div>
-        <div style="font-size:0.72rem; color:#047857; font-weight:700;">✅ उत्तम (Optimal)</div>
+    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">🫁 Oxygen SpO2</div>
+        <div style="font-size:1.35rem; font-weight:700; color:#30b0c7; letter-spacing:-0.03em; margin:2px 0;">{spo2_val}</div>
+        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">✅ Optimal / उत्तम</div>
     </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
-        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">🩸 ब्लड शुगर (Sugar)</div>
-        <div style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:2px 0;">{sugar_val}</div>
-        <div style="font-size:0.72rem; color:#047857; font-weight:700;">🟢 सामान्य (Normal)</div>
+    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">🩸 Blood Sugar</div>
+        <div style="font-size:1.35rem; font-weight:700; color:#1d1d1f; letter-spacing:-0.03em; margin:2px 0;">{sugar_val}</div>
+        <div style="font-size:0.72rem; color:#34c759; font-weight:600;">🟢 Controlled / नियंत्रित</div>
     </div>
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
-        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">💊 दवा नियमितता</div>
-        <div style="font-size:1.15rem; font-weight:800; color:#1d4ed8; margin:2px 0;">{adh_pct_str}</div>
-        <div style="font-size:0.72rem; color:#1d4ed8; font-weight:700;">⭐ {adh_stat['total_taken']} खुराक दर्ज</div>
+    <div style="background:#ffffff; border:1px solid #e5e5ea; border-radius:18px; padding:12px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+        <div style="font-size:0.75rem; color:#86868b; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">💊 Adherence</div>
+        <div style="font-size:1.35rem; font-weight:700; color:#0071e3; letter-spacing:-0.03em; margin:2px 0;">{adh_pct_str}</div>
+        <div style="font-size:0.72rem; color:#0071e3; font-weight:600;">⭐ {adh_stat['total_taken']} Doses Taken</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -1495,26 +1537,26 @@ with tab_settings:
 
 
 # -------------------------------------------------------------
-# MODERN WEBSITE FOOTER: National Helplines & Compliance Badges
+# APPLE-STYLE MINIMALIST FOOTER: Compliance & Helplines
 # -------------------------------------------------------------
 st.markdown("""
-<div style="margin-top: 36px; padding: 22px 16px 14px 16px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 0.88rem; text-align: center; background: #f8fafc; border-radius: 16px;">
-    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; font-size: 0.84rem;">
-        <span>🏛️ <b>National Health Mission (NHM)</b></span>
+<div style="margin-top: 48px; padding: 24px 16px 18px 16px; border-top: 1px solid #e5e5ea; color: #86868b; font-size: 0.85rem; text-align: center; background: transparent;">
+    <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; font-size: 0.82rem; font-weight: 500;">
+        <span>National Health Mission (NHM)</span>
         <span>•</span>
-        <span>🛡️ <b>Ayushman Bharat Digital Mission (ABDM)</b></span>
+        <span>Ayushman Bharat Digital Mission (ABDM)</span>
         <span>•</span>
-        <span>🔒 <b>DISHA Patient Consent & Privacy Compliant</b></span>
+        <span>DISHA Patient Consent & Privacy Compliant</span>
     </div>
-    <div style="margin-bottom: 10px; line-height: 1.6;">
-        📞 <b>राष्ट्रीय आपातकालीन नंबर (24x7 Free Govt Helplines):</b><br>
-        <a href="tel:108" style="color:#dc2626; font-weight:bold; text-decoration:none;">🚑 108 (एम्बुलेंस)</a> &nbsp;|&nbsp; 
-        <a href="tel:112" style="color:#c2185b; font-weight:bold; text-decoration:none;">🚨 112 (राष्ट्रीय आपातकाल)</a> &nbsp;|&nbsp; 
-        <a href="tel:104" style="color:#0284c7; font-weight:bold; text-decoration:none;">🩺 104 (स्वास्थ्य परामर्श)</a> &nbsp;|&nbsp; 
-        <a href="tel:14416" style="color:#c2185b; font-weight:bold; text-decoration:none;">🌸 14416 (Tele-MANAS)</a>
+    <div style="margin-bottom: 10px; line-height: 1.6; font-size: 0.82rem;">
+        📞 <b>Emergency Helplines (24x7 Free):</b> 
+        <a href="tel:108" style="color:#ff3b30; font-weight:600; text-decoration:none;">108 Ambulance</a> &nbsp;•&nbsp; 
+        <a href="tel:112" style="color:#ff3b30; font-weight:600; text-decoration:none;">112 Emergency</a> &nbsp;•&nbsp; 
+        <a href="tel:104" style="color:#0071e3; font-weight:600; text-decoration:none;">104 Health Advice</a> &nbsp;•&nbsp; 
+        <a href="tel:14416" style="color:#ff2d55; font-weight:600; text-decoration:none;">14416 Tele-MANAS</a>
     </div>
-    <div style="font-size: 0.78rem; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 6px;">
-        सेहत साथी (Sehat Saathi) v2.4 • Accessible AI Healthcare Companion • PWA Android / iOS / Desktop Web Ready
+    <div style="font-size: 0.76rem; color: #a1a1a6;">
+        Copyright © 2026 Sehat Saathi • Designed with Apple HIG principles for Rural India & Older Adults • PWA Offline Ready
     </div>
 </div>
 """, unsafe_allow_html=True)
