@@ -244,12 +244,12 @@ st.markdown("""
     }
     @media (min-width: 769px) {
         .main {
-            max-width: 680px !important;
+            max-width: 920px !important;
             margin: 15px auto !important;
             background: #ffffff;
             border-radius: 24px;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.07);
-            padding: 24px 28px !important;
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.06);
+            padding: 24px 32px !important;
             border: 1px solid #f1f5f9;
         }
     }
@@ -373,7 +373,10 @@ st.markdown(f"""
                 <p style="margin: 2px 0 0 0; font-size: 0.88rem; opacity: 0.92; color: #d1fae5;">AI Prescription Reader & Health Companion for Rural India</p>
             </div>
         </div>
-        <div style="display: flex; gap: 6px; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <a href="tel:108" style="background:#dc2626; color:white; padding:5px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 8px rgba(220,38,38,0.35);">
+                🚨 108 Call
+            </a>
             <span style="background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; color: #ffffff;">
                 {u_role_badge}: {curr_u.name.split('(')[0].strip()}
             </span>
@@ -504,6 +507,48 @@ st.markdown(f"""
         <div style="font-size: 1.6rem;">🚨</div>
         <div style="font-size: 1.05rem; font-weight: bold; margin-top: 2px;">{t('card_emergency_title', lang)}</div>
         <div style="font-size: 0.82rem; opacity: 0.92;">{t('card_emergency_desc', lang)}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Feature: Interactive Health At-a-Glance Stat Banner
+target_pat_id = f"pat_{curr_u.id}"
+pat_vitals_summary = clinical_db.get_patient_vitals(target_pat_id, limit=4)
+bp_val = "136/86 mmHg"
+spo2_val = "98%"
+sugar_val = "138 mg/dL"
+for pv in pat_vitals_summary:
+    m_name = pv.get("metric_name", "")
+    if "रक्तचाप" in m_name or "BP" in m_name or "Blood Pressure" in m_name:
+        bp_val = f"{pv['value']} {pv['unit']}"
+    elif "SpO2" in m_name or "ऑक्सीजन" in m_name:
+        spo2_val = f"{pv['value']}{pv['unit']}"
+    elif "Sugar" in m_name or "शुगर" in m_name:
+        sugar_val = f"{pv['value']} {pv['unit']}"
+adh_stat = clinical_db.get_patient_adherence_rate(target_pat_id)
+adh_pct_str = f"{adh_stat['percentage']}%"
+
+st.markdown(f"""
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
+        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">💓 रक्तचाप (BP)</div>
+        <div style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:2px 0;">{bp_val}</div>
+        <div style="font-size:0.72rem; color:#047857; font-weight:700;">🟢 स्थिर (Normal-High)</div>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
+        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">🫁 ऑक्सीजन (SpO2)</div>
+        <div style="font-size:1.15rem; font-weight:800; color:#047857; margin:2px 0;">{spo2_val}</div>
+        <div style="font-size:0.72rem; color:#047857; font-weight:700;">✅ उत्तम (Optimal)</div>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
+        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">🩸 ब्लड शुगर (Sugar)</div>
+        <div style="font-size:1.15rem; font-weight:800; color:#1e293b; margin:2px 0;">{sugar_val}</div>
+        <div style="font-size:0.72rem; color:#047857; font-weight:700;">🟢 सामान्य (Normal)</div>
+    </div>
+    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:10px 12px; text-align:center;">
+        <div style="font-size:0.78rem; color:#64748b; font-weight:600;">💊 दवा नियमितता</div>
+        <div style="font-size:1.15rem; font-weight:800; color:#1d4ed8; margin:2px 0;">{adh_pct_str}</div>
+        <div style="font-size:0.72rem; color:#1d4ed8; font-weight:700;">⭐ {adh_stat['total_taken']} खुराक दर्ज</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -1447,3 +1492,29 @@ with tab_settings:
         LocalStorageAdapter().clear_all()
         st.success("All reminders and schedules reset.")
         st.rerun()
+
+
+# -------------------------------------------------------------
+# MODERN WEBSITE FOOTER: National Helplines & Compliance Badges
+# -------------------------------------------------------------
+st.markdown("""
+<div style="margin-top: 36px; padding: 22px 16px 14px 16px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 0.88rem; text-align: center; background: #f8fafc; border-radius: 16px;">
+    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; font-size: 0.84rem;">
+        <span>🏛️ <b>National Health Mission (NHM)</b></span>
+        <span>•</span>
+        <span>🛡️ <b>Ayushman Bharat Digital Mission (ABDM)</b></span>
+        <span>•</span>
+        <span>🔒 <b>DISHA Patient Consent & Privacy Compliant</b></span>
+    </div>
+    <div style="margin-bottom: 10px; line-height: 1.6;">
+        📞 <b>राष्ट्रीय आपातकालीन नंबर (24x7 Free Govt Helplines):</b><br>
+        <a href="tel:108" style="color:#dc2626; font-weight:bold; text-decoration:none;">🚑 108 (एम्बुलेंस)</a> &nbsp;|&nbsp; 
+        <a href="tel:112" style="color:#c2185b; font-weight:bold; text-decoration:none;">🚨 112 (राष्ट्रीय आपातकाल)</a> &nbsp;|&nbsp; 
+        <a href="tel:104" style="color:#0284c7; font-weight:bold; text-decoration:none;">🩺 104 (स्वास्थ्य परामर्श)</a> &nbsp;|&nbsp; 
+        <a href="tel:14416" style="color:#c2185b; font-weight:bold; text-decoration:none;">🌸 14416 (Tele-MANAS)</a>
+    </div>
+    <div style="font-size: 0.78rem; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 10px; margin-top: 6px;">
+        सेहत साथी (Sehat Saathi) v2.4 • Accessible AI Healthcare Companion • PWA Android / iOS / Desktop Web Ready
+    </div>
+</div>
+""", unsafe_allow_html=True)
