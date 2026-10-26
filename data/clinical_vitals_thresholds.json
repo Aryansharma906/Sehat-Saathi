@@ -1,0 +1,91 @@
+{
+  "blood_pressure": {
+    "unit": "mmHg",
+    "categories": {
+      "low": {
+        "systolic_max": 89,
+        "diastolic_max": 59,
+        "classification": "निम्न रक्तचाप (Low BP)",
+        "alert_level": "WARNING",
+        "action_hindi": "ओआरएस या नींबू-पानी पिएं और डॉक्टर से परामर्श लें।"
+      },
+      "normal": {
+        "systolic_min": 90,
+        "systolic_max": 120,
+        "diastolic_min": 60,
+        "diastolic_max": 80,
+        "classification": "सामान्य (Normal BP)",
+        "alert_level": "NORMAL",
+        "action_hindi": "रक्तचाप पूरी तरह सामान्य है।"
+      },
+      "prehypertension": {
+        "systolic_min": 121,
+        "systolic_max": 139,
+        "diastolic_min": 81,
+        "diastolic_max": 89,
+        "classification": "हल्का बढ़ा हुआ (Elevated)",
+        "alert_level": "ATTENTION",
+        "action_hindi": "नमक कम करें, हल्का टहलें और तनाव न लें।"
+      },
+      "hypertension_stage1": {
+        "systolic_min": 140,
+        "diastolic_min": 90,
+        "classification": "उच्च रक्तचाप (High BP)",
+        "alert_level": "WARNING",
+        "action_hindi": "रक्तचाप बढ़ा हुआ है। आराम करें और डॉक्टर को सूचित करें।"
+      },
+      "hypertensive_crisis": {
+        "systolic_min": 180,
+        "diastolic_min": 120,
+        "classification": "अति-गंभीर उच्च रक्तचाप (Crisis)",
+        "alert_level": "CRITICAL",
+        "action_hindi": "अति-गंभीर स्थिति। तुरंत 108 एम्बुलेंस या अस्पताल पहुंचें।"
+      }
+    }
+  },
+  "oxygen_saturation_spo2": {
+    "unit": "%",
+    "categories": {
+      "normal": {
+        "min": 95,
+        "max": 100,
+        "classification": "सामान्य (Normal SpO2)",
+        "alert_level": "NORMAL",
+        "action_hindi": "ऑक्सीजन स्तर सामान्य है।"
+      },
+      "mild_hypoxia": {
+        "min": 92,
+        "max": 94,
+        "classification": "चेतावनी (Low Warning)",
+        "alert_level": "WARNING",
+        "action_hindi": "ऑक्सीजन स्तर हल्का कम है। 15 मिनट बाद दोबारा नापें।"
+      },
+      "severe_hypoxia": {
+        "max": 91,
+        "classification": "गंभीर (Critical Alert)",
+        "alert_level": "CRITICAL",
+        "action_hindi": "ऑक्सीजन 92% से कम है। तुरंत डॉक्टर या 108 एम्बुलेंस को कॉल करें।"
+      }
+    }
+  },
+  "blood_glucose": {
+    "unit": "mg/dL",
+    "fasting": {
+      "hypoglycemia": { "max": 70, "action": "तुरंत ग्लूकोज, चीनी या मीठा फल खाएं।" },
+      "normal": { "min": 71, "max": 100, "action": "फास्टिंग शुगर सामान्य है।" },
+      "prediabetes": { "min": 101, "max": 125, "action": "हल्का बढ़ा हुआ। मीठा कम करें।" },
+      "diabetes": { "min": 126, "action": "उच्च शुगर। डॉक्टर से परामर्श करें।" }
+    },
+    "random_or_postprandial": {
+      "normal": { "max": 140, "action": "खाने के बाद की शुगर सामान्य है।" },
+      "prediabetes": { "min": 141, "max": 199, "action": "हल्का बढ़ा हुआ।" },
+      "diabetes": { "min": 200, "action": "उच्च शुगर। डॉक्टर की दवा या सलाह आवश्यक है।" }
+    }
+  },
+  "body_temperature": {
+    "unit": "°F",
+    "normal": { "min": 97.0, "max": 99.0, "classification": "सामान्य तापमान" },
+    "low_grade_fever": { "min": 99.1, "max": 100.9, "classification": "हल्का बुखार" },
+    "high_fever": { "min": 101.0, "classification": "तेज बुखार (ठंडे पानी की पट्टी रखें)" }
+  }
+}

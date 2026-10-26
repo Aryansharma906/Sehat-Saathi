@@ -1,0 +1,18 @@
+[
+  {
+    "device_type": "Pulse Oximeter (पल्स ऑक्सीमीटर)",
+    "metric_name": "SpO2 (ऑक्सीजन)",
+    "value": "98",
+    "unit": "%",
+    "timestamp": "2026-10-26 09:30 AM",
+    "notes": "Finger pulse oximeter reading (Dr Trust Signature)"
+  },
+  {
+    "device_type": "Pulse Oximeter (पल्स ऑक्सीमीटर)",
+    "metric_name": "Pulse Rate",
+    "value": "76",
+    "unit": "bpm",
+    "timestamp": "2026-10-26 09:30 AM",
+    "notes": "Perfusion index normal"
+  }
+]

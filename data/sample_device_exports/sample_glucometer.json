@@ -1,0 +1,18 @@
+[
+  {
+    "device_type": "Glucometer (शुगर नापने की मशीन)",
+    "metric_name": "Blood Sugar (फास्टिंग)",
+    "value": "110",
+    "unit": "mg/dL",
+    "timestamp": "2026-10-26 07:45 AM",
+    "notes": "Fasting blood sugar test (Accu-Chek Active)"
+  },
+  {
+    "device_type": "Glucometer (शुगर नापने की मशीन)",
+    "metric_name": "Blood Sugar (खाने के 2 घंटे बाद)",
+    "value": "145",
+    "unit": "mg/dL",
+    "timestamp": "2026-10-26 01:30 PM",
+    "notes": "Postprandial sugar test"
+  }
+]

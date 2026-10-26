@@ -1,0 +1,18 @@
+[
+  {
+    "device_type": "Blood Pressure Monitor (रक्तचाप मॉनिटर)",
+    "metric_name": "Blood Pressure",
+    "value": "120/80",
+    "unit": "mmHg",
+    "timestamp": "2026-10-26 08:00 AM",
+    "notes": "Morning resting reading (Omron HEM-7120)"
+  },
+  {
+    "device_type": "Blood Pressure Monitor (रक्तचाप मॉनिटर)",
+    "metric_name": "Pulse",
+    "value": "72",
+    "unit": "bpm",
+    "timestamp": "2026-10-26 08:00 AM",
+    "notes": "Resting pulse"
+  }
+]

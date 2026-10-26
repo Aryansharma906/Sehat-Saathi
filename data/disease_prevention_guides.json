@@ -1,0 +1,38 @@
+[
+  {
+    "id": "clean_water_sanitation",
+    "title_hindi": "1. स्वच्छ पेयजल और पेट की बीमारियों से बचाव (Clean Water & Hygiene)",
+    "category": "जल जनित रोग (Waterborne Diseases - Diarrhea, Typhoid, Cholera)",
+    "guidelines_hindi": [
+      "पीने का पानी हमेशा उबालकर या साफ कपड़े से छानकर पिएं।",
+      "भोजन पकाने और खाना खाने से पहले हाथ साबुन से कम से कम 20 सेकंड तक अवश्य धोएं।",
+      "दस्त या उल्टी होने पर तुरंत ओआरएस (ORS) का घोल या नमक-चीनी का पानी पिएं।",
+      "खुले में रखा या बासी भोजन न खाएं, हमेशा ताजा और ढका हुआ खाना खाएं।"
+    ],
+    "who_reference": "WHO / MoHFW Water Sanitation and Hygiene (WASH) Protocol"
+  },
+  {
+    "id": "vector_borne_prevention",
+    "title_hindi": "2. मच्छर जनित रोगों से सुरक्षा (Vector-Borne Disease Control)",
+    "category": "मलेरिया, डेंगू और चिकनगुनिया (Malaria, Dengue, Chikungunya)",
+    "guidelines_hindi": [
+      "घर के आसपास, कूलर, पुराने टायर या गमलों में पानी जमा न होने दें।",
+      "सोते समय हमेशा मच्छरदानी का प्रयोग करें या नीम का धुआं/मच्छर रोधक लगाएं।",
+      "शाम के समय पूरी आस्तीन के कपड़े पहनें ताकि मच्छर काटने से बचा जा सके।",
+      "यदि 2 दिन से अधिक तेज बुखार और बदन दर्द रहे, तो तुरंत नजदीकी PHC पर खून की जांच कराएं।"
+    ],
+    "who_reference": "National Vector Borne Disease Control Programme (NVBDCP)"
+  },
+  {
+    "id": "indoor_air_respiratory",
+    "title_hindi": "3. स्वच्छ हवा और सांस के रोगों से बचाव (Clean Air & Respiratory Health)",
+    "category": "अस्थमा, खांसी और टीबी (Asthma, Bronchitis, Tuberculosis)",
+    "guidelines_hindi": [
+      "चूल्हा जलाते समय रसोई में खिड़की या रोशनदान अवश्य खुला रखें ताकि धुआं बाहर निकल सके।",
+      "धूल-मिट्टी या पराली के धुएं में बाहर निकलते समय मुंह पर गमछा या मास्क लगाएं।",
+      "घर में किसी को भी बीड़ी या सिगरेट न पीने दें, विशेषकर बच्चों और बुजुर्गों के पास।",
+      "यदि खांसी 2 हफ्ते से अधिक रहे, तो नजदीकी सरकारी अस्पताल में बलगम की मुफ्त जांच करवाएं।"
+    ],
+    "who_reference": "National Tuberculosis Elimination Programme (NTEP)"
+  }
+]

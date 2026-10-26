@@ -1,0 +1,62 @@
+[
+  {
+    "number": "108",
+    "service_name": "Emergency Medical Ambulance (एम्बुलेंस सेवा)",
+    "jurisdiction": "All India National Health Mission (NHM)",
+    "dial_action": "tel:108",
+    "toll_free": true,
+    "available_24x7": true,
+    "primary_use": "Critical trauma, heart attack, breathing difficulty, unconsciousness, severe injury",
+    "languages": ["Hindi", "Regional State Languages", "English"]
+  },
+  {
+    "number": "112",
+    "service_name": "National Emergency Response Support System (ERSS)",
+    "jurisdiction": "Ministry of Home Affairs, Govt. of India",
+    "dial_action": "tel:112",
+    "toll_free": true,
+    "available_24x7": true,
+    "primary_use": "Unified single emergency number for Police, Fire, Ambulance, and Disaster",
+    "languages": ["Hindi", "Regional State Languages", "English"]
+  },
+  {
+    "number": "104",
+    "service_name": "Health Information & Medical Advice Helpline (स्वास्थ्य सलाह हेल्पलाइन)",
+    "jurisdiction": "State Health Departments / MoHFW",
+    "dial_action": "tel:104",
+    "toll_free": true,
+    "available_24x7": true,
+    "primary_use": "Tele-consultation with doctor, first-aid advice, blood bank availability, epidemic info",
+    "languages": ["Hindi", "Regional State Languages"]
+  },
+  {
+    "number": "102",
+    "service_name": "Janani Shishu Suraksha Karyakram (JSSK Maternity Ambulance)",
+    "jurisdiction": "National Health Mission (NHM)",
+    "dial_action": "tel:102",
+    "toll_free": true,
+    "available_24x7": true,
+    "primary_use": "Free transport for pregnant mothers for institutional delivery and sick infants",
+    "languages": ["Hindi", "Regional State Languages"]
+  },
+  {
+    "number": "14416",
+    "service_name": "Tele-MANAS National Mental Health Helpline",
+    "jurisdiction": "Ministry of Health and Family Welfare (MoHFW) / NIMHANS",
+    "dial_action": "tel:14416",
+    "toll_free": true,
+    "available_24x7": true,
+    "primary_use": "24/7 free mental health counseling, crisis intervention, anxiety, depression, insomnia",
+    "languages": ["Hindi", "20+ Official Indian Languages", "English"]
+  },
+  {
+    "number": "1075",
+    "service_name": "National Health & Disease Control Helpline",
+    "jurisdiction": "National Centre for Disease Control (NCDC)",
+    "dial_action": "tel:1075",
+    "toll_free": true,
+    "available_24x7": true,
+    "primary_use": "Communicable diseases, epidemic outbreaks, public health alerts",
+    "languages": ["Hindi", "English"]
+  }
+]

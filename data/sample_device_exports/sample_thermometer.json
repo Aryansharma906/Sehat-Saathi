@@ -1,0 +1,10 @@
+[
+  {
+    "device_type": "Digital Thermometer (थर्मामीटर)",
+    "metric_name": "Body Temperature (शरीर का तापमान)",
+    "value": "98.6",
+    "unit": "°F",
+    "timestamp": "2026-10-26 10:15 AM",
+    "notes": "Oral digital thermometer reading (Hicks / Omron)"
+  }
+]
