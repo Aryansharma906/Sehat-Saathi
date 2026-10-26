@@ -30,6 +30,8 @@ from services.health_issue_service import HealthIssueService, COMMON_ISSUE_TYPES
 from services.progress_tracker_service import ProgressTrackerService
 from services.mental_health_service import MentalHealthService
 from services.device_data_service import DeviceDataService
+from services.complication_prediction_service import ComplicationPredictionService
+from models.complication_prediction import ComplicationPredictionInput, RiskTier
 from storage.persistence import LocalStorageAdapter
 
 
@@ -694,6 +696,81 @@ with tab_vitals:
                     </a>
                 </div>
                 """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # Part C: AI / ML Health Complication Risk Prediction
+    with st.expander("🤖 AI / ML स्वास्थ्य जटिलता जोखिम पूर्वानुमान (Complication Prediction)", expanded=False):
+        st.markdown("""
+        यह मशीन लर्निंग (ML) मॉडल आपके रक्तचाप, शुगर, ऑक्सीजन और दवा नियमितता के आधार पर 
+        भविष्य में होने वाली स्वास्थ्य जटिलताओं (जैसे दिल का दौरा, स्ट्रोक, शुगर असंतुलन) के जोखिम का पूर्वानुमान लगाता है:
+        """)
+
+        col_cp1, col_cp2 = st.columns(2)
+        with col_cp1:
+            inp_age = st.number_input("मरीज की आयु (Age):", min_value=1, max_value=110, value=58, key="ml_age")
+            inp_sys = st.number_input("सिस्टोलिक बीपी (ऊपर का BP):", min_value=60, max_value=240, value=135, key="ml_sys")
+            inp_dia = st.number_input("डायस्टोलिक बीपी (नीचे का BP):", min_value=40, max_value=140, value=88, key="ml_dia")
+        with col_cp2:
+            inp_sugar = st.number_input("ब्लड शुगर (mg/dL):", min_value=40, max_value=500, value=130, key="ml_sugar")
+            inp_spo2 = st.number_input("ऑक्सीजन स्तर SpO2 (%):", min_value=60, max_value=100, value=97, key="ml_spo2")
+            inp_adh = st.slider("दवा समय पर लेने का प्रतिशत (%):", min_value=0, max_value=100, value=90, key="ml_adh")
+
+        # Multi-day BP trend analysis (Deep Learning time-series simulation)
+        with st.expander("📈 पिछले 3-4 दिनों के रक्तचाप का ट्रेंड (Deep Learning Sequence Analysis)", expanded=False):
+            st.caption("पिछले दिनों का सिस्टोलिक बीपी कॉमा (,) लगाकर लिखें:")
+            bp_seq_str = st.text_input("दैनिक बीपी क्रम (उदा. 125, 130, 142):", value="125, 130, 138", key="ml_bp_seq")
+
+        if st.button("🔮 जटिलता जोखिम की जांच करें (Predict Complication Risk)", key="btn_run_ml_predict"):
+            pred_input = ComplicationPredictionInput(
+                age=int(inp_age),
+                systolic_bp=float(inp_sys),
+                diastolic_bp=float(inp_dia),
+                blood_sugar=float(inp_sugar),
+                spo2=float(inp_spo2),
+                adherence_percentage=float(inp_adh),
+                active_medications_count=len(all_reminders) if 'all_reminders' in locals() and all_reminders else 2
+            )
+            
+            res = ComplicationPredictionService.predict_complication_risk(pred_input)
+
+            # Display Risk Tier & Score
+            tier_badge = "🟢" if res.risk_tier == RiskTier.LOW else ("🟡" if res.risk_tier == RiskTier.MODERATE else "🔴")
+            st.markdown(f"### {tier_badge} जोखिम स्कोर: **{res.risk_score_percentage}%** — {res.risk_tier.value}")
+            st.progress(res.risk_score_percentage / 100.0)
+
+            st.markdown(res.clinical_guidance_hindi)
+
+            st.markdown("#### 🔍 संभावित स्वास्थ्य जटिलताएं (Potential Complications):")
+            for c in res.potential_complications_hindi:
+                st.markdown(f"• **{c}**")
+
+            if res.key_risk_factors:
+                st.markdown("#### 📊 मुख्य जोखिम कारक (Key Contributing Drivers):")
+                for rf in res.key_risk_factors:
+                    badge = "⚠️" if rf.impact_level == "चिंताजनक" else "🚨"
+                    st.caption(f"{badge} **{rf.feature_name}** ({rf.observed_value}): {rf.explanation_hindi}")
+
+            # Check Deep Learning sequence trajectory
+            try:
+                trend_vals = [float(x.strip()) for x in bp_seq_str.split(",") if x.strip()]
+                if len(trend_vals) >= 2:
+                    t_res = ComplicationPredictionService.predict_temporal_trajectory(trend_vals)
+                    st.markdown("---")
+                    st.markdown(f"📈 **समय-श्रृंखला रुझान (Trajectory):** {t_res['trend_direction']}")
+                    st.caption(t_res['warning_message_hindi'])
+            except Exception:
+                pass
+
+            if res.emergency_dial_advised:
+                st.markdown("""
+                <div style="background-color:#ffebee; border-left:6px solid #d32f2f; padding:12px; border-radius:8px; margin-top:10px;">
+                    🚨 <b>आपातकालीन चेतावनी:</b> महत्वपूर्ण संकेतक संकट सीमा में हैं। 
+                    तुरंत <a href="tel:108" style="color:#d32f2f; font-weight:bold;">108 एम्बुलेंस</a> या नजदीकी अस्पताल से संपर्क करें!
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.caption(f"🔬 *मॉडल: {res.model_name}* | {res.disclaimer}")
 
 
 # -------------------------------------------------------------
