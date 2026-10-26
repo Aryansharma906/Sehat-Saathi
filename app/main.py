@@ -43,13 +43,56 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for Mobile-First, Accessible, High-Contrast UI
+# Custom CSS & PWA Meta for Cross-Platform Compatibility (iOS, Android & Desktop Web)
 st.markdown("""
+<!-- PWA & Mobile WebApp Compatibility Tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="सेहत साथी">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1b5e20">
+<link rel="manifest" href="static/manifest.json">
+<link rel="apple-touch-icon" href="static/icon-192.png">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('/static/sw.js').catch(function(err) {});
+    });
+  }
+</script>
+
 <style>
-    /* Mobile-first viewport and typography */
+    /* Responsive Viewport across iOS, Android & Desktop Web */
+    @media (max-width: 768px) {
+        .main {
+            max-width: 100% !important;
+            padding: 4px 10px !important;
+        }
+        /* iOS Safe Area Insets for iPhone notch & Home bar */
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+    @media (min-width: 769px) {
+        .main {
+            max-width: 660px !important;
+            margin: 20px auto !important;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            padding: 24px 30px !important;
+            border: 1px solid #eef2f6;
+        }
+    }
+
     .main {
-        max-width: 620px;
-        margin: 0 auto;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
     /* Large Accessible Touch Targets */
@@ -974,6 +1017,23 @@ with tab_settings:
     st.session_state.demo_mode = st.toggle("डेमो / ऑफलाइन मोड का उपयोग करें (Use Mock Mode without API)", value=st.session_state.demo_mode)
     if st.session_state.demo_mode:
         st.info("डेमो मोड सक्रिय है: पर्ची पढ़ने के लिए सिंथेटिक सुरक्षित टेस्ट डेटा का उपयोग किया जाएगा।")
+
+    # Cross-Platform Installation Guide (iOS, Android, Desktop Web)
+    with st.expander("📱 फोन व कंप्यूटर में ऐप इंस्टॉल करें (Install on iOS, Android & PC)", expanded=True):
+        st.markdown("""
+        **1. 🍏 iPhone / iPad (iOS Safari):**
+        - सफारी में नीचे **शेयर बटन (Share 📤)** दबाएं।
+        - नीचे स्क्रॉल करके **'होम स्क्रीन में जोड़ें' (Add to Home Screen ➕)** पर टैप करें।
+        - अब यह बिना ब्राउज़र पट्टी के फुल-स्क्रीन ऐप बन जाएगा।
+
+        **2. 🤖 Android फोन (Chrome / Samsung Internet):**
+        - क्रोम में ऊपर दाईं ओर **तीन बिंदुओं (⋮)** पर टैप करें।
+        - **'ऐप इंस्टॉल करें' (Install App)** या **'होम स्क्रीन पर जोड़ें' (Add to Home Screen)** चुनें।
+
+        **3. 💻 कंप्यूटर / लैपटॉप (Chrome / Edge Desktop):**
+        - एड्रेस बार में दाईं ओर दिए गए **इंस्टॉल बटन (⊕)** पर क्लिक करें।
+        - यह बिना ब्राउज़र टैब के अलग डेस्कटॉप विंडो में चलेगा।
+        """)
 
     st.markdown("---")
     if st.button("🗑️ सभी सहेजे गए रिमाइंडर हटाएं (Reset Saved Reminders)"):
