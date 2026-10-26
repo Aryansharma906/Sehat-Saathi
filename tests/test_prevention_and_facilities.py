@@ -35,6 +35,19 @@ def test_maps_url_generation():
     url_ja = PreventionAndFacilitiesService.build_maps_search_url("Jan Aushadhi Kendra", user_location="Jaipur")
     assert "Jan%20Aushadhi%20Kendra%20in%20Jaipur" in url_ja
 
+    # 3. Medical Store / Chemist query
+    url_chemist = PreventionAndFacilitiesService.build_maps_search_url("Medical Store Chemist Pharmacy")
+    assert "Medical%20Store%20Chemist%20Pharmacy%20near%20me" in url_chemist
+
+
+def test_online_ordering_guide():
+    guide = PreventionAndFacilitiesService.get_online_ordering_guide()
+    assert "title_hindi" in guide
+    assert "disclaimer_hindi" in guide
+    assert "सेहत साथी खुद दवाइयां नहीं बेचता है" in guide["disclaimer_hindi"]
+    assert len(guide["steps"]) == 3
+    assert len(guide["trusted_platforms"]) >= 3
+
 
 def test_sample_facilities_coordinates():
     facilities = PreventionAndFacilitiesService.get_sample_facilities()

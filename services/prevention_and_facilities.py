@@ -86,14 +86,57 @@ SAMPLE_HEALTH_FACILITIES: List[Dict[str, Any]] = [
         "timing": "सुबह 9:00 से रात 8:00 बजे",
         "latitude": 26.9050,
         "longitude": 75.7950
+    },
+    {
+        "name": "स्थानीय मेडिकल स्टोर व केमिस्ट (Local Medical Store / Pharmacy)",
+        "type": "निजी दवा की दुकान (Retail Chemist)",
+        "services": "सभी ब्रांडेड दवाएं, ओटीसी उत्पाद, इंजेक्शन व सर्जिकल सामान",
+        "timing": "सुबह 8:00 से रात 10:00 बजे",
+        "latitude": 26.9180,
+        "longitude": 75.7910
     }
 ]
 
 
+# Guidance for safely purchasing medicines online in India (Drugs & Cosmetics Act compliant)
+ONLINE_ORDERING_STEPS: Dict[str, Any] = {
+    "title_hindi": "घर बैठे ऑनलाइन दवा मंगवाने का सुरक्षित तरीका",
+    "disclaimer_hindi": "⚠️ सेहत साथी खुद दवाइयां नहीं बेचता है। भारतीय दवा कानूनों (Drugs & Cosmetics Act) के अनुसार डॉक्टर के वैध पर्चे के बिना कोई भी ऐप या दुकान शेड्यूल H दवाएं नहीं बेच सकती।",
+    "steps": [
+        {
+            "step_num": 1,
+            "title": "पर्चे की साफ तस्वीर रखें (Keep Clear Prescription)",
+            "desc": "पर्चे पर डॉक्टर का नाम, रजिस्ट्रेशन नंबर, तारीख और मरीज का नाम साफ दिखना चाहिए। ऑनलाइन ऐप बिना पर्चे के एंटीबायोटिक या बीपी/शुगर की दवाएं नहीं भेजते।"
+        },
+        {
+            "step_num": 2,
+            "title": "विश्वसनीय ऐप या स्थानीय केमिस्ट का चुनाव करें (Choose Trusted Channel)",
+            "desc": "ग्रामीण क्षेत्रों में नजदीकी केमिस्ट के व्हाट्सएप पर पर्चा भेजकर होम डिलीवरी लेना सबसे तेज और आसान होता है। या आधिकारिक 'जन औषधि सुगम' (Jan Aushadhi Sugam) ऐप, Tata 1mg, Apollo 24/7, या Netmeds का उपयोग करें।"
+        },
+        {
+            "step_num": 3,
+            "title": "दवा प्राप्त होने पर 3 जरूरी जांच (Check Upon Delivery)",
+            "desc": "1. दवा के पत्ते की सील बंद हो। 2. एक्सपायरी तारीख (Expiry Date) बची हो। 3. दवा का नाम और पावर (mg) आपके पर्चे से मिलती हो।"
+        }
+    ],
+    "trusted_platforms": [
+        {"name": "जन औषधि सुगम (सरकारी पोर्टल)", "url": "https://janaushadhi.gov.in/"},
+        {"name": "Tata 1mg (दवा डिलीवरी)", "url": "https://www.1mg.com/"},
+        {"name": "Apollo Pharmacy 24/7", "url": "https://www.apollopharmacy.in/"},
+        {"name": "Netmeds", "url": "https://www.netmeds.com/"}
+    ]
+}
+
+
 class PreventionAndFacilitiesService:
     """
-    Provides community disease prevention guidance and zero-friction map navigation.
+    Provides community disease prevention guidance, zero-friction map navigation,
+    and safe online pharmacy guidance.
     """
+
+    @classmethod
+    def get_online_ordering_guide(cls) -> Dict[str, Any]:
+        return ONLINE_ORDERING_STEPS
 
     @classmethod
     def get_prevention_topics(cls) -> List[Dict[str, Any]]:

@@ -431,16 +431,16 @@ with tab_facilities:
         st.markdown(
             f'<a href="{phc_url}" target="_blank" style="text-decoration:none;">'
             f'<div style="background-color:#1b5e20; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
-            f'🏥 सरकारी अस्पताल / PHC का रास्ता (Directions)'
+            f'🏥 सरकारी अस्पताल / PHC का रास्ता'
             f'</div></a>',
             unsafe_allow_html=True
         )
 
-        dr_url = PreventionAndFacilitiesService.build_maps_search_url("Doctor Clinic", user_locality)
+        chemist_url = PreventionAndFacilitiesService.build_maps_search_url("Medical Store Chemist Pharmacy", user_locality)
         st.markdown(
-            f'<a href="{dr_url}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background-color:#0277bd; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
-            f'🩺 नजदीकी डॉक्टर व क्लीनिक (Doctor Clinic)'
+            f'<a href="{chemist_url}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background-color:#00695c; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
+            f'🏪 नजदीकी मेडिकल स्टोर / केमिस्ट'
             f'</div></a>',
             unsafe_allow_html=True
         )
@@ -450,19 +450,34 @@ with tab_facilities:
         st.markdown(
             f'<a href="{ja_url}" target="_blank" style="text-decoration:none;">'
             f'<div style="background-color:#e65100; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
-            f'💊 जन औषधि केंद्र (Generic Medicine Store)'
+            f'💊 जन औषधि केंद्र (सस्ती जेनेरिक दवा)'
             f'</div></a>',
             unsafe_allow_html=True
         )
 
-        chc_url = PreventionAndFacilitiesService.build_maps_search_url("Community Health Centre CHC", user_locality)
+        dr_url = PreventionAndFacilitiesService.build_maps_search_url("Doctor Clinic", user_locality)
         st.markdown(
-            f'<a href="{chc_url}" target="_blank" style="text-decoration:none;">'
-            f'<div style="background-color:#4a148c; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
-            f'🚑 24 घंटे इमरजेंसी अस्पताल (CHC)'
+            f'<a href="{dr_url}" target="_blank" style="text-decoration:none;">'
+            f'<div style="background-color:#0277bd; color:white; text-align:center; padding:12px; border-radius:10px; font-weight:bold; margin-bottom:10px;">'
+            f'🩺 नजदीकी डॉक्टर व क्लीनिक'
             f'</div></a>',
             unsafe_allow_html=True
         )
+
+    # Online Ordering Guidance (Drugs & Cosmetics Act compliant)
+    order_guide = PreventionAndFacilitiesService.get_online_ordering_guide()
+    with st.expander("📦 घर बैठे ऑनलाइन दवा कैसे मंगवाएं? (How to Order Online Safely)", expanded=False):
+        st.markdown(f'<div class="disclaimer-banner">{order_guide["disclaimer_hindi"]}</div>', unsafe_allow_html=True)
+        st.markdown("#### 3 आसान नियम:")
+        for s in order_guide["steps"]:
+            st.markdown(f"**{s['step_num']}. {s['title']}:** {s['desc']}")
+
+        st.markdown("---")
+        st.markdown("#### विश्वसनीय प्लेटफॉर्म और पोर्टल (Trusted Platforms):")
+        cols_plat = st.columns(len(order_guide["trusted_platforms"]))
+        for col_p, plat in zip(cols_plat, order_guide["trusted_platforms"]):
+            with col_p:
+                st.markdown(f'[{plat["name"]}]({plat["url"]})')
 
     # Interactive Facility Map Preview
     import pandas as pd
