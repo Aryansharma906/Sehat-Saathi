@@ -201,8 +201,15 @@ async def create_schedule(request: Request):
     if conflicts and not body.get("acknowledge_conflicts"):
         return JSONResponse({"conflicts": conflicts, "created": []}, status_code=409)
     times = body.get("times")
-    if times is not None and (not isinstance(times, list) or any(not isinstance(t, str) or len(t) != 5 or t[2] != ":" for t in times)):
-        raise HTTPException(422, "Reminder times must use HH:MM format.")
+    if times is not None:
+        if (
+            not isinstance(times, list)
+            or not times
+            or any(not isinstance(value, str) or not re.fullmatch(r"(?:[01]\d|2[0-3]):[0-5]\d", value) for value in times)
+        ):
+            raise HTTPException(422, "Provide one or more valid reminder times in 24-hour HH:MM format.")
+        if len(set(times)) != len(times):
+            raise HTTPException(422, "Reminder times must be unique.")
     created = reminders.create_reminders_from_instruction(
         medicine,
         custom_times=times,
@@ -243,7 +250,13 @@ async def create_vital(request: Request):
     required = ("device_type", "metric_name", "value", "unit")
     if any(not str(body.get(key, "")).strip() for key in required):
         raise HTTPException(422, "Device, measure, value, and unit are required.")
-    reading = vitals.record_reading(*(str(body[key]).strip() for key in required), sync_source=str(body.get("sync_source", "Manual / Device Export")))
+    try:
+        reading = vitals.record_reading(
+            *(str(body[key]).strip() for key in required),
+            sync_source=str(body.get("sync_source", "Manual / Device Export")),
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     return JSONResponse({"reading": payload(reading)})
 
 

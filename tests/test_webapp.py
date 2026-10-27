@@ -52,6 +52,51 @@ def test_demo_prescriptions_keep_the_ambiguity_flags():
         assert c.post("/api/prescriptions/demo", json={"scenario": "invented"}).status_code == 400
 
 
+def test_live_scan_without_gemini_key_fails_clearly_without_fabricating_medicines(monkeypatch):
+    from io import BytesIO
+    from PIL import Image, ImageDraw
+
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    image = Image.new("RGB", (600, 450), "#d0d0d0")
+    draw = ImageDraw.Draw(image)
+    for y in range(50, 400, 45):
+        draw.line((40, y, 550, y), fill="#101010", width=5)
+    image_bytes = BytesIO()
+    image.save(image_bytes, format="JPEG")
+    with client() as c:
+        response = c.post("/api/prescriptions/scan", files={"prescription": ("sample.jpg", image_bytes.getvalue(), "image/jpeg")})
+
+    assert response.status_code == 200
+    prescription = response.json()["prescription"]
+    assert prescription["medicines"] == []
+    assert prescription["unresolved_fields"] == ["GEMINI_API_KEY"]
+
+
+def test_sample_prescription_to_confirmed_reminder_flow_is_end_to_end(tmp_path, monkeypatch):
+    from storage.persistence import LocalStorageAdapter
+
+    monkeypatch.setattr(web, "reminders", web.ReminderService(LocalStorageAdapter(tmp_path / "schedules.json")))
+    with client() as c:
+        sample = c.post("/api/prescriptions/demo", json={"scenario": "clean"}).json()["prescription"]
+        medicine = sample["medicines"][0]
+        assert medicine["user_confirmed"] is False
+        medicine["user_confirmed"] = True
+
+        created = c.post("/api/reminders", json={
+            "medicine": medicine,
+            "prescription_id": sample["id"],
+            "prescription_date": sample["prescription_date"],
+        })
+
+        assert created.status_code == 200
+        assert len(created.json()["created"]) == 1
+        reminder = created.json()["created"][0]
+        assert reminder["medicine_name"] == medicine["candidate_medicine_name"]
+        assert reminder["source_prescription_id"] == sample["id"]
+        overview = c.get("/api/overview").json()
+        assert overview["reminders"][0]["id"] == reminder["id"]
+
+
 def test_unconfirmed_medicine_cannot_create_a_reminder(tmp_path, monkeypatch):
     monkeypatch.setattr(web, "reminders", web.ReminderService(web.reminders.storage.__class__(tmp_path / "schedules.json")))
     medicine = {"raw_medicine_name": "Tab Example", "candidate_medicine_name": "Example", "dose_instruction_raw": "1 tablet", "frequency_raw": "OD", "timing_raw": "After food", "user_confirmed": False}
@@ -83,6 +128,29 @@ def test_explicitly_confirmed_reminders_can_be_managed_without_touching_user_dat
         assert web.reminders.get_all_reminders() == []
 
 
+def test_custom_reminder_times_reject_invalid_or_empty_values(tmp_path, monkeypatch):
+    from storage.persistence import LocalStorageAdapter
+
+    monkeypatch.setattr(web, "reminders", web.ReminderService(LocalStorageAdapter(tmp_path / "schedules.json")))
+    medicine = {
+        "raw_medicine_name": "Tab Example",
+        "candidate_medicine_name": "Example",
+        "dose_instruction_raw": "1 tablet",
+        "frequency_raw": "OD",
+        "timing_raw": "After food",
+        "user_confirmed": True,
+    }
+    with client() as c:
+        for times in (["99:99"], ["08:00", "08:00"], []):
+            response = c.post("/api/reminders", json={"medicine": medicine, "times": times})
+            assert response.status_code == 422
+        assert web.reminders.get_all_reminders() == []
+
+        created = c.post("/api/reminders", json={"medicine": medicine, "times": ["07:30", "19:45"]})
+        assert created.status_code == 200
+        assert [item["reminder_time"] for item in created.json()["created"]] == ["07:30", "19:45"]
+
+
 def test_vitals_checkins_and_issue_logging_use_service_validations(tmp_path, monkeypatch):
     from services.device_data_service import DeviceDataService
     from services.health_issue_service import HealthIssueService
@@ -98,6 +166,9 @@ def test_vitals_checkins_and_issue_logging_use_service_validations(tmp_path, mon
         assert reading.status_code == 200
         assert "Critical" in reading.json()["reading"]["status_flag"]
         assert c.post("/api/vitals", json={"metric_name":"SpO2"}).status_code == 422
+        invalid_reading = c.post("/api/vitals", json={"device_type":"Oximeter","metric_name":"SpO2","value":"unknown","unit":"%"})
+        assert invalid_reading.status_code == 422
+        assert len(web.vitals.get_all_readings()) == 1
         assert c.post("/api/wellness", json={"sleep":"Good Sleep","stress":"Normal","mood":"Positive","lang":"en"}).status_code == 200
         assert c.post("/api/progress", json={"feeling":"Much Better","adherence":"All Doses On Time","symptoms":"Fully Relieved","lang":"en"}).status_code == 200
         severe = c.post("/api/issues", json={"medicine_name":"Example","issue_type":"breathing difficulty","severity":"Severe"})

@@ -72,6 +72,25 @@ def test_device_bp_monitor_high_alert(temp_device_service):
     assert "सामान्य (120/80) से अधिक है" in reading.alert_message
 
 
+def test_invalid_known_vital_readings_are_rejected_instead_of_saved_as_normal(temp_device_service):
+    invalid_readings = [
+        ("Pulse Oximeter", "SpO2", "not a number", "%"),
+        ("BP Monitor", "Blood Pressure", "120", "mmHg"),
+        ("Glucometer", "Blood Sugar", "NaN", "mg/dL"),
+        ("Thermometer", "Body Temperature", "abc", "°F"),
+        ("Oximeter", "Pulse Rate", "72", "%"),
+    ]
+    for device, metric, value, unit in invalid_readings:
+        with pytest.raises(ValueError):
+            temp_device_service.record_reading(device, metric, value, unit)
+    assert temp_device_service.get_all_readings() == []
+
+
+def test_unknown_measurement_is_not_mislabeled_normal(temp_device_service):
+    reading = temp_device_service.record_reading("Demo sensor", "Unknown metric", "12", "units")
+    assert "Not assessed" in reading.status_flag
+
+
 def test_device_json_import_compatibility(temp_device_service):
     json_export = """
     [

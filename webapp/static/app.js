@@ -112,7 +112,16 @@ function showPrescription(prescription, demo = false) {
   state.prescription = prescription;
   const root = $("#prescription-results");
   if (!prescription || !prescription.medicines?.length) {
-    root.hidden = false; root.innerHTML = `<div class="surface empty-state"><strong>We couldn’t read any medicine details.</strong><p>${escapeHtml(prescription?.original_text || "Try a clearer photo, or ask a pharmacist to help you read it.")}</p></div>`; return;
+    const missingModelKey = prescription?.unresolved_fields?.includes("GEMINI_API_KEY");
+    const message = missingModelKey
+      ? (state.overview?.service_scope?.demo_read_only
+          ? "Live prescription reading is turned off in this public demo. You can still explore a synthetic sample without entering personal information."
+          : "Live prescription reading is not configured on this local setup. Add a Gemini API key to the local environment, or try a synthetic sample.")
+      : (prescription?.original_text || "Try a clearer photo, or ask a pharmacist to help you read it.");
+    root.hidden = false;
+    root.innerHTML = `<div class="surface empty-state"><strong>${missingModelKey ? "Prescription reading isn’t configured here yet." : "We couldn’t read any medicine details."}</strong><p>${escapeHtml(message)}</p>${!state.overview?.service_scope?.demo_read_only ? `<button class="button button-outline" type="button" data-demo="clean">Try a synthetic example</button>` : ""}</div>`;
+    root.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
   }
   const status = prescription.extraction_status || "NEEDS REVIEW";
   root.hidden = false;

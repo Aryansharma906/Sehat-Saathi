@@ -3,7 +3,7 @@ Unit Tests for Reminder Service & Storage
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timedelta
 from models.prescription import MedicineInstruction
 from models.reminder import Reminder
 from services.reminder_service import ReminderService
@@ -43,6 +43,7 @@ def test_reminder_crud_lifecycle(temp_storage):
     service.mark_as_taken(rem_id, True)
     loaded = service.get_all_reminders()
     assert loaded[0].taken_today is True
+    assert loaded[0].taken_date == datetime.now().date().isoformat()
 
     # 4. Delete reminder
     deleted = service.delete_reminder(rem_id)
@@ -70,3 +71,37 @@ def test_is_due_now_calculation():
     # If marked taken today, it is no longer due
     rem.taken_today = True
     assert service.is_due_now(rem, current_dt=dt_due) is False
+
+
+def test_due_window_wraps_across_midnight_and_ignores_paused_reminders():
+    service = ReminderService()
+    reminder = Reminder(
+        medicine_instruction_id="123",
+        medicine_name="Example",
+        reminder_time="23:30",
+    )
+    just_after_midnight = datetime(2026, 10, 27, 0, 0)
+    assert service.is_due_now(reminder, current_dt=just_after_midnight) is True
+
+    reminder.enabled = False
+    assert service.is_due_now(reminder, current_dt=just_after_midnight) is False
+
+
+def test_taken_state_resets_after_local_calendar_day_changes(temp_storage):
+    service = ReminderService(storage_adapter=temp_storage)
+    reminder = Reminder(
+        medicine_instruction_id="123",
+        medicine_name="Example",
+        reminder_time="08:30",
+    )
+    temp_storage.add_reminder(reminder)
+
+    service.mark_as_taken(reminder.id, True)
+    taken_dt = datetime.now()
+    next_day = datetime.combine(taken_dt.date() + timedelta(days=1), taken_dt.time())
+    taken_record = service.get_all_reminders(current_dt=taken_dt)[0]
+    assert taken_record.taken_today is True
+
+    reset_record = service.get_all_reminders(current_dt=next_day)[0]
+    assert reset_record.taken_today is False
+    assert reset_record.taken_date is None

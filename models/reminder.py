@@ -43,6 +43,10 @@ class Reminder(BaseModel):
         default=False,
         description="Rule 11: Indicates user tapped 'Mark as Taken', never assumed automatically."
     )
+    taken_date: Optional[str] = Field(
+        default=None,
+        description="Local calendar date on which the user explicitly marked this reminder taken."
+    )
 
     @field_validator("reminder_time")
     def validate_time_format(cls, v: str) -> str:

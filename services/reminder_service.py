@@ -128,8 +128,28 @@ class ReminderService:
                     })
         return conflicts
 
-    def get_all_reminders(self) -> List[Reminder]:
-        return self.storage.load_all_reminders()
+    def get_all_reminders(self, current_dt: Optional[datetime] = None) -> List[Reminder]:
+        """Load reminders and clear yesterday's taken state without assuming a dose was taken today."""
+        now = current_dt or datetime.now()
+        today = now.date().isoformat()
+        reminders = self.storage.load_all_reminders()
+        for reminder in reminders:
+            changed = False
+            if reminder.taken_today and reminder.taken_date is None:
+                # Existing records predate taken_date. Preserve their current-day state once,
+                # then future days can reset it safely.
+                reminder.taken_date = today
+                changed = True
+            elif reminder.taken_today and reminder.taken_date != today:
+                reminder.taken_today = False
+                reminder.taken_date = None
+                changed = True
+            elif not reminder.taken_today and reminder.taken_date is not None:
+                reminder.taken_date = None
+                changed = True
+            if changed:
+                self.storage.update_reminder(reminder)
+        return reminders
 
     def toggle_reminder(self, reminder_id: str) -> Optional[bool]:
         return self.storage.toggle_reminder(reminder_id)
@@ -160,6 +180,7 @@ class ReminderService:
         for r in reminders:
             if r.id == reminder_id:
                 r.taken_today = taken
+                r.taken_date = datetime.now().date().isoformat() if taken else None
                 return self.storage.update_reminder(r)
         return False
 
@@ -174,7 +195,11 @@ class ReminderService:
             # Compare minutes from midnight
             now_minutes = now.hour * 60 + now.minute
             rem_minutes = rem_time.hour * 60 + rem_time.minute
-            diff = abs(now_minutes - rem_minutes)
-            return diff <= 60 and not reminder.taken_today
+            raw_diff = abs(now_minutes - rem_minutes)
+            diff = min(raw_diff, 24 * 60 - raw_diff)
+            is_marked_taken_today = reminder.taken_today and reminder.taken_date in {
+                None, now.date().isoformat()
+            }
+            return reminder.enabled and diff <= 60 and not is_marked_taken_today
         except Exception:
             return False

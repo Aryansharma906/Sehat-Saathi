@@ -6,6 +6,8 @@ Enforces Medical Safety Invariants (Rule 8: Vitals monitoring, not automated dia
 """
 
 import json
+import math
+import re
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from models.vitals_and_mental_health import DeviceVitalsReading
@@ -56,54 +58,87 @@ class DeviceDataService:
         alert = None
 
         val_clean = value.strip()
+        metric_lower = metric_name.casefold()
+
+        def parse_number(raw: str, label: str) -> float:
+            try:
+                number = float(raw)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"Enter a valid {label} reading.") from exc
+            if not math.isfinite(number):
+                raise ValueError(f"Enter a finite {label} reading.")
+            return number
 
         # Clinical Range Checks
-        if "SpO2" in metric_name or "ऑक्सीजन" in metric_name:
-            try:
-                num = float(val_clean.replace("%", ""))
-                if num < 92:
-                    status = "गंभीर (Critical Alert)"
-                    alert = "⚠️ ऑक्सीजन का स्तर (SpO2) 92% से कम है। कृपया तुरंत डॉक्टर या 108 एम्बुलेंस से संपर्क करें।"
-                elif num < 95:
-                    status = "चेतावनी (Low Warning)"
-                    alert = "ऑक्सीजन स्तर सामान्य से हल्का कम है। 15 मिनट बाद दोबारा नापें।"
-            except Exception:
-                pass
+        if "spo2" in metric_lower or "ऑक्सीजन" in metric_name:
+            if unit.strip().casefold() not in {"%", "percent"}:
+                raise ValueError("SpO₂ must be recorded as a percentage.")
+            num = parse_number(val_clean.replace("%", "").strip(), "SpO₂")
+            if not 0 <= num <= 100:
+                raise ValueError("SpO₂ must be between 0 and 100%.")
+            if num < 92:
+                status = "गंभीर (Critical Alert)"
+                alert = "⚠️ ऑक्सीजन का स्तर (SpO₂) 92% से कम है। कृपया तुरंत डॉक्टर या 108 एम्बुलेंस से संपर्क करें।"
+            elif num < 95:
+                status = "चेतावनी (Low Warning)"
+                alert = "ऑक्सीजन स्तर सामान्य से हल्का कम है। 15 मिनट बाद दोबारा नापें।"
 
-        elif "Blood Pressure" in metric_name or "रक्तचाप" in metric_name:
-            try:
-                parts = val_clean.split("/")
-                if len(parts) == 2:
-                    sys, dia = float(parts[0]), float(parts[1])
-                    if sys >= 140 or dia >= 90:
-                        status = "उच्च रक्तचाप (High BP Warning)"
-                        alert = "⚠️ रक्तचाप सामान्य (120/80) से अधिक है। आराम करें और डॉक्टर को सूचित करें।"
-                    elif sys < 90 or dia < 60:
-                        status = "निम्न रक्तचाप (Low BP Warning)"
-                        alert = "⚠️ रक्तचाप कम (Low BP) है। ओआरएस या पानी पिएं और डॉक्टर से पूछें।"
-            except Exception:
-                pass
+        elif "blood pressure" in metric_lower or "रक्तचाप" in metric_name:
+            if unit.strip().replace(" ", "").casefold() != "mmhg":
+                raise ValueError("Blood pressure must be recorded in mmHg.")
+            match = re.fullmatch(r"\s*(\d+(?:\.\d+)?)\s*/\s*(\d+(?:\.\d+)?)\s*", val_clean)
+            if not match:
+                raise ValueError("Blood pressure must use systolic/diastolic format, such as 120/80.")
+            systolic, diastolic = (float(part) for part in match.groups())
+            if not (0 < systolic <= 350 and 0 < diastolic <= 250):
+                raise ValueError("Enter a plausible systolic/diastolic blood pressure reading.")
+            if systolic >= 140 or diastolic >= 90:
+                status = "उच्च रक्तचाप (High BP Warning)"
+                alert = "⚠️ रक्तचाप सामान्य (120/80) से अधिक है। आराम करें और डॉक्टर से सलाह लें।"
+            elif systolic < 90 or diastolic < 60:
+                status = "निम्न रक्तचाप (Low BP Warning)"
+                alert = "रक्तचाप कम हो सकता है। यदि आप अस्वस्थ महसूस कर रहे हैं, तो डॉक्टर से सलाह लें।"
 
-        elif "Blood Sugar" in metric_name or "शुगर" in metric_name:
-            try:
-                num = float(val_clean)
-                if num > 200:
-                    status = "उच्च शुगर (High Sugar Warning)"
-                    alert = "रक्त शर्करा 200 mg/dL से अधिक है। मीठा न लें और डॉक्टर से परामर्श करें।"
-                elif num < 70:
-                    status = "कम शुगर (Low Sugar / Hypo Alert)"
-                    alert = "⚠️ शुगर 70 mg/dL से कम है। तुरंत थोड़ा मीठा पानी या ग्लूकोज लें।"
-            except Exception:
-                pass
+        elif "blood sugar" in metric_lower or "शुगर" in metric_name:
+            if unit.strip().replace(" ", "").casefold() != "mg/dl":
+                raise ValueError("Blood sugar must be recorded in mg/dL.")
+            num = parse_number(val_clean, "blood sugar")
+            if not 0 < num <= 2000:
+                raise ValueError("Blood sugar must be greater than 0 and no more than 2000 mg/dL.")
+            if num > 200:
+                status = "उच्च शुगर (High Sugar Warning)"
+                alert = "रक्त शर्करा की रीडिंग 200 mg/dL से अधिक है। अपने डॉक्टर से सलाह लें।"
+            elif num < 70:
+                status = "कम शुगर (Low Sugar / Hypo Alert)"
+                alert = "रक्त शर्करा की रीडिंग 70 mg/dL से कम है। अपने डॉक्टर की सलाह या स्थानीय आपातकालीन मार्गदर्शन लें।"
 
-        elif "Temperature" in metric_name or "बुखार" in metric_name:
-            try:
-                num = float(val_clean.replace("°F", "").replace("F", ""))
-                if num >= 101.0:
-                    status = "तेज बुखार (High Fever)"
-                    alert = "⚠️ तेज बुखार (101°F+) है। ठंडे पानी की पट्टी रखें और डॉक्टर की सलाह लें।"
-            except Exception:
-                pass
+        elif "temperature" in metric_lower or "तापमान" in metric_name or "बुखार" in metric_name:
+            unit_normalized = unit.strip().replace("°", "").casefold()
+            raw_temperature = val_clean.replace("°", "").strip()
+            if raw_temperature.casefold().endswith("f") or raw_temperature.casefold().endswith("c"):
+                raw_temperature = raw_temperature[:-1].strip()
+            num = parse_number(raw_temperature, "temperature")
+            if unit_normalized in {"c", "celsius"}:
+                temperature_f = num * 9 / 5 + 32
+            elif unit_normalized in {"f", "fahrenheit"}:
+                temperature_f = num
+            else:
+                raise ValueError("Temperature unit must be °F or °C.")
+            if not 68 <= temperature_f <= 122:
+                raise ValueError("Enter a plausible body-temperature reading.")
+            if temperature_f >= 101.0:
+                status = "तेज बुखार (High Fever)"
+                alert = "तापमान अधिक है। आराम करें और डॉक्टर की सलाह लें।"
+
+        elif "pulse" in metric_lower or "नाड़ी" in metric_name:
+            if unit.strip().casefold() not in {"bpm", "beats/min", "beats per minute"}:
+                raise ValueError("Pulse must be recorded in beats per minute (bpm).")
+            num = parse_number(val_clean, "pulse")
+            if not 0 < num <= 300:
+                raise ValueError("Pulse must be greater than 0 and no more than 300 beats per minute.")
+        else:
+            # Do not label unsupported measurements normal when no assessment was made.
+            status = "Not assessed (unsupported measurement)"
 
         reading = DeviceVitalsReading(
             device_type=device_type,

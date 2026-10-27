@@ -1128,6 +1128,7 @@ with st.expander(t("emergency_drawer_title", lang), expanded=st.session_state.ge
                 f"{ag_icon} {label_text} ({ag_num})",
                 tel_link,
                 use_container_width=True,
+                key=f"emg_call_{ag_num}",
             )
 
 
