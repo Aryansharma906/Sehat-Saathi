@@ -1,1 +1,512 @@
-[]
+[
+  {
+    "id": "21e3ee3c-2a7c-4181-bd99-fc3daf76e2cd",
+    "timestamp": "2026-10-26 11:53 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "b59b4994-8aad-417f-805a-8bf68bd5fa18",
+    "timestamp": "2026-10-26 11:53 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "e7470579-494b-4cfb-8fed-2738f18960c6",
+    "timestamp": "2026-10-26 11:53 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "964cf3c2-6805-4243-94a3-9e422edfea87",
+    "timestamp": "2026-10-26 11:48 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "39c2462a-c4f8-48c2-a775-73f4bd39c88f",
+    "timestamp": "2026-10-26 11:48 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "f6a3930b-69a1-4944-b02e-fbe3855d3465",
+    "timestamp": "2026-10-26 11:48 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "6a1f384d-7e7c-4bfa-af96-a436061a6465",
+    "timestamp": "2026-10-26 11:46 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "563e61f1-1f30-4c46-b271-74bc4a0830d2",
+    "timestamp": "2026-10-26 11:46 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "14a8f4f5-23be-45aa-9883-df8a95da2c2d",
+    "timestamp": "2026-10-26 11:46 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "fb604aa2-336d-41f1-9460-c26b1ff103fc",
+    "timestamp": "2026-10-26 11:43 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "a161748f-3927-4e6f-8940-b3aa814a75cb",
+    "timestamp": "2026-10-26 11:43 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "281b60d1-b0ff-4dc0-bcc9-5a97ca9c7405",
+    "timestamp": "2026-10-26 11:43 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "d5e40f20-325d-4154-bffd-da8ac4a88267",
+    "timestamp": "2026-10-26 11:36 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "0ae8dc91-8aee-4af3-9f92-a565e05fb393",
+    "timestamp": "2026-10-26 11:36 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "22bc6c38-42a2-4867-9292-eb57d94b1457",
+    "timestamp": "2026-10-26 11:36 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "c53e05ba-03aa-4f03-8240-47450f74a7c7",
+    "timestamp": "2026-10-26 11:35 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "be5fe5de-dd35-4fe0-8f77-9fe5d89860da",
+    "timestamp": "2026-10-26 11:35 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "d27ae69f-cb72-41be-840d-9ae2f7d7c4fa",
+    "timestamp": "2026-10-26 11:35 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "2d461c07-af98-4439-9367-793733bc1de8",
+    "timestamp": "2026-10-26 11:26 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "4348e878-7ecb-4016-8f24-6972be0280d1",
+    "timestamp": "2026-10-26 11:26 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "3271c1bc-2467-4a83-9196-1ee2466706ca",
+    "timestamp": "2026-10-26 11:26 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "690c5b52-c555-4548-ba20-1dfda73716bb",
+    "timestamp": "2026-10-26 11:23 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "36a79fb2-640c-4fae-9e78-aa923bee152d",
+    "timestamp": "2026-10-26 11:23 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "11f32816-3a14-46cb-a22f-82fa7673f9d2",
+    "timestamp": "2026-10-26 11:23 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "0520558e-7c15-4a76-9947-d3dbdbd8fd19",
+    "timestamp": "2026-10-26 11:15 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "7e6521b5-3af4-4f16-9757-8fc91ad13337",
+    "timestamp": "2026-10-26 11:15 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "789a9c47-d083-4c9b-82cf-5bc6e0637670",
+    "timestamp": "2026-10-26 11:15 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "3c30eb6d-2b60-4b46-a747-c37a41a04b8a",
+    "timestamp": "2026-10-26 11:10 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "54fa16a2-8e65-4d9f-8150-b91f5fa1dcbf",
+    "timestamp": "2026-10-26 11:10 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "98e509e8-4b4c-46f9-9b6a-bf323222ca3e",
+    "timestamp": "2026-10-26 11:10 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "5b722b69-708c-4c3a-9292-a649a7a6346e",
+    "timestamp": "2026-10-26 11:02 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "881a767c-251e-4832-877e-5fc07873a0e0",
+    "timestamp": "2026-10-26 11:02 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "6cb13cbf-ce0c-4aeb-bce9-21371b3cc91b",
+    "timestamp": "2026-10-26 11:02 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "7d3e9288-8a2a-497c-8c1d-c28c38a998a6",
+    "timestamp": "2026-10-26 11:00 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "781fe835-f4b9-42f0-91ac-7b0d4d0e025e",
+    "timestamp": "2026-10-26 11:00 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "972ee07d-af4f-48ed-b8de-1359e786565e",
+    "timestamp": "2026-10-26 11:00 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "7c4b8593-c065-49cf-b9c9-98101b21e1a1",
+    "timestamp": "2026-10-26 10:57 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "0c61a4f2-7fa0-41d4-a3dd-5a367560c7bb",
+    "timestamp": "2026-10-26 10:57 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "6fa6e9b2-61a4-4803-88bb-74311e9ca62c",
+    "timestamp": "2026-10-26 10:57 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "695689ba-c64a-4c1c-b4d5-0c2e0f539fe7",
+    "timestamp": "2026-10-26 10:56 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "a8d40939-8281-4955-9ff8-5c69a25583d8",
+    "timestamp": "2026-10-26 10:56 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "9d0de9b0-dfac-4bb3-ac3a-c40db28ea322",
+    "timestamp": "2026-10-26 10:56 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "4a398db4-da92-4184-8d90-8f4ef2c7d747",
+    "timestamp": "2026-10-26 10:34 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "c8a6d54c-e7bd-4a55-9f59-f67375f2bbdd",
+    "timestamp": "2026-10-26 10:34 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "76e5dd13-f860-425a-8f81-dbb882de074f",
+    "timestamp": "2026-10-26 10:34 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "5d84776e-ef12-4657-9e3f-d115942d2efa",
+    "timestamp": "2026-10-26 10:21 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "7e547061-788e-4bf5-9061-6ab31142540e",
+    "timestamp": "2026-10-26 10:21 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "1a0b07df-3c96-412c-a6cd-a316f4164b8e",
+    "timestamp": "2026-10-26 10:21 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "f627b6c9-f71b-4261-beef-783d882d84d5",
+    "timestamp": "2026-10-26 10:19 PM",
+    "sleep_quality": "अच्छी नींद",
+    "stress_level": "सामान्य",
+    "mood_status": "प्रसन्न",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 आपका मानसिक संतुलन बहुत अच्छा है। नियमित दिनचर्या, सुबह की धूप और परिवार से बातचीत जारी रखें।",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "d3bbcfe3-2f9a-464a-a903-db1b85f8ca08",
+    "timestamp": "2026-10-26 10:19 PM",
+    "sleep_quality": "Achhi Neend",
+    "stress_level": "Samanya",
+    "mood_status": "Khush",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Aapka mental wellness bahut accha hai. Daily routine, subah ki dhoop aur family se baat-cheet continue rakhein.",
+    "tele_manas_recommended": false
+  },
+  {
+    "id": "8389b4cb-4422-48d2-8795-5aed8764da69",
+    "timestamp": "2026-10-26 10:19 PM",
+    "sleep_quality": "Good Sleep",
+    "stress_level": "Normal",
+    "mood_status": "Positive",
+    "wellness_score": 100,
+    "supportive_advice_hindi": "🌸 Your mental wellness is excellent. Maintain your daily routine, morning sunshine, and open conversations with family.",
+    "tele_manas_recommended": false
+  }
+]

@@ -1,1 +1,512 @@
-[]
+[
+  {
+    "id": "e614ae65-0421-42bf-a137-b2d6d5654fe4",
+    "timestamp": "2026-10-26 11:53 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "5e556d28-6777-4b32-992d-9eb087699a1c",
+    "timestamp": "2026-10-26 11:53 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "73fe02e7-fb9c-4def-8a2a-8c9550a1f7df",
+    "timestamp": "2026-10-26 11:53 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "33985c76-a136-4ff1-a777-4f9abe38fd5f",
+    "timestamp": "2026-10-26 11:48 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "e9cb99a9-0de8-48c9-a23e-e9195df85e98",
+    "timestamp": "2026-10-26 11:48 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "bf4726c6-2c39-4aa3-92e3-7c4ab9475d88",
+    "timestamp": "2026-10-26 11:48 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "c2ebbd8c-abbd-49e4-9053-90ba58de4095",
+    "timestamp": "2026-10-26 11:46 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "4782a150-3c26-46ce-a0a7-466d12feeec4",
+    "timestamp": "2026-10-26 11:46 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "0e378638-4612-4620-a4fe-27e575aa2bc0",
+    "timestamp": "2026-10-26 11:46 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "4340bee2-5bc2-4be0-ae58-5cfa038af674",
+    "timestamp": "2026-10-26 11:43 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "106e1b7d-3c57-4b43-b93e-62028a30a6db",
+    "timestamp": "2026-10-26 11:43 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "03faad11-ee2b-4e58-8c0b-f776a5683f55",
+    "timestamp": "2026-10-26 11:43 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "6898731d-0aac-428b-aa03-64f0d23f6f01",
+    "timestamp": "2026-10-26 11:36 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "f76ccf72-644b-452f-9ef2-7de5d3f5d9a2",
+    "timestamp": "2026-10-26 11:36 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "17d847df-aa37-435b-8519-54d2a6da9775",
+    "timestamp": "2026-10-26 11:36 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "52416619-846e-490d-98cc-5d2f72ad3dc9",
+    "timestamp": "2026-10-26 11:35 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "387a79f1-760c-4e03-a917-449275ee9639",
+    "timestamp": "2026-10-26 11:35 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "f899a286-2d55-4275-ac87-9c9813e5e466",
+    "timestamp": "2026-10-26 11:35 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "056a146f-5ffb-4150-8447-14cf96ace2e1",
+    "timestamp": "2026-10-26 11:26 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "c463055b-106c-4825-8655-8bcab1674728",
+    "timestamp": "2026-10-26 11:26 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "60f8b041-170e-4cd9-a7e2-526c099d4501",
+    "timestamp": "2026-10-26 11:26 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "ac96ae9a-9ca4-4e13-934d-32ef8399407e",
+    "timestamp": "2026-10-26 11:23 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "5dab8711-a967-4a78-990e-43c5d5254df4",
+    "timestamp": "2026-10-26 11:23 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "7b4a741f-1913-4eff-8d52-2e02b7afc70e",
+    "timestamp": "2026-10-26 11:23 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "ac2143fb-d9af-48ff-88a6-ce31d98abc42",
+    "timestamp": "2026-10-26 11:15 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "99dafddb-944f-45f4-8bac-39742bde2a4e",
+    "timestamp": "2026-10-26 11:15 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "2e73869f-98e0-4d0d-851c-613f000af81e",
+    "timestamp": "2026-10-26 11:15 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "de6c3d44-e990-4d22-9dac-ec74b30c0019",
+    "timestamp": "2026-10-26 11:10 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "fa5e9bcf-6ab8-42bd-a081-b7de3503579b",
+    "timestamp": "2026-10-26 11:10 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "18812eea-958d-4fed-8d52-8b92cd5bb83a",
+    "timestamp": "2026-10-26 11:10 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "49b45d00-993c-4258-b307-694ac4cfc395",
+    "timestamp": "2026-10-26 11:02 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "930c330f-ae11-4534-af32-8b9e16580cd6",
+    "timestamp": "2026-10-26 11:02 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "bc76cf91-f57c-4412-8319-aec5bb308b20",
+    "timestamp": "2026-10-26 11:02 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "ec717373-8055-4b9f-823f-fe933d280adf",
+    "timestamp": "2026-10-26 11:00 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "aa8f8c18-7a37-437d-8f8e-cb72cf1de173",
+    "timestamp": "2026-10-26 11:00 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "aef617a7-c35e-48ec-9e5a-211decb781ae",
+    "timestamp": "2026-10-26 11:00 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "a54a8797-2bed-4943-9949-d9cd9a25d9d9",
+    "timestamp": "2026-10-26 10:57 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "4e6dabbd-868b-424f-b618-6205c408773f",
+    "timestamp": "2026-10-26 10:57 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "abd4e455-0019-4d2e-af5d-e46a4aba4cee",
+    "timestamp": "2026-10-26 10:57 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "c5150ea7-b808-43f3-9e3a-ad68e43b6212",
+    "timestamp": "2026-10-26 10:56 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "42c5d091-38aa-49e9-807a-1a56c3c75020",
+    "timestamp": "2026-10-26 10:56 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "8751497e-1bb0-4017-89c6-d757d1404ade",
+    "timestamp": "2026-10-26 10:56 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "5e4585e1-2368-4983-80fa-c9a68a4f7615",
+    "timestamp": "2026-10-26 10:34 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "5d346d6d-7b5c-4292-8a56-732019aaa37f",
+    "timestamp": "2026-10-26 10:34 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "7227881d-7328-4fb0-9765-b0c26449b762",
+    "timestamp": "2026-10-26 10:34 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "6f41c530-b0bd-435e-bc58-76289610541c",
+    "timestamp": "2026-10-26 10:21 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "7db1c278-de41-41d4-b206-758e4051e8e1",
+    "timestamp": "2026-10-26 10:21 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "b9bd1150-085c-466c-8fc8-9d73fc518776",
+    "timestamp": "2026-10-26 10:21 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "dc16ffed-704d-47ab-951b-76943aee527c",
+    "timestamp": "2026-10-26 10:19 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 आपका स्वास्थ्य सुधार बहुत अच्छा है! डॉक्टर द्वारा बताया गया पूरा कोर्स समय पर समाप्त करें।",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "30c95ad1-441f-47bb-ae11-ae49b37c8915",
+    "timestamp": "2026-10-26 10:19 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Aapka health progress bahut accha hai! Doctor dwara bataya gaya poora course time par complete karein.",
+    "doctor_visit_advised": false
+  },
+  {
+    "id": "3a88afd1-0ff6-4f2b-990b-f02d3f203dbd",
+    "timestamp": "2026-10-26 10:19 PM",
+    "overall_feeling": "😊 बहुत आराम है (Feeling Much Better)",
+    "adherence_status": "✅ हां, सभी खुराक समय पर लीं (All Doses on Time)",
+    "symptom_relief": "🟢 लक्षण लगभग खत्म हो चुके हैं (Fully Relieved)",
+    "recovery_score": 100,
+    "recommendation_hindi": "🌟 Your recovery progress is great! Complete the full medication course prescribed by your doctor.",
+    "doctor_visit_advised": false
+  }
+]
