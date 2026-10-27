@@ -30,7 +30,7 @@ The plain-language short brief is also available at `docs/PROJECT_BRIEF.md`.
 - Public Vercel entry point (`index.py`) forces `SEHAT_ENV=demo`; demo storage is isolated under the temporary directory, write routes are blocked, and only bundled synthetic prescription samples are intended to be used.
 - Vercel deployment configuration excludes repository `data/`, local environment files, tests, and development folders from the deploy bundle.
 - Local non-demo data services use JSON files and a local SQLite database. They do not support multiple authenticated users or secure tenant separation.
-- The facility directory is a small Neemrana / Rajasthan / NCR demo cluster. It is not nationwide, and there is no U.S. public-service configuration.
+- The curated facility directory is a small Neemrana / Rajasthan / NCR demo cluster. Other Indian locations use best-effort OpenStreetMap lookup, not a verified nationwide directory; there is no U.S. public-service configuration.
 - Gemini prescription extraction requires an API key. Mock/synthetic flows exist for local tests and sample behavior.
 
 ### Authentication and clinician claims
@@ -86,7 +86,7 @@ This flow does not imply clinical validation or secure multi-user service.
 - Prescription image upload, image quality checks/photo guidance, Gemini multimodal extraction, mock/synthetic sample prescriptions, uncertainty/raw text display.
 - Hindi plain-language explanation/read-aloud helpers and medicine-reference lookup based on Indian NLEM/Jan Aushadhi-style data.
 - Reminder create/update/toggle/delete and mark-taken flows, with required user confirmation, traceability, non-destructive merge, and conflict warnings.
-- Constrained prescription Q&A with guardrails against diagnosis and emergency symptom diversion.
+- Multilingual symptom-assessment chat that can cautiously rank plausible causes, ask follow-up questions, and flag urgent warning signs while distinguishing tentative assessments from clinician-confirmed diagnoses.
 - Vitals logging/import samples for blood pressure, oxygen saturation, glucose, and temperature, with prototype range alerts.
 - Mental-wellness check-in and Tele-MANAS contact information; observational recovery questionnaire/trend; treatment reaction/issue logging and formatted caregiver/clinician message.
 - India-focused emergency dial links and public-health guidance.

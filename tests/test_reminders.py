@@ -28,7 +28,10 @@ def test_reminder_crud_lifecycle(temp_storage):
     # 1. Create confirmed medicine
     med = MedicineInstruction(
         raw_medicine_name="Tab Pan-D",
+        candidate_medicine_name="Pan-D",
+        dose_instruction_raw="1 capsule",
         frequency_raw="OD",
+        timing_raw="Before food",
         user_confirmed=True
     )
     reminders = service.create_reminders_from_instruction(med)
@@ -105,3 +108,32 @@ def test_taken_state_resets_after_local_calendar_day_changes(temp_storage):
     reset_record = service.get_all_reminders(current_dt=next_day)[0]
     assert reset_record.taken_today is False
     assert reset_record.taken_date is None
+
+
+def test_unknown_and_as_needed_frequencies_do_not_create_default_reminders(temp_storage):
+    service = ReminderService(storage_adapter=temp_storage)
+    for frequency in ("SOS / as needed", "when required"):
+        medicine = MedicineInstruction(
+            raw_medicine_name="Example",
+            candidate_medicine_name="Example",
+            dose_instruction_raw="1 tablet",
+            frequency_raw=frequency,
+            timing_raw="As prescribed",
+            user_confirmed=True,
+        )
+        with pytest.raises(ValueError, match="does not map to a safe reminder schedule"):
+            service.create_reminders_from_instruction(medicine)
+    assert service.get_all_reminders() == []
+
+
+def test_reminders_require_confirmed_dose_timing_and_frequency(temp_storage):
+    service = ReminderService(storage_adapter=temp_storage)
+    medicine = MedicineInstruction(
+        raw_medicine_name="Example",
+        candidate_medicine_name="Example",
+        frequency_raw="OD",
+        user_confirmed=True,
+    )
+    with pytest.raises(ValueError, match="confirmed dose is required"):
+        service.create_reminders_from_instruction(medicine)
+    assert service.get_all_reminders() == []

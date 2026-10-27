@@ -76,7 +76,7 @@ def test_emergency_drawer_link_buttons(app):
     assert len(app.exception) == 0
 
     # Verify link buttons exist and have correct tel schemes
-    call_108 = [l for l in app.link_button if l.key == "emg_call_108"]
+    call_108 = [l for l in app.link_button if l.url == "tel:108"]
     assert len(call_108) == 1
     assert call_108[0].url == "tel:108"
 
@@ -88,7 +88,7 @@ def test_segmented_control_tab_switching(app):
     assert len(app.exception) == 0
 
     # Verify maps link buttons in Tab 4
-    map_links = [l for l in app.link_button if "link_maps_" in str(l.key)]
+    map_links = [l for l in app.link_button if "google.com/maps/search" in l.url]
     assert len(map_links) == 4
 
     # Switch to Doctor & Staff Portal (Index 5)

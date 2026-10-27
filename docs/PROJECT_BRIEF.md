@@ -13,7 +13,7 @@ The idea is to support patients, older adults, and family caregivers—especiall
 - Read a prescription image and show the text it could identify for a person to review.
 - Create medicine reminders only after the person checks and confirms the details.
 - Record health readings, wellbeing check-ins, recovery notes, and medicine concerns.
-- Answer some general questions about medicine instructions, with limits against diagnosis.
+- Discuss symptoms and cautiously compare plausible causes, ask relevant follow-up questions, and explain medicine instructions. The chat distinguishes tentative assessments from a clinician-confirmed diagnosis and does not recommend personal prescription dose changes.
 - Show a small demo directory of nearby care services for selected places around Rajasthan and the NCR region.
 - Display India-focused emergency and support contacts.
 

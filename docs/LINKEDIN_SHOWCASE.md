@@ -21,7 +21,7 @@ Here is the simple, safe workflow:
 ⚠️ 𝐕𝐞𝐫𝐢𝐟𝐲 (The Core Difference): Ambiguous handwriting or uncertain doses are prominently highlighted in amber. A medication reminder can NEVER be created without explicit human confirmation.
 🗣️ 𝐄𝐱𝐩𝐥𝐚𝐢𝐧: Confirmed instructions are broken down in simple, jargon-free Hindi, with audio read-aloud support for low-literacy users.
 ⏰ 𝐑𝐞𝐦𝐢𝐧𝐝: Scheduled times (morning, afternoon, night) with real-time "Due Now" indicators.
-💬 𝐀𝐬𝐤: Grounded Q&A assistant with strict safety guardrails that refuses diagnostic queries and routes emergencies immediately to local services (108/112).
+💬 𝐀𝐬𝐤: Health-information chat that compares plausible symptom causes, asks focused follow-up questions, and points out urgent warning signs—while separating tentative AI assessments from clinician-confirmed diagnoses and preserving prescribed doses.
 
 🛠️ 𝐓𝐡𝐞 𝐓𝐞𝐜𝐡 𝐒𝐭𝐚𝐜𝐤:
 • Python 3.13 & Streamlit (Mobile-First Accessible UI)

@@ -1,5 +1,6 @@
 """Browser-first Sehat Saathi web app backed by the existing safety services."""
 
+import asyncio
 import json
 import os
 import re
@@ -14,15 +15,18 @@ from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import FileResponse, JSONResponse
+from starlette.responses import FileResponse, JSONResponse, Response
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
+from pydantic import ValidationError
+import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 from models.prescription import MedicineInstruction, Prescription  # noqa: E402
 from services.chat_service import PrescriptionChatService  # noqa: E402
+from services.language_service import SimpleHindiLanguageService  # noqa: E402
 from services.device_data_service import DeviceDataService  # noqa: E402
 from services.emergency_service import EmergencyService  # noqa: E402
 from services.health_issue_service import HealthIssueService  # noqa: E402
@@ -32,6 +36,7 @@ from services.prevention_and_facilities import PreventionAndFacilitiesService  #
 from services.prescription_extractor import GeminiMultimodalExtractor, MockPrescriptionExtractor  # noqa: E402
 from services.progress_tracker_service import ProgressTrackerService  # noqa: E402
 from services.proximity_service import ProximityLocationService  # noqa: E402
+from services.openstreetmap_facilities import OpenStreetMapFacilityService  # noqa: E402
 from services.reminder_service import ReminderService  # noqa: E402
 from services.medicine_reference import MedicineReferenceService  # noqa: E402
 from storage.persistence import LocalStorageAdapter  # noqa: E402
@@ -54,6 +59,7 @@ async def lifespan(_: Starlette):
 reminders = ReminderService(LocalStorageAdapter(DATA_DIR / "saved_schedules.json"))
 vitals = DeviceDataService(DATA_DIR / "device_vitals.json")
 chat = PrescriptionChatService()
+language = SimpleHindiLanguageService()
 issues = HealthIssueService(DATA_DIR / "treatment_issues.json")
 progress = ProgressTrackerService(DATA_DIR / "progress_records.json")
 wellness = MentalHealthService(DATA_DIR / "mental_health_records.json")
@@ -90,13 +96,36 @@ async def home(_: Request):
     return FileResponse(ASSETS / "index.html")
 
 
-async def overview(_: Request):
+def _parse_optional_coords(request: Request):
+    lat_raw = request.query_params.get("lat")
+    lon_raw = request.query_params.get("lon")
+    if lat_raw is None and lon_raw is None:
+        return None, None
+    if not lat_raw or not lon_raw:
+        raise HTTPException(400, "Both latitude and longitude are required when using coordinates.")
+    try:
+        lat_val = float(lat_raw)
+        lon_val = float(lon_raw)
+    except ValueError as exc:
+        raise HTTPException(400, "Latitude and longitude must be valid numbers.") from exc
+    if not (-90.0 <= lat_val <= 90.0 and -180.0 <= lon_val <= 180.0):
+        raise HTTPException(400, "Latitude must be between -90 and 90 and longitude between -180 and 180.")
+    return lat_val, lon_val
+
+
+async def overview(request: Request):
     saved = reminders.get_all_reminders()
     readings = vitals.get_all_readings()
     p_checkins = progress.get_all_checkins()
     m_checkins = wellness.get_all_checkins()
-    locality = "Neemrana"
-    nearby = ProximityLocationService.find_facilities_within_proximity(locality, max_radius_miles=10)
+    custom_lat, custom_lon = _parse_optional_coords(request)
+    locality = request.query_params.get("locality", "" if custom_lat is not None else "Neemrana")
+    nearby = ProximityLocationService.find_facilities_within_proximity(
+        locality=locality,
+        custom_lat=custom_lat,
+        custom_lon=custom_lon,
+        max_radius_miles=10,
+    )
     return JSONResponse({
         "reminders": payload(saved),
         "vitals": payload(readings[:12]),
@@ -121,14 +150,57 @@ async def overview(_: Request):
 
 
 async def facilities(request: Request):
-    locality = request.query_params.get("locality", "Neemrana")
-    if not locality.strip():
-        raise HTTPException(400, "Enter a town or city to search.")
+    custom_lat, custom_lon = _parse_optional_coords(request)
+    locality = request.query_params.get("locality", "" if custom_lat is not None else "Neemrana")
+    if custom_lat is None and not locality.strip():
+        raise HTTPException(400, "Enter a town or city to search, or use your current location.")
     try:
         radius = min(max(float(request.query_params.get("radius", "10")), 1), 100)
     except ValueError as exc:
         raise HTTPException(400, "Radius must be a number.") from exc
-    return JSONResponse(ProximityLocationService.find_facilities_within_proximity(locality, max_radius_miles=radius))
+    category = request.query_params.get("category")
+    result = ProximityLocationService.find_facilities_within_proximity(
+        locality=locality,
+        custom_lat=custom_lat,
+        custom_lon=custom_lon,
+        max_radius_miles=radius,
+        category=category,
+    )
+    if result["facilities"]:
+        return JSONResponse(result)
+
+    user_location = result["user_location"]
+    try:
+        live = await asyncio.to_thread(
+            OpenStreetMapFacilityService.search,
+            locality=user_location["locality"],
+            latitude=user_location["latitude"],
+            longitude=user_location["longitude"],
+            max_radius_miles=radius,
+            category=category,
+        )
+    except (requests.RequestException, ValueError):
+        result["directory_status"] = "live_provider_unavailable"
+        result["directory_notice"] = (
+            "Live OpenStreetMap search is temporarily unavailable. "
+            "Try again later or open the map search below."
+        )
+        return JSONResponse(result)
+
+    if live["latitude"] is not None and live["longitude"] is not None:
+        result["user_location"]["latitude"] = live["latitude"]
+        result["user_location"]["longitude"] = live["longitude"]
+        result["fallback_maps_query"] = ProximityLocationService.build_proximity_maps_query(
+            f'{live["latitude"]:.4f},{live["longitude"]:.4f}', radius
+        )
+    result["facilities"] = live["facilities"]
+    result["total_found"] = len(live["facilities"])
+    result["nearest_facility"] = live["facilities"][0] if live["facilities"] else None
+    result["directory_status"] = live["status"]
+    result["directory_notice"] = live["notice"]
+    if live["status"].startswith("live_openstreetmap"):
+        result["data_attribution"] = "© OpenStreetMap contributors"
+    return JSONResponse(result)
 
 
 async def prescription_scan(request: Request):
@@ -180,23 +252,16 @@ async def create_schedule(request: Request):
     body = await json_body(request)
     try:
         medicine = MedicineInstruction.model_validate(body.get("medicine", {}))
-    except Exception as exc:
+    except ValidationError as exc:
         raise HTTPException(422, f"Medicine details need review: {exc}") from exc
     if not medicine.user_confirmed:
         raise HTTPException(409, "Confirm that you checked this medicine against the prescription before saving a reminder.")
     if not medicine.candidate_medicine_name or not medicine.dose_instruction_raw or not medicine.frequency_raw or not medicine.timing_raw:
         raise HTTPException(422, "The medicine name, dose, frequency, and timing must be legible and confirmed before a reminder can be created.")
-    frequency = medicine.frequency_raw.strip().lower()
-    words = set(re.findall(r"[a-z]+", frequency))
-    known_schedule = (
-        bool(words & {"od", "bd", "bid", "tds", "tid"})
-        or ({"once"} <= words and bool(words & {"daily", "day"}))
-        or bool(words & {"twice", "three"}) and bool(words & {"daily", "times"})
-        or bool(re.search(r"(?<!\w)[123](?!\w)", frequency)) and bool(words & {"daily", "times"})
-        or any(token in frequency for token in ("दिन में 1 बार", "एक बार", "2 बार", "दो बार", "3 बार", "तीन बार"))
-    )
-    if not known_schedule:
-        raise HTTPException(422, "This frequency does not map to a safe reminder schedule. Please ask your prescriber or pharmacist to clarify it.")
+    try:
+        scheduled_times = ReminderService.schedule_for_frequency(medicine.frequency_raw)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     conflicts = reminders.check_potential_conflicts(medicine)
     if conflicts and not body.get("acknowledge_conflicts"):
         return JSONResponse({"conflicts": conflicts, "created": []}, status_code=409)
@@ -210,13 +275,53 @@ async def create_schedule(request: Request):
             raise HTTPException(422, "Provide one or more valid reminder times in 24-hour HH:MM format.")
         if len(set(times)) != len(times):
             raise HTTPException(422, "Reminder times must be unique.")
-    created = reminders.create_reminders_from_instruction(
-        medicine,
-        custom_times=times,
-        prescription_id=body.get("prescription_id"),
-        prescription_date=body.get("prescription_date"),
-    )
+        if len(times) != len(scheduled_times):
+            raise HTTPException(422, "The number of reminder times must match the confirmed frequency.")
+    try:
+        created = reminders.create_reminders_from_instruction(
+            medicine,
+            custom_times=times,
+            prescription_id=body.get("prescription_id"),
+            prescription_date=body.get("prescription_date"),
+        )
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
     return JSONResponse({"conflicts": conflicts, "created": payload(created)})
+
+
+async def prescription_explanation(request: Request):
+    body = await json_body(request)
+    try:
+        medicine = MedicineInstruction.model_validate(body.get("medicine", {}))
+    except ValidationError as exc:
+        raise HTTPException(422, f"Medicine details need review: {exc}") from exc
+    if not medicine.user_confirmed:
+        raise HTTPException(409, "Review and confirm this medicine before requesting an explanation.")
+    lang = body.get("lang", "hi")
+    if not isinstance(lang, str) or lang not in {"hi", "en", "hinglish"}:
+        raise HTTPException(422, "Choose Hindi, English, or Hinglish for the explanation.")
+    return JSONResponse({
+        "explanation": language.explain_medicine(medicine, lang=lang),
+        "language": lang,
+    })
+
+
+async def prescription_audio(request: Request):
+    body = await json_body(request)
+    try:
+        medicine = MedicineInstruction.model_validate(body.get("medicine", {}))
+    except ValidationError as exc:
+        raise HTTPException(422, f"Medicine details need review: {exc}") from exc
+    if not medicine.user_confirmed:
+        raise HTTPException(409, "Review and confirm this medicine before requesting audio.")
+    lang = body.get("lang", "hi")
+    if not isinstance(lang, str) or lang not in {"hi", "en", "hinglish"}:
+        raise HTTPException(422, "Choose Hindi, English, or Hinglish for the explanation.")
+    explanation = language.explain_medicine(medicine, lang=lang)
+    audio = language.generate_speech_audio(explanation, lang=lang)
+    if not audio:
+        raise HTTPException(503, "Audio is unavailable right now. The written explanation is still available.")
+    return Response(audio, media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
 
 
 async def reminder_action(request: Request):
@@ -267,13 +372,16 @@ async def ask_question(request: Request):
         raise HTTPException(422, "Write a question first.")
     if len(question) > 1200:
         raise HTTPException(413, "Please keep the question under 1,200 characters.")
+    lang = body.get("lang", "en")
+    if not isinstance(lang, str) or lang not in {"hi", "en", "hinglish"}:
+        raise HTTPException(422, "Choose English, Hindi, or Hinglish.")
     prescription = None
     if body.get("prescription"):
         try:
             prescription = Prescription.model_validate(body["prescription"])
         except Exception:
             prescription = None
-    return JSONResponse({"answer": chat.ask_question(question, prescription)})
+    return JSONResponse({"answer": chat.ask_question(question, prescription, lang=lang)})
 
 
 async def progress_checkin(request: Request):
@@ -329,6 +437,8 @@ routes = [
     Route("/api/facilities", facilities),
     Route("/api/prescriptions/scan", prescription_scan, methods=["POST"]),
     Route("/api/prescriptions/demo", prescription_demo, methods=["POST"]),
+    Route("/api/prescriptions/explanation", prescription_explanation, methods=["POST"]),
+    Route("/api/prescriptions/audio", prescription_audio, methods=["POST"]),
     Route("/api/reminders", create_schedule, methods=["POST"]),
     Route("/api/reminders/{reminder_id:str}/{action:str}", reminder_action, methods=["POST"]),
     Route("/api/vitals", create_vital, methods=["POST"]),

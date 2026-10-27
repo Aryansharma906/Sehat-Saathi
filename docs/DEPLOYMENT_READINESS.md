@@ -8,8 +8,9 @@ This repository is a local research prototype. It is **not approved for clinical
 
 ## Current boundaries
 
-- The facility directory is a small Neemrana / Rajasthan / NCR demo cluster. Unknown towns return no curated results; they never inherit Neemrana's coordinates.
-- Emergency numbers, public resources, medicine references, and languages are India-focused. There is no US public-service configuration or nationwide verified directory.
+- The curated facility directory is a small Neemrana / Rajasthan / NCR demo cluster. Other Indian locations use best-effort public OpenStreetMap geocoding and facility data; unknown towns never inherit Neemrana's coordinates. OpenStreetMap listings are community-mapped, not verified or guaranteed complete.
+- Emergency numbers, public resources, medicine references, and languages are India-focused. There is no US public-service configuration or verified nationwide directory.
+- Live nearby searches send the selected city or GPS coordinates to OpenStreetMap services. A controlled deployment needs an approved provider, privacy/retention review, attribution, coverage/freshness monitoring, and rate-limit/error handling.
 - Patient-related records use local files/services. The app has no web identity, authorization, tenant separation, consent lifecycle, or tamper-evident audit trail.
 - AI prescription reading and chat are assistive prototype features. They are not validated for clinical decisions and must not be trusted as medication instructions.
 - Localhost binding is a development convenience, not an access-control design. Do not expose this server to a network.

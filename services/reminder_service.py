@@ -6,6 +6,7 @@ Enforces Medical Safety Invariants (Rule 3, 11).
 
 from typing import List, Optional
 from datetime import datetime, time
+import re
 from models.prescription import MedicineInstruction
 from models.reminder import Reminder
 from storage.persistence import LocalStorageAdapter
@@ -19,6 +20,50 @@ DEFAULT_TIME_NIGHT = "20:00"
 class ReminderService:
     def __init__(self, storage_adapter: Optional[LocalStorageAdapter] = None):
         self.storage = storage_adapter or LocalStorageAdapter()
+
+    @staticmethod
+    def schedule_for_frequency(frequency_raw: Optional[str]) -> List[tuple[str, str]]:
+        """Return supported default times, refusing ambiguous or as-needed frequencies."""
+        frequency = (frequency_raw or "").strip().lower()
+        words = set(re.findall(r"[a-z]+", frequency))
+        numbers = set(re.findall(r"(?<!\w)[123](?!\w)", frequency))
+
+        if (
+            words & {"tds", "tid"}
+            or "दिन में 3 बार" in frequency
+            or "तीन बार" in frequency
+            or ("3" in numbers and words & {"daily", "day", "times"})
+            or ("three" in words and words & {"daily", "day", "times"})
+        ):
+            return [
+                ("सुबह (Morning)", DEFAULT_TIME_MORNING),
+                ("दोपहर (Afternoon)", DEFAULT_TIME_AFTERNOON),
+                ("रात (Night)", DEFAULT_TIME_NIGHT),
+            ]
+        if (
+            words & {"bd", "bid"}
+            or "2 बार" in frequency
+            or "दो बार" in frequency
+            or ("2" in numbers and words & {"daily", "day", "times"})
+            or ("twice" in words and words & {"daily", "day"})
+        ):
+            return [
+                ("सुबह (Morning)", DEFAULT_TIME_MORNING),
+                ("रात (Night)", DEFAULT_TIME_NIGHT),
+            ]
+        if (
+            "od" in words
+            or "दिन में 1 बार" in frequency
+            or "एक बार" in frequency
+            or ("1" in numbers and words & {"daily", "day", "times"})
+            or ("once" in words and words & {"daily", "day"})
+        ):
+            return [("सुबह (Morning)", DEFAULT_TIME_MORNING)]
+
+        raise ValueError(
+            "This frequency does not map to a safe reminder schedule. "
+            "Please ask your prescriber or pharmacist to clarify it."
+        )
 
     def create_reminders_from_instruction(
         self,
@@ -38,13 +83,29 @@ class ReminderService:
                 "User must verify and confirm the instruction first."
             )
 
+        if not medicine.candidate_medicine_name or not medicine.candidate_medicine_name.strip():
+            raise ValueError("A confirmed medicine name is required before creating reminders.")
+        if not medicine.dose_instruction_raw or not medicine.dose_instruction_raw.strip():
+            raise ValueError("A confirmed dose is required before creating reminders.")
+        if not medicine.frequency_raw or not medicine.frequency_raw.strip():
+            raise ValueError("A confirmed frequency is required before creating reminders.")
+        if not medicine.timing_raw or not medicine.timing_raw.strip():
+            raise ValueError("A confirmed timing instruction is required before creating reminders.")
+
+        scheduled_times = self.schedule_for_frequency(medicine.frequency_raw)
         name = medicine.candidate_medicine_name or medicine.raw_medicine_name
-        dose = medicine.dose_instruction_raw or "1 खुराक (1 dose)"
-        food = medicine.timing_raw or "खाने के बाद (After Food)"
+        dose = medicine.dose_instruction_raw
+        food = medicine.timing_raw
 
         created_reminders = []
 
-        if custom_times:
+        if custom_times is not None:
+            if not custom_times:
+                raise ValueError("Provide at least one reminder time.")
+            if len(set(custom_times)) != len(custom_times):
+                raise ValueError("Reminder times must be unique.")
+            if len(custom_times) != len(scheduled_times):
+                raise ValueError("The number of reminder times must match the confirmed frequency.")
             for t_str in custom_times:
                 r = Reminder(
                     medicine_instruction_id=medicine.id,
@@ -60,31 +121,7 @@ class ReminderService:
                 )
                 created_reminders.append(r)
         else:
-            freq_lower = (medicine.frequency_raw or "").lower()
-            
-            # Map common medical frequency abbreviations to standard schedule times
-            if "tds" in freq_lower or "tid" in freq_lower or "3 बार" in freq_lower or "तीन बार" in freq_lower:
-                times = [
-                    ("सुबह (Morning)", DEFAULT_TIME_MORNING),
-                    ("दोपहर (Afternoon)", DEFAULT_TIME_AFTERNOON),
-                    ("रात (Night)", DEFAULT_TIME_NIGHT),
-                ]
-            elif "bd" in freq_lower or "bid" in freq_lower or "2 बार" in freq_lower or "दो बार" in freq_lower:
-                times = [
-                    ("सुबह (Morning)", DEFAULT_TIME_MORNING),
-                    ("रात (Night)", DEFAULT_TIME_NIGHT),
-                ]
-            elif "od" in freq_lower or "दिन में 1 बार" in freq_lower or "एक बार" in freq_lower:
-                times = [
-                    ("सुबह (Morning)", DEFAULT_TIME_MORNING)
-                ]
-            else:
-                # Default to morning if frequency is unspecified or SOS
-                times = [
-                    ("निर्धारित समय (Default)", DEFAULT_TIME_MORNING)
-                ]
-
-            for label, t_str in times:
+            for label, t_str in scheduled_times:
                 r = Reminder(
                     medicine_instruction_id=medicine.id,
                     source_prescription_id=prescription_id,

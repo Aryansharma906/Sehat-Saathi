@@ -1,4 +1,5 @@
-const state = { overview: null, resources: null, prescription: null, easyRead: false, locality: "Neemrana", lang: "en" };
+const state = { overview: null, resources: null, prescription: null, easyRead: false, locality: "Neemrana", coords: null, locationMode: "manual", locationRequestId: 0, lang: "en", explanationLang: "hi" };
+let facilitiesRequestId = 0;
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])).replace(/\p{Extended_Pictographic}|\uFE0F|\uFE0E|\u200D/gu,"");
@@ -59,6 +60,13 @@ function activeReminders() { return (state.overview?.reminders || []).filter(r =
 function renderOverview() {
   const reminders = activeReminders(); const data = state.overview || {};
   const scope=data.service_scope || {};
+  const ocrStatus=$("#ocr-status");
+  if(ocrStatus){
+    ocrStatus.textContent=data.demo_mode?"Live Gemini OCR not configured":"Live Gemini OCR ready";
+    ocrStatus.title=data.demo_mode
+      ?"Configure GEMINI_API_KEY locally to read uploaded prescription images."
+      :"Uploaded images are sent to Gemini for extraction.";
+  }
   if(scope.demo_read_only){
     $("#prototype-heading").textContent="Public demonstration";
     $("#prototype-detail").textContent=scope.notice;
@@ -95,7 +103,19 @@ async function changeReminderTime(id) {
   try{state.overview.reminders=(await jsonPost(`/api/reminders/${encodeURIComponent(id)}/time`,{time:field.value})).reminders;renderOverview();toast("Reminder time updated.");}
   catch(err){toast(err.message,true);}
 }
-async function refresh() { state.overview = await api("/api/overview"); renderOverview(); }
+async function refresh() {
+  const params = new URLSearchParams();
+  if (state.coords && state.locationMode === "gps") {
+    params.set("lat", String(state.coords.lat));
+    params.set("lon", String(state.coords.lon));
+    if (state.locality) params.set("locality", state.locality);
+  } else if (state.locality) {
+    params.set("locality", state.locality);
+  }
+  const qs = params.toString();
+  state.overview = await api(qs ? `/api/overview?${qs}` : "/api/overview");
+  renderOverview();
+}
 async function reminderAction(id, action) {
   if (action === "delete" && !(await confirm("Remove this reminder?", "This removes this reminder from your local schedule."))) return;
   try { state.overview.reminders = (await jsonPost(`/api/reminders/${encodeURIComponent(id)}/${action}`, {})).reminders; renderOverview(); toast(action === "taken" ? "Marked as taken. Take care." : action === "delete" ? "Reminder removed." : "Reminder updated."); }
@@ -131,6 +151,7 @@ function showPrescription(prescription, demo = false) {
       ${m.is_uncertain ? `<p class="uncertainty-copy">${escapeHtml(m.uncertainty_reason || "Some writing may be unclear. Please compare every field with the paper prescription.")}</p>` : ""}
       <div class="field-grid">${[["raw_medicine_name","As written",m.raw_medicine_name], ["candidate_medicine_name","Medicine name",m.candidate_medicine_name], ["strength","Strength",m.strength], ["dose_instruction_raw","Dose",m.dose_instruction_raw], ["frequency_raw","How often",m.frequency_raw], ["timing_raw","When to take",m.timing_raw], ["duration_raw","For how long",m.duration_raw]].map(([key,label,value])=>`<label>${label}<input data-field="${key}" value="${escapeHtml(value || "")}" placeholder="Not clear from prescription" /></label>`).join("")}</div>
       <label class="review-confirm"><input type="checkbox" data-confirm /> I checked this information against the prescription.</label>
+      <div class="checkin-result medicine-explanation" data-explanation hidden aria-live="polite"></div>
       <div class="result-actions"><button class="button button-green save-medicine" data-index="${i}">Confirm & set reminder <span>→</span></button></div>
     </article>`).join("")}</div><div class="photo-tips"><span class="tip-mark">${icon("sparkle")}</span><div><strong>Keep your original prescription close</strong><p>Ask your doctor or pharmacist about any word, dose, or timing you cannot verify. Do not take a medicine based on an uncertain reading.</p></div></div></section>`;
   root.scrollIntoView({behavior:"smooth",block:"start"});
@@ -144,12 +165,77 @@ function showPrescription(prescription, demo = false) {
     if(state.overview?.service_scope?.demo_read_only)button.disabled=true;
     button.addEventListener("click",()=>scheduleMedicine(Number(button.dataset.index),button.closest(".medicine-review")));
   });
+  root.querySelectorAll("[data-confirm]").forEach(checkbox=>{
+    if(state.overview?.service_scope?.demo_read_only){checkbox.disabled=true;return;}
+    checkbox.addEventListener("change",()=>{
+      const card=checkbox.closest(".medicine-review");
+      const box=$("[data-explanation]",card);
+      if(!checkbox.checked){box.hidden=true;box.replaceChildren();return;}
+      const medicine=readReviewedMedicine(Number(card.dataset.index),card);
+      medicine.user_confirmed=true;
+      showMedicineExplanation(medicine,box);
+    });
+  });
+  root.querySelectorAll("[data-field]").forEach(input=>{
+    input.addEventListener("change",()=>{
+      const card=input.closest(".medicine-review");
+      if(!$("[data-confirm]",card).checked)return;
+      const medicine=readReviewedMedicine(Number(card.dataset.index),card);
+      medicine.user_confirmed=true;
+      showMedicineExplanation(medicine,$("[data-explanation]",card));
+    });
+  });
+}
+function readReviewedMedicine(index, card) {
+  const medicine={...state.prescription.medicines[index]};
+  card.querySelectorAll("[data-field]").forEach(input=>medicine[input.dataset.field]=input.value.trim()||null);
+  return medicine;
+}
+async function showMedicineExplanation(medicine, box) {
+  box.hidden=false;
+  box.textContent="Preparing a plain-language explanation…";
+  try {
+    const data=await jsonPost("/api/prescriptions/explanation",{medicine,lang:state.explanationLang});
+    const text=document.createElement("p");
+    text.className="explanation-text";
+    text.textContent=data.explanation.replace(/\*\*/g,"").replace(/^---$/gm,"");
+    const audioButton=document.createElement("button");
+    audioButton.type="button";
+    audioButton.className="button button-outline";
+    audioButton.textContent="Listen to this explanation";
+    audioButton.addEventListener("click",()=>playMedicineAudio(medicine,audioButton));
+    box.replaceChildren(text,audioButton);
+  } catch(err) {
+    box.textContent=err.message;
+  }
+}
+async function playMedicineAudio(medicine,button) {
+  button.disabled=true;
+  try {
+    const response=await fetch("/api/prescriptions/audio",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({medicine,lang:state.explanationLang})
+    });
+    if(!response.ok){
+      const data=await response.json().catch(()=>({}));
+      throw new Error(data.detail||"Audio is unavailable right now.");
+    }
+    const audioUrl=URL.createObjectURL(await response.blob());
+    const player=new Audio(audioUrl);
+    player.addEventListener("ended",()=>URL.revokeObjectURL(audioUrl),{once:true});
+    player.addEventListener("error",()=>{URL.revokeObjectURL(audioUrl);toast("The audio could not be played.",true);},{once:true});
+    await player.play();
+  } catch(err) {
+    toast(err.message,true);
+  } finally {
+    button.disabled=false;
+  }
 }
 async function scheduleMedicine(index, card, acknowledge = false) {
   const checkbox = $("[data-confirm]", card);
   if (!checkbox.checked) { toast("Please confirm you checked this medicine against the paper prescription.", true); checkbox.focus(); return; }
-  const medicine = {...state.prescription.medicines[index]};
-  card.querySelectorAll("[data-field]").forEach(input => medicine[input.dataset.field] = input.value.trim() || null);
+  const medicine = readReviewedMedicine(index,card);
   if (!medicine.raw_medicine_name?.trim() || !medicine.candidate_medicine_name?.trim() || !medicine.dose_instruction_raw || !medicine.frequency_raw || !medicine.timing_raw) {
     toast("Name, dose, frequency, and timing must be clear before a reminder can be set. Please ask a pharmacist if the prescription is unclear.", true); return;
   }
@@ -191,17 +277,155 @@ function renderIssueHistory() {
   const latest=state.overview?.issues?.[0]; if(!latest)return;
   $("#issue-result").innerHTML=`<div class="checkin-result ${latest.is_severe_alert?"warning":""}">${latest.is_severe_alert?"This may need urgent medical attention. Contact emergency services or a doctor now. ":"Your note has been saved. "}${escapeHtml(latest.issue_type)}${latest.is_severe_alert?` <a href="tel:108">Call 108</a>`:""}</div>`;
 }
-async function loadFacilities(locality=$("#locality").value.trim() || "Neemrana") {
-  locality=locality.trim();
-  if(!locality){toast("Enter a town or city to search.",true);return;}
+function updateLocationBanner(userLoc, mode = state.locationMode) {
+  const statusEl = $("#location-status-text");
+  const gpsBtnLabel = $("#gps-button-label");
+  if (!statusEl) return;
+  if (mode === "gps" && userLoc?.latitude != null && userLoc?.longitude != null) {
+    statusEl.textContent = `Using your current GPS location: ${userLoc.locality || "Current Location"} (${Number(userLoc.latitude).toFixed(4)}, ${Number(userLoc.longitude).toFixed(4)}). You can also type a location manually.`;
+    if (gpsBtnLabel) gpsBtnLabel.textContent = "GPS active";
+  } else {
+    const locName = userLoc?.locality || state.locality || "Neemrana";
+    statusEl.textContent = `Showing results for manual location: ${locName}. Click "Use current location" for automatic GPS or type another town/city.`;
+    if (gpsBtnLabel) gpsBtnLabel.textContent = "Use current location";
+  }
+  document.querySelectorAll("[data-city]").forEach(button => {
+    const active = mode !== "gps"
+      && button.dataset.city.toLowerCase() === String(userLoc?.locality || state.locality).toLowerCase();
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function isCoordinateInput(value) {
+  const match = value.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if (!match) return false;
+  const lat = Number(match[1]);
+  const lon = Number(match[2]);
+  return Number.isFinite(lat) && Number.isFinite(lon)
+    && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+}
+
+async function loadFacilities(options = {}) {
+  const requestId = ++facilitiesRequestId;
+  const useGps = options.useGps ?? (state.locationMode === "gps" && Boolean(state.coords));
+  const manualLocality = (options.locality ?? $("#locality")?.value ?? state.locality ?? "Neemrana").trim();
+  if (!useGps && !manualLocality) {
+    toast("Enter a town or city to search, or click Use current location.", true);
+    return;
+  }
   $("#facility-list").innerHTML = `<div class="surface empty-state"><strong>Looking for nearby care…</strong></div>`;
   try {
-    const data=await api(`/api/facilities?locality=${encodeURIComponent(locality)}&radius=10`); $("#facility-list").dataset.loaded="true";
-    $("#facility-count").textContent=data.directory_status === "unavailable_for_location" ? "No verified sample listings here" : `${data.total_found} places to know`;
-    $("#maps-search").href=data.fallback_maps_query;
-    const categoryName={clinic:"HEALTH CENTRE",chemist:"PHARMACY",jan_aushadhi:"JAN AUSHADHI",doctor:"DOCTOR'S CLINIC"};
-    $("#facility-list").innerHTML=data.facilities?.length?data.facilities.map(f=>`<article class="facility-card"><div class="facility-top"><div><span class="facility-type">${categoryName[f.category]||"HEALTH SERVICE"}</span><h3>${escapeHtml(state.lang==="hi"?f.name_hindi:f.name_en)}</h3></div><span class="facility-distance">${escapeHtml(f.distance_miles)} mi · ${escapeHtml(f.distance_km)} km</span></div><p>${escapeHtml(f.address)}</p><span class="facility-hours">${icon("clock")} ${escapeHtml(f.timing)}</span>${f.services?.length?`<p>${f.services.slice(0,3).map(escapeHtml).join(" · ")}</p>`:""}<div class="facility-actions"><a class="button button-outline" href="${escapeHtml(f.tel_url)}">Call ${escapeHtml(f.phone)} ↗</a><a class="button button-green" target="_blank" rel="noreferrer" href="${escapeHtml(f.directions_url)}">Directions ↗</a></div></article>`).join(""):`<div class="surface empty-state"><strong>${escapeHtml(data.directory_notice || "No sample places found in this radius.")}</strong><p>${data.directory_status === "unavailable_for_location" ? "This prototype cannot verify care listings for this town. Use a trusted local directory or emergency service." : "Try a supported demo town or widen the search."}</p>${data.directory_status === "unavailable_for_location" ? "" : `<a class="button button-outline" target="_blank" rel="noreferrer" href="${escapeHtml(data.fallback_maps_query)}">Search sample area in Maps ↗</a>`}</div>`;
-  } catch(err) { $("#facility-list").innerHTML=`<div class="surface empty-state"><strong>Care listings could not be loaded.</strong><p>${escapeHtml(err.message)} Try again in a moment.</p><button class="button button-outline" type="button" data-retry-facilities>Try again</button></div>`; }
+    const params = new URLSearchParams({ radius: "10" });
+    if (useGps && state.coords) {
+      params.set("lat", String(state.coords.lat));
+      params.set("lon", String(state.coords.lon));
+      if (options.locality) params.set("locality", options.locality);
+    } else {
+      state.locationMode = "manual";
+      state.locality = manualLocality;
+      params.set("locality", manualLocality);
+    }
+    const data = await api(`/api/facilities?${params.toString()}`);
+    if (requestId !== facilitiesRequestId) return;
+    $("#facility-list").dataset.loaded = "true";
+    updateLocationBanner(data.user_location, useGps ? "gps" : "manual");
+    $("#facility-count").textContent = data.total_found > 0
+      ? `${data.total_found} places within 10 miles${data.directory_status === "live_openstreetmap" ? " · OpenStreetMap" : ""}`
+      : data.directory_status === "location_not_found"
+        ? "Location not found"
+        : data.directory_status === "live_provider_unavailable"
+          ? "Live listings unavailable"
+          : data.directory_status === "live_openstreetmap_empty"
+            ? "No OpenStreetMap listings nearby"
+            : "No pilot listings within 10 miles";
+    $("#maps-search").href = data.fallback_maps_query;
+    const categoryName = { clinic: "HEALTH CENTRE", chemist: "PHARMACY", jan_aushadhi: "JAN AUSHADHI", doctor: "DOCTOR'S CLINIC" };
+    $("#facility-list").innerHTML = data.facilities?.length
+      ? data.facilities.map(f => `<article class="facility-card"><div class="facility-top"><div><span class="facility-type">${categoryName[f.category] || "HEALTH SERVICE"}${f.source === "OpenStreetMap" ? " · OSM" : ""}</span><h3>${escapeHtml(state.lang === "hi" ? f.name_hindi : f.name_en)}</h3></div><span class="facility-distance">${escapeHtml(f.distance_miles)} mi · ${escapeHtml(f.distance_km)} km</span></div><p>${escapeHtml(f.address)}</p><span class="facility-hours">${icon("clock")} ${escapeHtml(f.timing)}</span>${f.services?.length ? `<p>${f.services.slice(0, 3).map(escapeHtml).join(" · ")}</p>` : ""}<div class="facility-actions">${f.tel_url ? `<a class="button button-outline" href="${escapeHtml(f.tel_url)}">Call ${escapeHtml(f.phone)} ↗</a>` : ""}<a class="button button-green" target="_blank" rel="noreferrer" href="${escapeHtml(f.directions_url)}">Directions ↗</a>${f.source_url ? `<a class="button button-outline" target="_blank" rel="noreferrer" href="${escapeHtml(f.source_url)}">View OSM record ↗</a>` : ""}</div></article>`).join("")
+      : `<div class="surface empty-state"><strong>${escapeHtml(data.directory_notice || "No nearby medical places were found.")}</strong><p>${data.directory_status === "live_provider_unavailable" ? "The live provider did not respond. You can still search this location directly in Google Maps." : data.directory_status === "location_not_found" ? "Check the spelling or enter a nearby town/city or coordinates, then try again." : "Open Google Maps to check for nearby clinics and pharmacies."}</p><a class="button button-outline" target="_blank" rel="noreferrer" href="${escapeHtml(data.fallback_maps_query)}">Search nearby in Google Maps ↗</a></div>`;
+  } catch (err) {
+    if (requestId !== facilitiesRequestId) return;
+    $("#facility-list").innerHTML = `<div class="surface empty-state"><strong>Care listings could not be loaded.</strong><p>${escapeHtml(err.message)} Try again in a moment.</p><button class="button button-outline" type="button" data-retry-facilities>Try again</button></div>`;
+  }
+}
+
+async function searchLocality(locality) {
+  const selectedLocality = locality.trim();
+  if (!selectedLocality) {
+    toast("Enter a town or city to search, or click Use current location.", true);
+    return;
+  }
+  state.coords = null;
+  state.locationMode = "manual";
+  state.locationRequestId += 1;
+  $("#use-current-location").disabled = false;
+  $("#gps-button-label").textContent = "Use current location";
+  state.locality = selectedLocality;
+  $("#locality").value = selectedLocality;
+  $("#facility-list").dataset.loaded = "";
+  await Promise.all([
+    loadFacilities({ useGps: false, locality: selectedLocality }),
+    refresh(),
+  ]);
+}
+
+function detectCurrentLocation({ silent = false } = {}) {
+  if (!("geolocation" in navigator)) {
+    $("#location-status-text").textContent = "This browser does not support GPS location. Choose a quick city, enter a town/city or coordinates, or open Google Maps.";
+    if (!silent) toast("Browser geolocation is not supported on this device. Please enter a town or city manually.", true);
+    return Promise.resolve(false);
+  }
+  const gpsBtn = $("#use-current-location");
+  const gpsLabel = $("#gps-button-label");
+  const requestId = ++state.locationRequestId;
+  const localityAtRequest = state.locality;
+  if (gpsBtn) gpsBtn.disabled = true;
+  if (gpsLabel) gpsLabel.textContent = "Locating…";
+  return new Promise(resolve => {
+    navigator.geolocation.getCurrentPosition(
+      async pos => {
+        if (requestId !== state.locationRequestId) {
+          resolve(false);
+          return;
+        }
+        const lat = Number(pos.coords.latitude.toFixed(5));
+        const lon = Number(pos.coords.longitude.toFixed(5));
+        state.coords = { lat, lon };
+        state.locationMode = "gps";
+        if ($("#locality")) $("#locality").value = `${lat}, ${lon}`;
+        if (gpsBtn) gpsBtn.disabled = false;
+        if (gpsLabel) gpsLabel.textContent = "GPS active";
+        await Promise.all([refresh(), loadFacilities({ useGps: true })]);
+        if (!silent) toast(`Current location detected (${lat}, ${lon}).`);
+        resolve(true);
+      },
+      err => {
+        if (requestId !== state.locationRequestId) {
+          resolve(false);
+          return;
+        }
+        if (gpsBtn) gpsBtn.disabled = false;
+        if (gpsLabel) gpsLabel.textContent = "Use current location";
+        const statusEl = $("#location-status-text");
+        if (statusEl && state.locationMode !== "gps" && state.locality === localityAtRequest) {
+          const message = err.code === 1
+            ? "Location permission is blocked. Allow location access in your browser settings, choose a quick city, or enter a town/city or coordinates."
+            : err.code === 2
+              ? "Your device could not determine a location. Choose a quick city, enter a town/city or coordinates, or try GPS again."
+              : "Location lookup timed out. Choose a quick city, enter a town/city or coordinates, or try GPS again.";
+          statusEl.textContent = message;
+        }
+        if (!silent) {
+          toast(err.code === 1
+            ? "Location permission is blocked. Allow it in your browser settings or choose a city manually."
+            : "Could not determine your location. Choose a city manually or try GPS again.", true);
+        }
+        resolve(false);
+      },
+      { enableHighAccuracy: false, timeout: 7000, maximumAge: 300000 }
+    );
+  });
 }
 async function loadResources() {
   try {
@@ -228,6 +452,15 @@ document.addEventListener("click", event => {
 $("#mobile-menu").addEventListener("click",()=>$("#sidebar").classList.toggle("open"));
 $("#text-size").addEventListener("click",toggleEasyRead);
 $("#text-size-setting").addEventListener("click",toggleEasyRead);
+$("#explanation-language").addEventListener("change",event=>{
+  state.explanationLang=event.target.value;
+  document.querySelectorAll("[data-explanation]:not([hidden])").forEach(box=>{
+    const card=box.closest(".medicine-review");
+    const medicine=readReviewedMedicine(Number(card.dataset.index),card);
+    medicine.user_confirmed=true;
+    showMedicineExplanation(medicine,box);
+  });
+});
 function toggleEasyRead() { state.easyRead=!state.easyRead; document.body.classList.toggle("easy-read",state.easyRead); $("#text-size").setAttribute("aria-pressed",String(state.easyRead)); $("#text-size-setting").textContent=state.easyRead?"Turn off easy read":"Turn on easy read"; }
 $("#prescription-file").addEventListener("change",event=>{
   const file=event.target.files[0]; if(!file)return;
@@ -264,7 +497,40 @@ $("#issue-form").addEventListener("submit",async e=>{
   e.preventDefault();const form=e.currentTarget;const button=$("button[type=submit]",form);setBusy(button,true);
   try{const result=await jsonPost("/api/issues",formData(form));const issue=result.issue;$("#issue-result").innerHTML=`<div class="checkin-result ${issue.is_severe_alert?"warning":""}">${issue.is_severe_alert?`This may need urgent medical attention. Please contact a doctor now. <a href="tel:108">Call 108</a>`:"Your concern has been saved so you can discuss it with your doctor."}</div>`;form.reset();await refresh();if(issue.is_severe_alert)toast("A severe concern was detected. Please seek urgent medical help.",true);else toast("Your note is saved.");}catch(err){toast(err.message,true);}finally{setBusy(button,false);}
 });
-$("#locality-form").addEventListener("submit",e=>{e.preventDefault();$("#facility-list").dataset.loaded="";loadFacilities();});
+$("#locality-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const manualVal = $("#locality").value.trim();
+  const stillUsingDetectedCoordinates = state.locationMode === "gps"
+    && state.coords
+    && isCoordinateInput(manualVal)
+    && Number(manualVal.split(",")[0].trim()) === state.coords.lat
+    && Number(manualVal.split(",")[1].trim()) === state.coords.lon;
+  if (stillUsingDetectedCoordinates) {
+    $("#facility-list").dataset.loaded = "";
+    await Promise.all([
+      loadFacilities({ useGps: true }),
+      refresh(),
+    ]);
+    return;
+  }
+  await searchLocality(manualVal || "Neemrana");
+});
+$("#locality").addEventListener("input", event => {
+  state.locationRequestId += 1;
+  if (state.locationMode === "gps" && state.coords) {
+    const detected = `${state.coords.lat}, ${state.coords.lon}`;
+    if (event.currentTarget.value.trim() !== detected) {
+      state.coords = null;
+      state.locationMode = "manual";
+      $("#gps-button-label").textContent = "Use current location";
+      $("#use-current-location").disabled = false;
+    }
+  }
+});
+$("#use-current-location")?.addEventListener("click", () => detectCurrentLocation({ silent: false }));
+document.querySelectorAll("[data-city]").forEach(button => {
+  button.addEventListener("click", () => searchLocality(button.dataset.city));
+});
 async function shareSchedule(){
   const items=activeReminders().slice().sort((a,b)=>(a.reminder_time||"").localeCompare(b.reminder_time||""));
   if(!items.length){toast("There are no active reminders to share yet.",true);return;}
@@ -277,14 +543,18 @@ $("#chat-form").addEventListener("submit",async e=>{
   e.preventDefault();const form=e.currentTarget;const input=$("textarea",form);const question=input.value.trim();if(!question)return;
   const messages=$("#chat-messages");const bubble=document.createElement("div");bubble.className="chat-bubble user";bubble.innerHTML=`<span class="chat-label">YOU</span><p>${escapeHtml(question)}</p>`;messages.append(bubble);
   input.value="";const waiting=document.createElement("div");waiting.className="chat-bubble bot";waiting.innerHTML=`<span class="chat-label">SAATHI</span><p>One moment, let me think…</p>`;messages.append(waiting);messages.scrollTop=messages.scrollHeight;
-  try{const result=await jsonPost("/api/chat",{question,prescription:state.prescription});waiting.querySelector("p").textContent=result.answer;}
+  try{const result=await jsonPost("/api/chat",{question,prescription:state.prescription,lang:$("#chat-language").value});waiting.querySelector("p").textContent=result.answer;}
   catch(err){waiting.remove();toast(err.message,true);}messages.scrollTop=messages.scrollHeight;
 });
 
 async function init(){
   hydrateIcons();
   $(".overline").innerHTML=`<span class="sun-dot"></span> ${new Intl.DateTimeFormat("en",{weekday:"long",month:"long",day:"numeric"}).format(new Date()).toUpperCase()} <span class="overline-divider">·</span> NEEMRANA PILOT`;
-  try { await Promise.all([refresh(),loadResources()]); }
+  try {
+    await Promise.all([refresh(), loadResources()]);
+    // Automatically attempt to detect user's current GPS location on startup (falls back gracefully to manual locality)
+    detectCurrentLocation({ silent: true });
+  }
   catch(err){toast(`Could not load your care details: ${err.message}`,true);}
 }
 init();

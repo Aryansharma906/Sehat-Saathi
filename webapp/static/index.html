@@ -3,154 +3,795 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f7f8f5" />
-  <meta name="description" content="A friendly health companion for your medicines, everyday wellbeing, and nearby care." />
+  <meta name="theme-color" content="#059669" />
+  <meta name="description" content="A friendly AI health companion for your medicines, everyday wellbeing, and nearby care within 10 miles." />
   <link rel="manifest" href="/illustrations/manifest.json" />
-  <title>Sehat Saathi — care, made simple</title>
+  <title>Sehat Saathi — Care, clearly · AI Health Companion</title>
   <link rel="icon" href="/illustrations/icon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/assets/app.css" />
 </head>
 <body>
   <div class="app-shell">
+    <!-- Left Navigation Sidebar -->
     <aside class="sidebar" id="sidebar">
       <a class="brand" href="#home" aria-label="Sehat Saathi home">
-        <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 7v26M7 20h26"/><path d="M30.8 9.2c-4.2-4.2-10.8-2.7-10.8 3.1 0-5.8-6.6-7.3-10.8-3.1-4.8 4.8-.4 11.1 10.8 20 11.2-8.9 15.6-15.2 10.8-20Z"/></svg></span>
-        <span><strong>सेहत साथी</strong><small>SEHAT SAATHI</small></span>
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><path d="M12 21s-7-4.3-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.7-7 10-7 10Z"/><path d="M9 12h2l1-2 2 4 1-2h2"/></svg>
+        </span>
+        <div class="brand-title">
+          <strong>सेहत साथी</strong>
+          <small>HEALTH-AI SAATHI</small>
+        </div>
       </a>
-      <div class="sidebar-label">YOUR SPACE</div>
+
+      <div class="sidebar-label">Main Hub</div>
       <nav class="side-nav" aria-label="Main navigation">
-        <button class="nav-item active" data-view="home" aria-label="Overview" title="Overview"><span class="nav-icon" data-icon="home"></span><span>Overview</span><span class="nav-dot"></span></button>
-        <button class="nav-item" data-view="prescription" aria-label="Prescription reader" title="Prescription reader"><span class="nav-icon" data-icon="file"></span><span>Prescription reader</span></button>
-        <button class="nav-item" data-view="medicines" aria-label="My medicines" title="My medicines"><span class="nav-icon" data-icon="clock"></span><span>My medicines</span><span class="nav-count" id="nav-reminder-count">0</span></button>
-        <button class="nav-item" data-view="wellbeing" aria-label="Health and wellbeing" title="Health and wellbeing"><span class="nav-icon" data-icon="heart"></span><span>Health & wellbeing</span></button>
-        <button class="nav-item" data-view="nearby" aria-label="Care nearby" title="Care nearby"><span class="nav-icon" data-icon="pin"></span><span>Care nearby</span></button>
-        <button class="nav-item" data-view="ask" aria-label="Ask Saathi" title="Ask Saathi"><span class="nav-icon" data-icon="sparkle"></span><span>Ask Saathi</span></button>
+        <button class="nav-item active" data-view="home" aria-label="Dashboard" title="Dashboard">
+          <span class="nav-icon" data-icon="home"></span>
+          <span>Dashboard</span>
+          <span class="nav-dot"></span>
+        </button>
+        <button class="nav-item" data-view="prescription" aria-label="Prescription reader" title="Prescription reader">
+          <span class="nav-icon" data-icon="file"></span>
+          <span>Prescription AI</span>
+        </button>
+        <button class="nav-item" data-view="medicines" aria-label="My medicines" title="My medicines">
+          <span class="nav-icon" data-icon="clock"></span>
+          <span>My Medicines</span>
+          <span class="nav-count" id="nav-reminder-count">0</span>
+        </button>
+        <button class="nav-item" data-view="wellbeing" aria-label="Health and wellbeing" title="Health and wellbeing">
+          <span class="nav-icon" data-icon="heart"></span>
+          <span>Health Vitals</span>
+        </button>
+        <button class="nav-item" data-view="nearby" aria-label="Care nearby" title="Care nearby">
+          <span class="nav-icon" data-icon="pin"></span>
+          <span>Care Nearby (&lt;10 mi)</span>
+        </button>
+        <button class="nav-item" data-view="ask" aria-label="Ask Saathi" title="Ask Saathi">
+          <span class="nav-icon" data-icon="sparkle"></span>
+          <span>Ask AI Saathi</span>
+        </button>
       </nav>
+
       <div class="sidebar-bottom">
-        <div class="gentle-card"><span class="gentle-spark" data-icon="sparkle"></span><strong>Small steps count.</strong><p>Looking after yourself is a good place to begin.</p><span class="gentle-leaf" data-icon="leaf"></span></div>
-        <button class="nav-item" data-view="settings" aria-label="Preferences" title="Preferences"><span class="nav-icon" data-icon="settings"></span><span>Preferences</span></button>
-        <div class="side-profile"><span class="avatar">S</span><span><strong>Saathi guest</strong><small>Your private space</small></span><span class="more-dot">···</span></div>
+        <div class="gentle-card">
+          <span class="gentle-spark" data-icon="sparkle"></span>
+          <strong>Local research prototype</strong>
+          <p>For testing with synthetic examples only. Do not enter real patient information.</p>
+        </div>
+        <button class="nav-item" data-view="settings" aria-label="Preferences" title="Preferences">
+          <span class="nav-icon" data-icon="settings"></span>
+          <span>Preferences &amp; SOS</span>
+        </button>
+        <div class="side-profile">
+          <span class="avatar">S</span>
+          <div>
+            <strong>Saathi Guest</strong>
+            <small>Local demo · No sign-in</small>
+          </div>
+          <span class="more-dot" style="margin-left:auto; color:var(--slate-400)">···</span>
+        </div>
       </div>
     </aside>
 
+    <!-- Main Workspace Area -->
     <div class="workspace">
+      <!-- Top Sticky App Bar -->
       <header class="topbar">
-        <button class="mobile-menu" id="mobile-menu" aria-label="Open menu"><span data-icon="menu"></span></button>
-        <div class="breadcrumbs"><span>My care</span><span class="crumb-slash">/</span><strong id="page-title">Overview</strong></div>
+        <button class="mobile-menu" id="mobile-menu" aria-label="Open menu">
+          <span data-icon="menu"></span>
+        </button>
+        <div class="breadcrumbs">
+          <span>Sehat Saathi</span>
+          <span class="crumb-slash">/</span>
+          <strong id="page-title">Dashboard</strong>
+        </div>
         <div class="topbar-actions">
-          <button class="text-size" id="text-size" aria-pressed="false" title="Increase text size">A<span>+</span><small>Easy read</small></button>
-          <a class="emergency-mini" href="tel:108"><span class="emergency-icon" data-icon="cross"></span><span>Emergency <b>108</b></span></a>
-          <button class="user-chip" data-view="settings"><span class="avatar small">S</span><span>Guest</span><span class="chevron">⌄</span></button>
+          <button class="text-size" id="text-size" aria-pressed="false" title="Toggle easy read typography">
+            A<span>+</span><small>Easy Read</small>
+          </button>
+          <a class="emergency-mini" href="tel:108">
+            <span class="emergency-icon" data-icon="cross"></span>
+            <span>🚨 <b>108</b> Emergency</span>
+          </a>
+          <button class="user-chip" data-view="settings" aria-label="Open preferences" title="Open preferences">
+            <span class="avatar small">S</span>
+            <span>Guest</span>
+            <span class="chevron" style="color:var(--slate-400); font-size:11px">▾</span>
+          </button>
         </div>
       </header>
 
+      <!-- Main Content Views -->
       <main class="main-content">
-        <section class="prototype-notice" role="note" aria-label="Prototype and data scope"><span class="notice-mark" aria-hidden="true">P</span><span><strong id="prototype-heading">Research prototype</strong><span id="prototype-detail">Neemrana, Rajasthan demo data only · Not a government service or for clinical decisions</span></span><a href="#settings" data-go="settings">Read scope</a></section>
-        <section class="view active" id="view-home" data-page="Overview">
-          <div class="welcome-row"><div><div class="overline"><span class="sun-dot"></span> CARE WORKSPACE <span class="overline-divider">·</span> NEEMRANA PILOT</div><h1>Care, clearly.<br class="mobile-break"/> <em>Every step.</em></h1><p class="welcome-sub">A private prototype for organizing care information and preparing better conversations.</p></div><div class="weather-pill"><span class="weather-icon" data-icon="sun"></span><span><strong>Made for clarity</strong><small>Never a substitute for care</small></span></div></div>
-
-          <article class="hero-panel">
-            <div class="hero-text">
-              <span class="hero-kicker"><span class="pulse-dot"></span> YOUR CARE, ORGANIZED</span>
-              <h2>Make sense of<br/>the next <em>step.</em></h2>
-              <p>Bring prescriptions, medicine routines, and health notes into one clear workspace — ready for a better conversation with your care team.</p>
-              <button class="button button-light" data-go="prescription">Review a prescription <span>↗</span></button>
-              <div class="hero-points"><span><i data-icon="check"></i> You review every instruction</span><span><i data-icon="check"></i> Unclear stays unclear</span></div>
-            </div>
-            <img class="hero-illustration" src="/illustrations/care-companion.svg" alt="Illustration of a caring health companion" />
-            <div class="hero-orbit"></div><span class="hero-star star-one" data-icon="sparkle"></span><span class="hero-star star-two" data-icon="sparkle"></span>
-          </article>
-
-          <div class="section-heading"><div><span class="section-eyebrow">A GOOD PLACE TO BEGIN</span><h2>Your care, at a glance</h2></div><button class="quiet-link" data-go="wellbeing">See health tools <span>→</span></button></div>
-          <div class="metric-grid" id="metric-grid">
-            <button class="metric-card metric-medicine" data-go="medicines"><span class="metric-top"><span class="metric-icon" data-icon="clock"></span><span class="metric-arrow">↗</span></span><span class="metric-label">ACTIVE MEDICINES</span><strong id="metric-medicines">—</strong><small>Keep your day on track</small><span class="metric-art art-clock" data-icon="clock"></span></button>
-            <button class="metric-card metric-heart" data-go="wellbeing"><span class="metric-top"><span class="metric-icon" data-icon="heart"></span><span class="metric-arrow">↗</span></span><span class="metric-label">LATEST BLOOD PRESSURE</span><strong id="metric-bp">—</strong><small id="metric-bp-note">Add a reading when you’re ready</small><span class="metric-art art-heart" data-icon="heart"></span></button>
-            <button class="metric-card metric-oxygen" data-go="wellbeing"><span class="metric-top"><span class="metric-icon" data-icon="pulse"></span><span class="metric-arrow">↗</span></span><span class="metric-label">LATEST OXYGEN LEVEL</span><strong id="metric-spo2">—</strong><small id="metric-spo2-note">A quick check-in, whenever</small><span class="metric-art art-wave" data-icon="pulse"></span></button>
-            <button class="metric-card metric-nearby" data-go="nearby"><span class="metric-top"><span class="metric-icon" data-icon="pin"></span><span class="metric-arrow">↗</span></span><span class="metric-label">CARE CLOSE TO HOME</span><strong id="metric-nearby">—</strong><small>Clinics, pharmacies & more</small><span class="metric-art art-pin" data-icon="pin"></span></button>
-          </div>
-
-          <div class="two-column-section">
-            <section class="surface schedule-surface">
-              <div class="surface-heading"><div><span class="section-eyebrow">A KIND REMINDER</span><h3>Today’s medicines</h3></div><button class="icon-link" data-go="medicines">See all <span>→</span></button></div>
-              <div id="today-list" class="today-list"><div class="empty-state compact"><span class="empty-icon" data-icon="clock"></span><strong>Your schedule will live here</strong><p>Scan a prescription to add your first reminder.</p><button class="button button-outline" data-go="prescription">Read a prescription</button></div></div>
-            </section>
-            <section class="surface rhythm-surface">
-              <div class="surface-heading"><div><span class="section-eyebrow">YOUR WELLBEING</span><h3>How are you feeling?</h3></div><span class="mood-orbit" data-icon="heart"></span></div>
-              <p class="rhythm-copy">A small check-in can help you notice how you’re doing. There’s no right or wrong answer.</p>
-              <div class="mood-options"><button data-go="wellbeing" aria-label="Feeling good"><span class="mood-icon" data-icon="smile"></span><small>Good</small></button><button data-go="wellbeing" aria-label="Feeling okay"><span class="mood-icon" data-icon="neutral"></span><small>Okay</small></button><button data-go="wellbeing" aria-label="Could be better"><span class="mood-icon" data-icon="frown"></span><small>Hard day</small></button></div>
-              <button class="quiet-link rhythm-link" data-go="wellbeing">Start a gentle check-in <span>→</span></button>
-            </section>
-          </div>
-
-          <div class="section-heading quick-heading"><div><span class="section-eyebrow">HERE WHEN YOU NEED IT</span><h2>Everyday care, made easier</h2></div></div>
-          <div class="quick-grid">
-            <button class="quick-card" data-go="prescription"><span class="quick-icon q-green" data-icon="file"></span><span><strong>Read a prescription</strong><small>See what’s written, together</small></span><span class="quick-next">↗</span></button>
-            <button class="quick-card" data-go="wellbeing"><span class="quick-icon q-peach" data-icon="pulse"></span><span><strong>Log a health reading</strong><small>Blood pressure, oxygen & more</small></span><span class="quick-next">↗</span></button>
-            <button class="quick-card" data-go="nearby"><span class="quick-icon q-blue" data-icon="pin"></span><span><strong>Find care nearby</strong><small>Clinics and medicine shops</small></span><span class="quick-next">↗</span></button>
-            <button class="quick-card" data-go="ask"><span class="quick-icon q-lilac" data-icon="sparkle"></span><span><strong>Ask Saathi</strong><small>Get help understanding your care</small></span><span class="quick-next">↗</span></button>
-          </div>
-
-          <section class="emergency-banner"><span class="emergency-symbol" data-icon="cross"></span><span><strong>Need urgent help?</strong><small>Call emergency services at any time.</small></span><a href="tel:108" class="button button-emergency">Call 108 <span>↗</span></a><a href="tel:112" class="emergency-alt">or 112</a></section>
-          <footer class="footer-note"><span>सेहत साथी</span><span>Here to support your care — never to replace your doctor.</span><a href="tel:14416">Need to talk? Tele-MANAS 14416</a></footer>
+        <!-- Safety & Scope Notice -->
+        <section class="prototype-notice" role="note" aria-label="Prototype and data scope">
+          <span class="notice-mark" aria-hidden="true">P</span>
+          <span>
+            <strong id="prototype-heading">Research prototype</strong>
+            <span id="prototype-detail">Neemrana, Rajasthan pilot data · Care, clearly · For informational guidance only, not a clinical diagnostic tool</span>
+          </span>
+          <a href="#settings" data-go="settings">Read Scope</a>
         </section>
 
-        <section class="view" id="view-prescription" data-page="Prescription reader">
-          <div class="page-intro"><span class="section-eyebrow">A CLEARER LOOK TOGETHER</span><h1>Let’s read your <em>prescription.</em></h1><p>Take a photo or choose an image. We’ll show what we can read and mark anything that needs a closer look.</p></div>
-          <div class="prescription-grid">
-            <section class="surface scan-surface"><div class="surface-heading"><div><span class="section-eyebrow">STEP 01 · ADD AN IMAGE</span><h3>Your prescription</h3></div><span class="scan-badge">Processed for review</span></div>
-              <label class="upload-zone" id="upload-zone" for="prescription-file"><input id="prescription-file" type="file" accept="image/*" capture="environment" /><span class="upload-art"><svg viewBox="0 0 70 70" aria-hidden="true"><rect x="14" y="11" width="42" height="50" rx="9"/><path d="M25 27h20M25 35h20M25 43h12"/><circle cx="48" cy="49" r="11"/><path d="m44 49 3 3 6-7"/></svg></span><strong>Drop a photo or browse</strong><span class="upload-sub">JPG, PNG or WEBP · up to 10 MB</span><span class="button button-green">Choose a photo <span>↗</span></span><span class="upload-preview" id="upload-preview"></span></label>
-              <div class="photo-tips"><span class="tip-mark" data-icon="sparkle"></span><div><strong>A little photo guidance</strong><p>Keep the paper flat, use bright even light, and show all four corners.</p></div></div>
-              <button class="button button-green button-wide" id="scan-button" disabled>Read this prescription <span>→</span></button>
-              <div class="demo-divider"><span>OR TRY A SAMPLE</span></div>
-              <div class="demo-actions"><button class="button button-outline" data-demo="clean">Try a clear example</button><button class="button button-outline" data-demo="ambiguous">Try a hard-to-read example</button></div>
-              <p class="privacy-note">Your photo is processed for reading and isn’t stored as a record.</p>
+        <!-- Screen 1: Dashboard / Home -->
+        <section class="view active" id="view-home" data-page="Dashboard">
+          <div class="welcome-row">
+            <div>
+              <div class="overline">
+                <span class="sun-dot"></span> CARE WORKSPACE · NEEMRANA PILOT (&lt;10 MILES)
+              </div>
+              <h1>Care, clearly.<br class="mobile-break"/> <em>Every step of the way.</em></h1>
+              <p class="welcome-sub">Your personal clinical companion for prescriptions, medicine schedules, and nearby medical support.</p>
+            </div>
+            <div class="weather-pill">
+              <span class="weather-icon" data-icon="sun"></span>
+              <div>
+                <strong>Care, clearly</strong>
+                <small>Research prototype</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hero Banner -->
+          <article class="hero-panel">
+            <div class="hero-text">
+              <span class="hero-kicker">
+                <span class="pulse-dot"></span> AI-POWERED HEALTHCARE
+              </span>
+              <h2>Organize your care.<br/>Know your <em>next step.</em></h2>
+              <p>Bring prescriptions, medication schedules, and clinical notes into one clear workspace — ready for a confident conversation with your doctor.</p>
+              <div style="display:flex; gap:12px; flex-wrap:wrap">
+                <button class="button button-light" data-go="prescription">Scan Prescription <span>↗</span></button>
+                <button class="button button-outline" style="background:rgba(255,255,255,0.15); color:#fff; border-color:rgba(255,255,255,0.3)" data-go="nearby">Find Care Nearby <span>📍</span></button>
+              </div>
+              <div class="hero-points">
+                <span><i data-icon="check"></i> Gemini-assisted reading</span>
+                <span><i data-icon="check"></i> 10-Mile Proximity Radar</span>
+                <span><i data-icon="check"></i> Tentative symptom assessment and warning signs</span>
+              </div>
+            </div>
+            <img class="hero-illustration" src="/illustrations/care-companion.svg" alt="Sehat Saathi Care Companion" />
+          </article>
+
+          <!-- 4 Vitals & Overview Telemetry Cards -->
+          <div class="section-heading">
+            <div>
+              <span class="section-eyebrow">LIVE TELEMETRY</span>
+              <h2>Your Care at a Glance</h2>
+            </div>
+          </div>
+          <div class="metric-grid" id="metric-grid">
+            <button class="metric-card metric-medicine" data-go="medicines">
+              <div class="metric-top">
+                <span class="metric-icon" data-icon="clock"></span>
+                <span class="metric-arrow">↗</span>
+              </div>
+              <span class="metric-label">Active Medicines</span>
+              <strong id="metric-medicines">—</strong>
+              <small>Doses scheduled today</small>
+            </button>
+            <button class="metric-card metric-heart" data-go="wellbeing">
+              <div class="metric-top">
+                <span class="metric-icon" data-icon="heart"></span>
+                <span class="metric-arrow">↗</span>
+              </div>
+              <span class="metric-label">Blood Pressure</span>
+              <strong id="metric-bp">—</strong>
+              <small id="metric-bp-note">Add a reading when ready</small>
+            </button>
+            <button class="metric-card metric-oxygen" data-go="wellbeing">
+              <div class="metric-top">
+                <span class="metric-icon" data-icon="pulse"></span>
+                <span class="metric-arrow">↗</span>
+              </div>
+              <span class="metric-label">Oxygen Level (SpO₂)</span>
+              <strong id="metric-spo2">—</strong>
+              <small id="metric-spo2-note">Pulse oximeter checkin</small>
+            </button>
+            <button class="metric-card metric-nearby" data-go="nearby">
+              <div class="metric-top">
+                <span class="metric-icon" data-icon="pin"></span>
+                <span class="metric-arrow">↗</span>
+              </div>
+              <span class="metric-label">Care Within 10 Miles</span>
+              <strong id="metric-nearby">—</strong>
+              <small>Clinics &amp; Pharmacies</small>
+            </button>
+          </div>
+
+          <!-- Schedule & Wellbeing Row -->
+          <div class="two-column-section">
+            <section class="surface schedule-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">MEDICATION SCHEDULE</span>
+                  <h3>Today's Medicines</h3>
+                </div>
+                <button class="icon-link" data-go="medicines">Manage All <span>→</span></button>
+              </div>
+              <div id="today-list" class="today-list">
+                <div class="empty-state compact" style="text-align:center; padding:24px 10px">
+                  <span class="empty-icon" data-icon="clock" style="display:inline-block; margin-bottom:8px"></span>
+                  <strong style="display:block">Your schedule will appear here</strong>
+                  <p style="color:var(--slate-500); font-size:13px; margin:4px 0 14px">Scan a prescription to add your first medicine reminder.</p>
+                  <button class="button button-outline" data-go="prescription">Scan Prescription</button>
+                </div>
+              </div>
             </section>
-            <aside class="scan-aside"><div class="safety-note"><span class="safety-icon" data-icon="sparkle"></span><span class="section-eyebrow">A SAFETY PROMISE</span><h3>We’ll never fill in the blanks.</h3><p>If a dose or word is unclear, we’ll leave it uncertain and ask you to check with a pharmacist or doctor.</p></div><div class="scan-steps"><span class="section-eyebrow">HOW IT WORKS</span><div><i>1</i><span><strong>Read</strong><small>We look closely at the image.</small></span></div><div><i>2</i><span><strong>Review</strong><small>You check every medicine.</small></span></div><div><i>3</i><span><strong>Choose</strong><small>Only you decide to set reminders.</small></span></div></div></aside>
+
+            <section class="surface rhythm-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">WELLNESS CHECK-IN</span>
+                  <h3>How are you feeling today?</h3>
+                </div>
+                <span class="mood-orbit" data-icon="heart"></span>
+              </div>
+              <p class="rhythm-copy">A quick self-reflection helps track health patterns over time. There are no right or wrong answers.</p>
+              <div class="mood-options">
+                <button data-go="wellbeing" aria-label="Feeling good">
+                  <span class="mood-icon" data-icon="smile"></span>
+                  <small>Energetic</small>
+                </button>
+                <button data-go="wellbeing" aria-label="Feeling okay">
+                  <span class="mood-icon" data-icon="neutral"></span>
+                  <small>Normal</small>
+                </button>
+                <button data-go="wellbeing" aria-label="Could be better">
+                  <span class="mood-icon" data-icon="frown"></span>
+                  <small>Need Rest</small>
+                </button>
+              </div>
+              <button class="quiet-link rhythm-link" data-go="wellbeing">Log Health Vitals <span>→</span></button>
+            </section>
+          </div>
+
+          <!-- Quick Action Hub Cards -->
+          <div class="section-heading quick-heading">
+            <div>
+              <span class="section-eyebrow">HEALTH HUB</span>
+              <h2>Everyday Care Made Simple</h2>
+            </div>
+          </div>
+          <div class="quick-grid">
+            <button class="quick-card" data-go="prescription">
+              <span class="quick-icon q-green" data-icon="file"></span>
+              <span>
+                <strong>Read Prescription</strong>
+                <small>Extract medications &amp; food timing</small>
+              </span>
+              <span class="quick-next">↗</span>
+            </button>
+            <button class="quick-card" data-go="wellbeing">
+              <span class="quick-icon q-peach" data-icon="pulse"></span>
+              <span>
+                <strong>Log Health Vitals</strong>
+                <small>BP, SpO₂, Blood Sugar &amp; Pulse</small>
+              </span>
+              <span class="quick-next">↗</span>
+            </button>
+            <button class="quick-card" data-go="nearby">
+              <span class="quick-icon q-blue" data-icon="pin"></span>
+              <span>
+                <strong>Care Nearby (&lt;10 mi)</strong>
+                <small>Find nearest clinic &amp; 24/7 chemist</small>
+              </span>
+              <span class="quick-next">↗</span>
+            </button>
+            <button class="quick-card" data-go="ask">
+              <span class="quick-icon q-lilac" data-icon="sparkle"></span>
+              <span>
+                <strong>Ask AI Saathi</strong>
+                <small>Understand instructions safely</small>
+              </span>
+              <span class="quick-next">↗</span>
+            </button>
+          </div>
+
+          <!-- Emergency Banner -->
+          <section class="emergency-banner">
+            <span class="emergency-symbol" data-icon="cross"></span>
+            <span>
+              <strong>Emergency Assistance Available 24/7</strong>
+              <small>Call national ambulance or emergency medical services immediately.</small>
+            </span>
+            <a href="tel:108" class="button button-emergency">Call 108 <span>↗</span></a>
+            <a href="tel:112" class="emergency-alt">or 112</a>
+          </section>
+
+          <!-- Footer -->
+          <footer style="margin-top:28px; padding-top:18px; border-top:1px solid var(--slate-200); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; font-size:12px; color:var(--slate-500)">
+            <span><strong>सेहत साथी</strong> · Your AI Healthcare Companion</span>
+            <span>Always consult a qualified doctor for medical advice.</span>
+            <a href="tel:14416" style="color:var(--primary); font-weight:700">Tele-MANAS Helpline: 14416</a>
+          </footer>
+        </section>
+
+        <!-- Screen 2: Prescription Reader -->
+        <section class="view" id="view-prescription" data-page="Prescription AI">
+          <div class="page-intro">
+            <span class="section-eyebrow">STEP-BY-STEP OCR ASSISTANT</span>
+            <h1>Read &amp; Understand Your <em>Prescription.</em></h1>
+            <p>Upload a clear photo or document. We extract medicine names, dosages, and food timings, highlighting anything that requires clinical confirmation.</p>
+          </div>
+          <div class="prescription-grid">
+            <section class="surface scan-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">STEP 01 · ADD PRESCRIPTION IMAGE</span>
+                  <h3>Upload or Take a Photo</h3>
+                </div>
+                <span class="scan-badge" id="ocr-status" style="font-size:11px; font-weight:700; color:var(--primary); background:var(--primary-light); padding:4px 10px; border-radius:var(--radius-full)">Checking scan availability…</span>
+              </div>
+              <label class="upload-zone" id="upload-zone" for="prescription-file">
+                <input id="prescription-file" type="file" accept="image/*" capture="environment" />
+                <span class="upload-art">
+                  <svg viewBox="0 0 70 70" aria-hidden="true">
+                    <rect x="14" y="11" width="42" height="50" rx="9"/>
+                    <path d="M25 27h20M25 35h20M25 43h12"/>
+                    <circle cx="48" cy="49" r="11"/>
+                    <path d="m44 49 3 3 6-7"/>
+                  </svg>
+                </span>
+                <strong>Drop prescription photo or browse</strong>
+                <span class="upload-sub">Supports JPG, PNG or WEBP · Clear lighting</span>
+                <span class="button button-green">Select File <span>↗</span></span>
+                <span class="upload-preview" id="upload-preview"></span>
+              </label>
+
+              <button class="button button-green button-wide" id="scan-button" disabled>Analyze Prescription <span>→</span></button>
+
+              <div class="demo-divider"><span>OR TRY A SAMPLE PREVIEW</span></div>
+              <div class="demo-actions">
+                <button class="button button-outline" data-demo="clean">Try Clear Example</button>
+                <button class="button button-outline" data-demo="ambiguous">Try Ambiguous Example</button>
+              </div>
+              <p class="privacy-note">When live scanning is enabled, image bytes are sent to Google Gemini. This app does not save the image locally; provider data handling is separate. Use synthetic examples only.</p>
+            </section>
+
+            <aside class="scan-aside">
+              <div class="safety-note">
+                <span class="safety-icon" data-icon="sparkle"></span>
+                <span class="section-eyebrow">OUR CLINICAL SAFETY PROMISE</span>
+                <h3>We Never Guess Or Fabricate.</h3>
+                <p>If handwriting or dose timing is unclear, Sehat Saathi explicitly flags it as uncertain, prompting you to double-check with your pharmacist.</p>
+              </div>
+              <div class="scan-steps">
+                <span class="section-eyebrow">HOW IT WORKS</span>
+                <div><i>1</i><div><strong>Upload</strong><small>High-contrast digital scanning</small></div></div>
+                <div><i>2</i><div><strong>Review</strong><small>Verify medicine instructions</small></div></div>
+                <div><i>3</i><div><strong>Confirm</strong><small>1-Click sync to your daily reminder schedule</small></div></div>
+              </div>
+            </aside>
           </div>
           <div id="prescription-results" class="prescription-results" hidden></div>
         </section>
 
-        <section class="view" id="view-medicines" data-page="My medicines">
-          <div class="page-intro split-intro"><div><span class="section-eyebrow">YOUR ROUTINE, AT YOUR PACE</span><h1>My <em>medicines.</em></h1><p>Gentle reminders based only on instructions you’ve checked and confirmed.</p></div><div class="page-actions"><button class="button button-outline" id="share-schedule">Share with family <span>↗</span></button><button class="button button-green" data-go="prescription">Add from prescription <span>＋</span></button></div></div>
-          <div class="medicine-summary" id="medicine-summary"></div><div class="medicine-list" id="medicine-list"></div>
-        </section>
-
-        <section class="view" id="view-wellbeing" data-page="Health & wellbeing">
-          <div class="page-intro"><span class="section-eyebrow">A LITTLE CHECK-IN WITH YOURSELF</span><h1>Health & <em>wellbeing.</em></h1><p>Keep a simple record of how you’re feeling. These tools support conversations with a health professional; they don’t diagnose.</p></div>
-          <div class="wellbeing-grid">
-            <section class="surface form-surface"><div class="surface-heading"><div><span class="section-eyebrow">01 · BODY CHECK-IN</span><h3>Log a health reading</h3></div><span class="form-emoji" data-icon="heart"></span></div><form id="vitals-form" class="form-grid"><label>What would you like to record?<select name="kind" id="vital-kind"><option value="bp">Blood pressure</option><option value="spo2">Oxygen level (SpO₂)</option><option value="sugar">Blood sugar</option><option value="temp">Temperature</option><option value="pulse">Pulse</option></select></label><label>Reading<div class="input-unit"><input name="value" id="vital-value" required placeholder="e.g. 120/80"/><span id="vital-unit">mmHg</span></div></label><label class="span-two">Where was this measured?<select name="device_type"><option>Home monitor</option><option>Pulse oximeter</option><option>Glucometer</option><option>Thermometer</option><option>Clinic reading</option></select></label><button class="button button-green" type="submit">Save this reading <span>→</span></button></form><div id="vital-result"></div></section>
-            <section class="surface form-surface"><div class="surface-heading"><div><span class="section-eyebrow">02 · HOW ARE YOU FEELING?</span><h3>A gentle wellbeing check-in</h3></div><span class="form-emoji peach" data-icon="sun"></span></div><form id="wellness-form" class="stack-form"><label>How has your sleep been?<select name="sleep"><option>Good Sleep</option><option>Disturbed sleep</option><option>Very little sleep</option></select></label><label>How has your stress felt?<select name="stress"><option>Normal</option><option>Mild stress</option><option>High stress or worry</option></select></label><label>How has your mood been?<select name="mood"><option>Positive</option><option>Neutral</option><option>Low or lonely</option></select></label><button class="button button-green" type="submit">Save my check-in <span>→</span></button></form><div id="wellness-result"></div><a class="support-link" href="tel:14416">You can talk to Tele-MANAS, free and confidential · 14416 ↗</a></section>
-            <section class="surface form-surface"><div class="surface-heading"><div><span class="section-eyebrow">03 · NOTICE YOUR PROGRESS</span><h3>Recovery check-in</h3></div><span class="form-emoji green">↗</span></div><form id="progress-form" class="stack-form"><label>How are you feeling overall?<select name="feeling"><option>Much Better</option><option>Slight Improvement</option><option>No Change</option><option>Feeling Worse</option></select></label><label>How have medicines been going?<select name="adherence"><option>All Doses On Time</option><option>Missed 1-2 Doses</option><option>Unable to take medicines</option></select></label><label>Have your symptoms eased?<select name="symptoms"><option>Fully Relieved</option><option>Partially Relieved</option><option>No Relief</option></select></label><button class="button button-green" type="submit">See my check-in <span>→</span></button></form><div id="progress-result"></div></section>
-            <section class="surface form-surface"><div class="surface-heading"><div><span class="section-eyebrow">04 · SOMETHING FEELING OFF?</span><h3>Note a medicine concern</h3></div><span class="form-emoji peach" data-icon="sparkle"></span></div><form id="issue-form" class="stack-form"><label>Medicine name<input name="medicine_name" required placeholder="Name on the pack or prescription"/></label><label>What have you noticed?<select name="issue_type"><option>Feeling unwell</option><option>Stomach discomfort</option><option>Skin rash or itching</option><option>Feeling dizzy</option><option>Swelling or breathing difficulty</option><option>Other concern</option></select></label><label>How serious does it feel?<select name="severity"><option>Mild</option><option>Moderate</option><option>Severe</option></select></label><label>Anything else to note?<textarea name="notes" rows="2" placeholder="Optional"></textarea></label><button class="button button-outline" type="submit">Save a note</button></form><div id="issue-result"></div></section>
+        <!-- Screen 3: My Medicines -->
+        <section class="view" id="view-medicines" data-page="My Medicines">
+          <div class="page-intro split-intro">
+            <div>
+              <span class="section-eyebrow">DAILY ADHERENCE TRACKER</span>
+              <h1>My <em>Medicines &amp; Reminders.</em></h1>
+              <p>Gentle, timely reminders based only on instructions you have reviewed and verified.</p>
+            </div>
+            <div class="page-actions">
+              <button class="button button-outline" id="share-schedule">Share Schedule <span>↗</span></button>
+              <button class="button button-green" data-go="prescription">Add from Prescription <span>＋</span></button>
+            </div>
           </div>
-          <div class="surface history-surface"><div class="surface-heading"><div><span class="section-eyebrow">A RECORD FOR YOU</span><h3>Recent readings</h3></div></div><div id="vitals-history"></div></div>
+          <div class="medicine-summary" id="medicine-summary"></div>
+          <div class="medicine-list" id="medicine-list"></div>
         </section>
 
-        <section class="view" id="view-nearby" data-page="Care nearby">
-          <div class="page-intro"><span class="section-eyebrow">CARE IS CLOSER THAN IT FEELS</span><h1>Find support <em>nearby.</em></h1><p>Explore local health centres, clinics, and pharmacies. Call ahead to confirm services and timings.</p></div>
-          <section class="nearby-hero"><span class="nearby-art" data-icon="pin"></span><div><span class="section-eyebrow">PILOT DIRECTORY · INDIA</span><h2>Find care around you.</h2><p>Demo listings cover a small Rajasthan / NCR cluster only. Call ahead; this is not an official directory.</p></div><form id="locality-form"><label class="sr-only" for="locality">Town or city</label><input id="locality" value="Neemrana" aria-label="Town or city"/><button class="button button-green" type="submit">Search sample <span>→</span></button></form></section>
-          <div class="nearby-toolbar"><div><span class="section-eyebrow">WITHIN 10 MILES</span><h2 id="facility-count">Places to know</h2></div><a id="maps-search" class="button button-outline" target="_blank" rel="noreferrer">Open in Maps ↗</a></div>
+        <!-- Screen 4: Health & Wellbeing -->
+        <section class="view" id="view-wellbeing" data-page="Health Vitals">
+          <div class="page-intro">
+            <span class="section-eyebrow">CLINICAL TELEMETRY &amp; SELF-CHECK</span>
+            <h1>Health Vitals &amp; <em>Wellbeing.</em></h1>
+            <p>Maintain an accurate log of your blood pressure, oxygen levels, and emotional wellness for informed consultations.</p>
+          </div>
+          <div class="wellbeing-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-bottom:24px">
+            <!-- 01 Vitals -->
+            <section class="surface form-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">01 · BODY VITALS</span>
+                  <h3>Log a Health Reading</h3>
+                </div>
+                <span class="form-emoji" data-icon="heart"></span>
+              </div>
+              <form id="vitals-form" class="form-grid" style="display:flex; flex-direction:column; gap:12px">
+                <label style="font-size:12.5px; font-weight:700">Metric Type
+                  <select name="kind" id="vital-kind" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option value="bp">Blood pressure (mmHg)</option>
+                    <option value="spo2">Oxygen level SpO₂ (%)</option>
+                    <option value="sugar">Blood sugar (mg/dL)</option>
+                    <option value="temp">Temperature (°F)</option>
+                    <option value="pulse">Pulse / Heart Rate (BPM)</option>
+                  </select>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Reading Value
+                  <div style="display:flex; align-items:center; gap:8px; margin-top:4px">
+                    <input name="value" id="vital-value" required placeholder="e.g. 120/80" style="flex:1; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)"/>
+                    <span id="vital-unit" style="font-size:12px; font-weight:700; color:var(--slate-500)">mmHg</span>
+                  </div>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Measurement Device
+                  <select name="device_type" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Home monitor</option>
+                    <option>Pulse oximeter</option>
+                    <option>Glucometer</option>
+                    <option>Thermometer</option>
+                    <option>Clinic reading</option>
+                  </select>
+                </label>
+                <button class="button button-green" type="submit">Save Vital Reading <span>→</span></button>
+              </form>
+              <div id="vital-result" style="margin-top:12px"></div>
+            </section>
+
+            <!-- 02 Wellness -->
+            <section class="surface form-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">02 · MENTAL WELLBEING</span>
+                  <h3>Emotional Check-In</h3>
+                </div>
+                <span class="form-emoji peach" data-icon="sun"></span>
+              </div>
+              <form id="wellness-form" class="stack-form" style="display:flex; flex-direction:column; gap:12px">
+                <label style="font-size:12.5px; font-weight:700">Sleep Quality
+                  <select name="sleep" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Good Sleep</option>
+                    <option>Disturbed sleep</option>
+                    <option>Very little sleep</option>
+                  </select>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Stress Level
+                  <select name="stress" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Normal</option>
+                    <option>Mild stress</option>
+                    <option>High stress or worry</option>
+                  </select>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Overall Mood
+                  <select name="mood" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Positive</option>
+                    <option>Neutral</option>
+                    <option>Low or lonely</option>
+                  </select>
+                </label>
+                <button class="button button-green" type="submit">Save Wellness Check-In <span>→</span></button>
+              </form>
+              <div id="wellness-result" style="margin-top:12px"></div>
+              <a class="support-link" href="tel:14416" style="display:inline-block; margin-top:10px; font-size:12px; color:var(--primary); font-weight:700">Talk to Tele-MANAS (Toll-Free 24/7): 14416 ↗</a>
+            </section>
+
+            <!-- 03 Recovery Progress -->
+            <section class="surface form-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">03 · TREATMENT TRACKER</span>
+                  <h3>Recovery Check-In</h3>
+                </div>
+                <span class="form-emoji green" style="color:var(--primary); font-weight:800">↗</span>
+              </div>
+              <form id="progress-form" class="stack-form" style="display:flex; flex-direction:column; gap:12px">
+                <label style="font-size:12.5px; font-weight:700">Overall Feeling
+                  <select name="feeling" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Much Better</option>
+                    <option>Slight Improvement</option>
+                    <option>No Change</option>
+                    <option>Feeling Worse</option>
+                  </select>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Medication Adherence
+                  <select name="adherence" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>All Doses On Time</option>
+                    <option>Missed 1-2 Doses</option>
+                    <option>Unable to take medicines</option>
+                  </select>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Symptom Ease
+                  <select name="symptoms" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Fully Relieved</option>
+                    <option>Partially Relieved</option>
+                    <option>No Relief</option>
+                  </select>
+                </label>
+                <button class="button button-green" type="submit">Submit Progress Update <span>→</span></button>
+              </form>
+              <div id="progress-result" style="margin-top:12px"></div>
+            </section>
+
+            <!-- 04 Medicine Concern -->
+            <section class="surface form-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">04 · DRUG CONCERNS</span>
+                  <h3>Note a Medication Issue</h3>
+                </div>
+                <span class="form-emoji peach" data-icon="sparkle"></span>
+              </div>
+              <form id="issue-form" class="stack-form" style="display:flex; flex-direction:column; gap:12px">
+                <label style="font-size:12.5px; font-weight:700">Medicine Name
+                  <input name="medicine_name" required placeholder="Medicine on label or pack" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)"/>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Observed Concern
+                  <select name="issue_type" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Feeling unwell</option>
+                    <option>Stomach discomfort</option>
+                    <option>Skin rash or itching</option>
+                    <option>Feeling dizzy</option>
+                    <option>Swelling or breathing difficulty</option>
+                    <option>Other concern</option>
+                  </select>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Severity Level
+                  <select name="severity" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)">
+                    <option>Mild</option>
+                    <option>Moderate</option>
+                    <option>Severe</option>
+                  </select>
+                </label>
+                <label style="font-size:12.5px; font-weight:700">Notes (Optional)
+                  <textarea name="notes" rows="2" placeholder="Details about when it occurred" style="width:100%; margin-top:4px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--slate-300); background:var(--slate-50)"></textarea>
+                </label>
+                <button class="button button-outline" type="submit">Log Medication Concern</button>
+              </form>
+              <div id="issue-result" style="margin-top:12px"></div>
+            </section>
+          </div>
+
+          <!-- History -->
+          <div class="surface history-surface">
+            <div class="surface-heading">
+              <div>
+                <span class="section-eyebrow">LONGITUDINAL TELEMETRY</span>
+                <h3>Recent Vitals Log</h3>
+              </div>
+            </div>
+            <div id="vitals-history"></div>
+          </div>
+        </section>
+
+        <!-- Screen 5: Care Nearby (< 10 Miles Radar) -->
+        <section class="view" id="view-nearby" data-page="Care Nearby (&lt;10 mi)">
+          <div class="page-intro">
+            <span class="section-eyebrow">10-MILE PROXIMITY RADAR · GPS &amp; MANUAL</span>
+            <h1>Find Care &amp; Support <em>Nearby.</em></h1>
+            <p>Search the local pilot directory where sample listings are available, or open a live map search for care near your location.</p>
+          </div>
+          <section class="nearby-hero">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px">
+              <span class="nearby-art" data-icon="pin" style="color:var(--primary)"></span>
+              <span class="section-eyebrow" style="margin:0">AUTOMATIC GPS RADAR OR MANUAL SEARCH</span>
+            </div>
+            <h2>Find Clinics &amp; Pharmacies Around You</h2>
+            <p id="location-status-text" style="color:var(--slate-500); font-size:13.5px">Use GPS, choose a quick city, or enter a town/city or latitude,longitude. Outside the Rajasthan pilot sample, live nearby results are searched in OpenStreetMap.</p>
+            <p class="nearby-data-note">Live searches send the selected city or GPS coordinates to OpenStreetMap. Its community-mapped listings may be incomplete or out of date; confirm details before travelling.</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 14px">
+              <span style="font-size:12px; font-weight:800; color:var(--slate-500); align-self:center">Search a city:</span>
+              <button type="button" class="quick-city-chip" data-city="Faridabad" aria-pressed="false">📍 Faridabad</button>
+              <button type="button" class="quick-city-chip" data-city="Gurgaon" aria-pressed="false">📍 Gurgaon</button>
+              <button type="button" class="quick-city-chip" data-city="Delhi" aria-pressed="false">📍 Delhi</button>
+              <button type="button" class="quick-city-chip" data-city="Noida" aria-pressed="false">📍 Noida</button>
+              <button type="button" class="quick-city-chip" data-city="Neemrana" aria-pressed="false">📍 Neemrana</button>
+              <button type="button" class="quick-city-chip" data-city="Jaipur" aria-pressed="false">📍 Jaipur</button>
+              <button type="button" class="quick-city-chip" data-city="Mumbai" aria-pressed="false">📍 Mumbai</button>
+              <button type="button" class="quick-city-chip" data-city="Bengaluru" aria-pressed="false">📍 Bengaluru</button>
+              <button type="button" class="quick-city-chip" data-city="Hyderabad" aria-pressed="false">📍 Hyderabad</button>
+              <button type="button" class="quick-city-chip" data-city="Kolkata" aria-pressed="false">📍 Kolkata</button>
+              <button type="button" class="quick-city-chip" data-city="Chandigarh" aria-pressed="false">📍 Chandigarh</button>
+              <button type="button" class="quick-city-chip" data-city="Lucknow" aria-pressed="false">📍 Lucknow</button>
+            </div>
+            <form id="locality-form" class="location-controls">
+              <button class="button button-outline" type="button" id="use-current-location" title="Automatically detect GPS location">
+                <span data-icon="pin"></span> <span id="gps-button-label">Use GPS Location</span>
+              </button>
+              <label class="sr-only" for="locality" style="display:none">Town or Coordinates</label>
+              <input id="locality" value="Neemrana" placeholder="Enter town or lat,lon coordinates" aria-label="Town or city"/>
+              <button class="button button-green" type="submit">Search Radius <span>→</span></button>
+            </form>
+          </section>
+
+          <div class="nearby-toolbar">
+            <div>
+              <span class="section-eyebrow">PROXIMITY RADAR (&lt; 10 MILES)</span>
+              <h2 id="facility-count">Medical Facilities Found</h2>
+            </div>
+            <a id="maps-search" class="button button-outline" target="_blank" rel="noreferrer">Open in Google Maps ↗</a>
+          </div>
+          <p class="nearby-attribution"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a></p>
+
           <div id="facility-list" class="facility-grid"></div>
-          <section class="prevention-section"><div class="section-heading"><div><span class="section-eyebrow">EVERYDAY PREVENTION</span><h2>Little things that help</h2></div></div><div id="prevention-list" class="prevention-grid"></div></section>
+
+          <section class="prevention-section" style="margin-top:28px">
+            <div class="section-heading">
+              <div>
+                <span class="section-eyebrow">PREVENTIVE GUIDANCE</span>
+                <h2>Essential Care Tips</h2>
+              </div>
+            </div>
+            <div id="prevention-list" class="prevention-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px"></div>
+          </section>
         </section>
 
-        <section class="view" id="view-ask" data-page="Ask Saathi">
-          <div class="page-intro"><span class="section-eyebrow">A HELPFUL PLACE TO ASK</span><h1>Ask <em>Saathi.</em></h1><p>Get help understanding medicine instructions. Saathi can’t diagnose symptoms or replace a doctor’s advice.</p></div>
-          <div class="chat-layout"><div class="chat-card"><div class="chat-head"><span class="saathi-avatar" data-icon="sparkle"></span><span><strong>Saathi</strong><small>Your health companion · here to help</small></span><span class="online-dot"></span></div><div class="chat-messages" id="chat-messages"><div class="chat-bubble bot"><span class="chat-label">SAATHI</span><p>Namaste. I can help explain words on a prescription or share general medicine information. What would you like to understand?</p></div></div><form class="chat-composer" id="chat-form"><textarea name="question" rows="1" maxlength="1200" placeholder="Ask about an instruction or medicine…" required></textarea><button class="send-button" aria-label="Send question">↑</button></form><div class="chat-footnote">For new or worsening symptoms, please speak with a doctor or visit a PHC.</div></div><aside class="chat-aside"><span class="section-eyebrow">SAATHI CAN HELP WITH</span><div class="prompt-card"><span>01</span><p>What does “after food” mean?</p></div><div class="prompt-card"><span>02</span><p>How can I keep my medicines organised?</p></div><div class="prompt-card"><span>03</span><p>What is a generic medicine?</p></div><div class="chat-safety"><span class="safety-mini-icon" data-icon="sparkle"></span><p>Saathi does not diagnose or recommend changing a dose.</p></div></aside></div>
+        <!-- Screen 6: Ask Saathi (AI Chat) -->
+        <section class="view" id="view-ask" data-page="Ask AI Saathi">
+          <div class="page-intro">
+            <span class="section-eyebrow">CONVERSATIONAL HEALTH ASSISTANT</span>
+            <h1>Ask <em>AI Saathi.</em></h1>
+            <p>Explore health information, discuss symptoms and plausible causes, understand medicines, and prepare questions for a clinician. Saathi can offer a tentative assessment, explain what remains uncertain, and help you decide on a next step.</p>
+          </div>
+          <div class="chat-layout">
+            <div class="chat-card">
+              <div class="chat-head">
+                <span class="saathi-avatar" data-icon="sparkle"></span>
+                <div>
+                  <strong style="display:block; font-size:14px; color:var(--slate-900)">AI Saathi Companion</strong>
+                  <small style="color:var(--primary); font-weight:700">General health information · AI responses may be incomplete</small>
+                </div>
+                <span class="online-dot" style="width:8px; height:8px; border-radius:50%; background:#10b981; margin-left:auto; box-shadow:0 0 8px #10b981"></span>
+              </div>
+              <div class="chat-messages" id="chat-messages">
+                <div class="chat-bubble bot">
+                  <span class="chat-label" style="font-size:10px; font-weight:800; color:var(--primary); display:block; margin-bottom:2px">SAATHI</span>
+                  <p>Namaste! I can help explain symptoms and health topics, discuss confirmed prescription details, and suggest questions to ask a clinician. What would you like to understand?</p>
+                </div>
+              </div>
+              <form class="chat-composer" id="chat-form">
+                <textarea name="question" rows="1" maxlength="1200" placeholder="Ask about a symptom, health topic, or medicine…" required></textarea>
+                <button class="send-button" aria-label="Send question">↑</button>
+              </form>
+              <label for="chat-language" class="chat-footnote">Answer language
+                <select id="chat-language" aria-label="Answer language">
+                  <option value="en">English</option>
+                  <option value="hi">हिन्दी</option>
+                  <option value="hinglish">Hinglish</option>
+                </select>
+              </label>
+              <div class="chat-footnote">For severe, rapidly worsening, or alarming symptoms, seek urgent medical care. AI information can be incomplete and is not a substitute for clinical assessment.</div>
+            </div>
+
+            <aside class="chat-aside">
+              <span class="section-eyebrow">SUGGESTED QUESTIONS</span>
+              <div class="prompt-card">
+                <span>01</span>
+                <p>What can cause severe lower-back pain, and what warning signs matter?</p>
+              </div>
+              <div class="prompt-card">
+                <span>02</span>
+                <p>What should I tell a doctor about a new symptom?</p>
+              </div>
+              <div class="prompt-card">
+                <span>03</span>
+                <p>What does “Take after food” mean for my stomach?</p>
+              </div>
+              <div class="safety-note" style="margin-top:6px">
+                <span class="section-eyebrow">USEFUL CONTEXT</span>
+                <h3 style="font-size:14px; margin:2px 0 4px">Possible causes, not certainty</h3>
+                <p style="font-size:12px">Saathi can compare plausible causes from what you report, ask focused questions, and explain warning signs. It cannot confirm a diagnosis or recommend changing your prescribed dose.</p>
+              </div>
+            </aside>
+          </div>
         </section>
 
-        <section class="view" id="view-settings" data-page="Preferences">
-          <div class="page-intro"><span class="section-eyebrow">MAKE THIS SPACE YOURS</span><h1>Your <em>preferences.</em></h1><p>Simple choices to make Sehat Saathi easier to use.</p></div>
-          <div class="settings-grid"><section class="surface settings-surface"><div class="surface-heading"><div><span class="section-eyebrow">READING COMFORT</span><h3>Text size</h3></div><span class="form-emoji text-glyph">Aa</span></div><p>Make words and controls larger across the app.</p><button class="button button-outline" id="text-size-setting">Turn on easy read</button></section><section class="surface settings-surface"><div class="surface-heading"><div><span class="section-eyebrow">HELP IS ALWAYS CLOSE</span><h3>Emergency contacts</h3></div><span class="form-emoji peach" data-icon="cross"></span></div><div id="emergency-list" class="emergency-list"></div></section><section class="surface settings-surface"><div class="surface-heading"><div><span class="section-eyebrow">A NOTE ABOUT YOUR CARE</span><h3>Made to support, not diagnose</h3></div></div><p>Sehat Saathi helps you understand instructions and keep your own records. It does not replace a doctor or pharmacist. Your medicine reminders are created only after you review and confirm each instruction.</p></section></div>
+        <!-- Screen 7: Preferences & SOS -->
+        <section class="view" id="view-settings" data-page="Preferences &amp; SOS">
+          <div class="page-intro">
+            <span class="section-eyebrow">ACCESSIBILITY &amp; EMERGENCY CONFIGURATION</span>
+            <h1>Preferences &amp; <em>Emergency SOS.</em></h1>
+            <p>Customize typography readability, review national helplines, and inspect safety controls.</p>
+          </div>
+          <div class="settings-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px">
+            <section class="surface settings-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">ACCESSIBILITY</span>
+                  <h3>Easy-Read Typography</h3>
+                </div>
+                <span class="form-emoji text-glyph" style="font-weight:800; font-size:18px; color:var(--primary)">Aa</span>
+              </div>
+              <p style="font-size:13.5px; color:var(--slate-600); margin-bottom:14px">Increases text sizing, contrast, and touch targets across all screens for enhanced readability.</p>
+              <button class="button button-outline" id="text-size-setting">Toggle Easy Read Mode</button>
+            </section>
+
+            <section class="surface settings-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">PRESCRIPTION HELP</span>
+                  <h3>Explanation language</h3>
+                </div>
+                <span class="form-emoji text-glyph" style="font-weight:800; font-size:18px; color:var(--primary)">अ</span>
+              </div>
+              <p style="font-size:13.5px; color:var(--slate-600); margin-bottom:14px">Choose the language for plain-language explanations and optional audio.</p>
+              <label for="explanation-language">Language</label>
+              <select id="explanation-language">
+                <option value="hi" selected>हिन्दी (Hindi)</option>
+                <option value="en">English</option>
+                <option value="hinglish">Hinglish</option>
+              </select>
+              <p class="privacy-note">Audio sends the explanation text to Google Text-to-Speech and needs an internet connection.</p>
+            </section>
+
+            <section class="surface settings-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">SPEED-DIAL DIRECTORY</span>
+                  <h3>Emergency Helplines</h3>
+                </div>
+                <span class="form-emoji peach" data-icon="cross"></span>
+              </div>
+              <div id="emergency-list" class="emergency-list"></div>
+            </section>
+
+            <section class="surface settings-surface">
+              <div class="surface-heading">
+                <div>
+                  <span class="section-eyebrow">PROTOTYPE SCOPE</span>
+                  <h3>Tentative assessment &amp; next steps</h3>
+                </div>
+              </div>
+              <p style="font-size:13px; color:var(--slate-600); line-height:1.55">
+                This local research prototype is not a certified clinical product and has no user accounts or per-user data separation. Do not enter real patient information. Reminders require explicit review and confirmation.
+              </p>
+            </section>
+          </div>
         </section>
       </main>
     </div>
   </div>
+
+  <!-- Mobile Bottom Navigation Dock (App Experience) -->
+  <nav class="mobile-bottom-dock" aria-label="Mobile Bottom Navigation">
+    <div class="mobile-dock-inner">
+      <button class="dock-tab nav-item active" data-view="home" aria-label="Dashboard">
+        <span class="nav-icon" data-icon="home"></span>
+        <span>Home</span>
+      </button>
+      <button class="dock-tab nav-item" data-view="prescription" aria-label="Scan Prescription">
+        <span class="nav-icon" data-icon="file"></span>
+        <span>Scan Rx</span>
+      </button>
+      <button class="dock-tab nav-item" data-view="medicines" aria-label="My Medicines">
+        <span class="nav-icon" data-icon="clock"></span>
+        <span>Meds</span>
+      </button>
+      <button class="dock-tab nav-item" data-view="nearby" aria-label="Nearby Care">
+        <span class="nav-icon" data-icon="pin"></span>
+        <span>Nearby</span>
+      </button>
+      <button class="dock-tab nav-item" data-view="ask" aria-label="Ask AI Saathi">
+        <span class="nav-icon" data-icon="sparkle"></span>
+        <span>AI Saathi</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Notification Toast Region -->
   <div class="toast-region" id="toast-region" aria-live="polite"></div>
-  <dialog class="confirm-dialog" id="confirm-dialog"><form method="dialog"><button class="dialog-close" value="cancel" aria-label="Close">×</button><div class="dialog-icon">!</div><h3 id="dialog-title">Please review this</h3><p id="dialog-copy"></p><div class="dialog-actions"><button class="button button-outline" value="cancel">Go back</button><button class="button button-green" id="dialog-confirm" value="confirm">Continue</button></div></form></dialog>
+
+  <!-- Confirmation Dialog Modal -->
+  <dialog class="confirm-dialog" id="confirm-dialog">
+    <form method="dialog" style="padding:24px; max-width:400px; background:#fff; border-radius:var(--radius-lg); border:1px solid var(--slate-200); box-shadow:var(--shadow-lg)">
+      <button class="dialog-close" value="cancel" aria-label="Close" style="float:right; font-size:18px; font-weight:700; color:var(--slate-400)">×</button>
+      <div class="dialog-icon" style="width:36px; height:36px; border-radius:50%; background:#fef3c7; color:#d97706; display:flex; align-items:center; justify-content:center; font-weight:800; margin-bottom:12px">!</div>
+      <h3 id="dialog-title" style="font-family:var(--display); font-size:18px; font-weight:800; color:var(--slate-900); margin-bottom:6px">Please review this</h3>
+      <p id="dialog-copy" style="font-size:13.5px; color:var(--slate-600); margin-bottom:18px"></p>
+      <div class="dialog-actions" style="display:flex; justify-content:flex-end; gap:10px">
+        <button class="button button-outline" value="cancel">Go Back</button>
+        <button class="button button-green" id="dialog-confirm" value="confirm">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="/assets/app.js" defer></script>
 </body>
 </html>

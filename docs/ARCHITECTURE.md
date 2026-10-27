@@ -58,6 +58,8 @@
 
 Local JSON services and the SQLite clinical database use the directory configured by `SEHAT_DATA_DIR`; when unset, the repository's `data/` directory is used. The Vercel public demo forces its own temporary directory and remains read-only.
 
+The browser prescription review calls `POST /api/prescriptions/explanation` and `POST /api/prescriptions/audio` only for a user-confirmed medicine and a supported language. Explanation text is generated locally by the language service; audio is generated through gTTS and requires an external network request. Real image extraction sends the uploaded image bytes to Gemini when a live API key is configured. In-memory image handling means the app does not write the upload to its local store; it does not guarantee third-party retention behavior.
+
 ## 2. Core Pydantic Schemas
 
 ### `MedicineInstruction`
@@ -131,5 +133,6 @@ class BaseLanguageService(ABC):
 ```
 
 ### Privacy & Storage Strategy
-- By default, uploaded prescription photos are processed purely in-memory (`BytesIO`) and **not persisted to disk**.
+- Uploaded prescription photos are processed in-memory (`BytesIO`) and not written to the app's local store. When live scanning is enabled, image bytes are sent to Gemini; this local behavior does not determine Gemini's data retention.
+- The browser's optional read-aloud feature sends explanation text to Google Text-to-Speech through gTTS.
 - Confirmed schedules are saved in a clean session state or lightweight local JSON file (`data/saved_schedules.json`), editable and deletable by the user at any time.

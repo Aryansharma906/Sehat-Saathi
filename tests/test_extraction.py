@@ -6,7 +6,8 @@ import pytest
 from services.prescription_extractor import (
     MockPrescriptionExtractor,
     GeminiMultimodalExtractor,
-    ExtractionStatus
+    ExtractionStatus,
+    live_extractor_or_none,
 )
 
 
@@ -51,3 +52,10 @@ def test_gemini_missing_api_key_fails_safely():
 
     assert prescription.extraction_status == ExtractionStatus.FAILED
     assert "GEMINI_API_KEY" in prescription.unresolved_fields
+
+
+def test_live_scanning_requires_api_key_and_demo_mode_off():
+    assert live_extractor_or_none(None, demo_mode=False) is None
+    assert live_extractor_or_none("", demo_mode=False) is None
+    assert live_extractor_or_none("configured-key", demo_mode=True) is None
+    assert isinstance(live_extractor_or_none("configured-key", demo_mode=False), GeminiMultimodalExtractor)
