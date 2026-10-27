@@ -19,12 +19,12 @@ In rural India, millions of older adults and patients struggle to read doctors' 
 1. **Scan (तस्वीर लें):** Take a photo with built-in photography guidance (flat surface, no shadows, 4 corners visible).
 2. **Read (पर्चे को समझें):** Extract medicine names and written instructions with Gemini Multimodal Vision.
 3. **Verify & Confirm (जांचें और पुष्टि करें):** **Never silently guess.** Highlight ambiguous or uncertain text in amber, check for conflicting instructions against existing schedules, and require explicit user confirmation before any schedule can be created.
-4. **Explain (सरल भाषा में समझें):** Explain the confirmed instructions in plain Hindi, with active generic salt mapping (NLEM & Jan Aushadhi) and audio read-aloud support.
+4. **Explain (सरल भाषा में समझें):** After confirmation, explain the instructions in English, Hindi, or Hinglish in the browser app; the Streamlit app also provides Hindi/Hinglish explanations. The browser can read the explanation aloud when its online speech service is available. General medicine references (NLEM & Jan Aushadhi) are shown separately from the doctor's instructions.
 5. **Remind (दवा रिमाइंडर):** Create reminders strictly from confirmed instructions without wiping older prescriptions.
 6. **Caregiver Share (परिवार को भेजें):** 1-tap WhatsApp schedule export for family caregivers assisting elderly relatives.
-7. **Ask (सवाल पूछें):** Constrained Q&A assistant to answer questions about the prescription without diagnosing or overriding medical advice.
+7. **Ask (सवाल पूछें):** Health-information assistant that discusses and cautiously ranks plausible causes, asks follow-up questions, and helps explain confirmed prescription details while distinguishing tentative assessments from clinician-confirmed diagnoses.
 8. **Emergency Support (आपातकालीन नंबर):** Instant 1-tap calling for 108 (Ambulance), 112 (Emergency), 104 (Health advice), and 102 (Mother/Child).
-9. **Clinics & Chemists Map (अस्पताल व दवा दुकानें):** 1-tap turn-by-turn navigation on Google Maps for nearby PHCs, CHCs, and retail chemists.
+9. **Clinics & Chemists Map (अस्पताल व दवा दुकानें):** One-time, permission-based GPS or manual city/coordinate search. Curated sample listings cover the Rajasthan pilot cluster; other locations use OpenStreetMap's community-maintained facility data, with Google Maps as a fallback. Live searches send the selected city or GPS coordinates to OpenStreetMap. Listings may be incomplete or out of date and should be confirmed before travelling. GPS is not continuously tracked.
 10. **Treatment Reaction Logger & Doctor Escalation (समस्या व डॉक्टर सूचना):** Log side-effects or allergic symptoms and generate 1-tap structured WhatsApp reports for the doctor.
 11. **Recovery Progress Tracking (स्वास्थ्य सुधार सवाल):** 30-second observational check-in to track recovery percentage over time.
 12. **Health Device Vitals & Mental Wellness (जांच व मन की शांति):** Standardized logging for BP, SpO2, blood sugar, and digital thermometers with clinical alert banners, alongside mental health screening integrated with Govt of India's Tele-MANAS (14416).
@@ -40,7 +40,7 @@ In rural India, millions of older adults and patients struggle to read doctors' 
 - **Rule 4 — Raw Wording Preservation & Traceability:** The app displays the raw text alongside parsed fields and links each saved reminder to its source prescription date.
 - **Rule 5 & 6 — Sourced General Information:** General drug knowledge (Indian NLEM / Jan Aushadhi) is strictly segregated into an educational reference box.
 - **Conflict Prevention:** If an incoming prescription has a different dosage for an existing medicine, the app explicitly flags the conflict for clinician clarification.
-- **Rule 8 & 9 — No Diagnosis:** The chatbot refuses diagnostic queries and symptom checks, advising users to visit their local Primary Health Centre (PHC).
+- **Chat — Symptom Assessment:** The assistant can explain and cautiously rank plausible causes based on reported symptoms, ask focused follow-up questions, and point out urgent warning signs. It must identify uncertainty, cannot claim a confirmed diagnosis, and does not recommend personal prescription dose changes.
 - **Rule 13 — Zero Patient Data Storage:** Uploaded photos are processed in memory and not permanently retained by default.
 
 ---
@@ -66,7 +66,7 @@ sehat-saathi/
 │   ├── medicine_reference.py       # Indian Healthcare Database (NLEM & Jan Aushadhi generic mapping)
 │   ├── language_service.py         # Simple Hindi copy & gTTS audio
 │   ├── reminder_service.py         # Schedule logic, conflict detection, due-status check
-│   ├── chat_service.py             # Grounded Q&A assistant with safety tripwires
+│   ├── chat_service.py             # Multilingual health information and prescription Q&A
 │   ├── emergency_service.py        # Direct mobile dialer links (108, 112, 104, 102)
 │   ├── prevention_and_facilities.py# Disease prevention guides & universal Map links (PHC, CHC, Chemists)
 │   ├── health_issue_service.py     # Side-effect logging & WhatsApp doctor escalation
@@ -135,7 +135,9 @@ uvicorn webapp.main:app --host 127.0.0.1 --port 8000 --env-file .env
 ```
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000). The server binds to your computer only by default. Keep it on loopback unless you configure authentication before exposing it to a network.
 
-The new interface uses the project's existing Python services and local data stores. Prescription scans require `GEMINI_API_KEY`; the two sample prescriptions are available in demo mode without an API key. Photos are processed in memory. A reminder can only be saved after reviewing and confirming its medicine name, dose, frequency, and timing.
+The browser interface uses the project's existing Python services and local data stores. Real prescription scans require `GEMINI_API_KEY`; uploaded image bytes are sent to Gemini for extraction. The two sample prescriptions are available in demo mode without an API key and do not call the live extractor. The app processes uploaded photos in memory and does not save them to its local data store, but this does not establish Gemini's retention or handling practices. When read-aloud is requested, the explanation text is sent to Google Text-to-Speech (gTTS), which requires a network connection. A reminder can only be saved after reviewing and confirming its medicine name, dose, supported frequency, and timing; missing or as-needed instructions cannot be scheduled.
+
+**Privacy boundary:** This is a local research prototype without user accounts or per-user data separation. Do not enter real patient information. Nearby live searches share the entered city or selected GPS coordinates with OpenStreetMap's public Nominatim/Overpass services. Keep the server on loopback; do not expose it to a network.
 
 For isolated local testing, set `SEHAT_DATA_DIR` to a disposable directory before starting the server. Otherwise, the app uses `data/` in the repository. For example, on macOS/Linux:
 

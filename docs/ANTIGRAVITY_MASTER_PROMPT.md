@@ -12,7 +12,7 @@ Be direct and evidence-based. Do not claim a feature works because a button exis
 
 ### 1. What this project is
 
-Sehat Saathi (सेहत साथी, “health companion”) is an assistive health-information prototype for patients, older adults, and caregivers, initially focused on rural India. Its intended purpose is to help people read and organize medicine instructions and prepare for conversations with doctors, pharmacists, and caregivers. It is not intended to diagnose, prescribe, or replace a clinician.
+Sehat Saathi (सेहत साथी, “health companion”) is an assistive health-information prototype for patients, older adults, and caregivers, initially focused on rural India. Its intended purpose is to help people read and organize medicine instructions, understand reported symptoms through tentative cause assessments, and prepare for conversations with doctors, pharmacists, and caregivers. It does not provide clinician-confirmed diagnoses, prescribe medicines, or replace a clinician.
 
 The main browser application is a Python Starlette ASGI backend with a plain HTML/CSS/JavaScript frontend. The code is organized around existing Python services and Pydantic models. A legacy Streamlit UI remains in `app/main.py` for compatibility and older workflows. The Vercel entrypoint is `index.py`, which forces a separate read-only public demo mode.
 
@@ -93,7 +93,7 @@ At the time this handoff was written, focused auth/web API checks passed, while 
 - Do not fake Google/ABHA sign-in, clinician verification, authorization, persistence, or clinical accuracy. If real identity work is requested, first define provider, redirect origins, account/session lifecycle, role policy, clinician verification source, secrets handling, and test strategy. Never ask the user to paste secrets into chat; use environment/Vercel secret configuration.
 - Keep credentials out of source, logs, screenshots, and commits. Do not commit `.env`, local databases, health records, or uploads.
 - Keep the app bound to `127.0.0.1` for local work unless the owner explicitly requests a safe network setup.
-- Preserve explicit “assistive, not diagnostic” language and uncertainty. Escalate emergency symptoms to local emergency resources; do not make medical judgments beyond the project’s tested rules.
+- Allow the assistant to discuss and cautiously rank plausible symptom causes from user-reported details, while clearly distinguishing tentative assessments from clinician-confirmed diagnoses. Preserve uncertainty, escalate emergency symptoms to local resources, and do not recommend individualized changes to prescription dosages.
 - For large or risky changes, first provide a short evidence-based plan and list dependencies. Continue with independent safe work; do not silently claim blocked work is complete.
 
 ### 7. Definition of done

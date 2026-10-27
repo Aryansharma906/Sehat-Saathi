@@ -1512,6 +1512,16 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "Demo Mode Active: Synthetic medical data is used for safe, offline demonstration.",
         "hinglish": "Demo Mode Active: Safe aur offline demonstration ke liye sample medical data use hota hai."
     },
+    "live_scan_unavailable": {
+        "hi": "लाइव पर्ची पढ़ना उपलब्ध नहीं है। Gemini API कुंजी जोड़ें और डेमो मोड बंद करें। आपकी अपलोड की गई तस्वीर की जगह कोई नमूना परिणाम नहीं दिखाया जाएगा।",
+        "en": "Live prescription reading is unavailable. Configure a Gemini API key and turn off demo mode. No sample result will be shown in place of your uploaded image.",
+        "hinglish": "Live prescription reading available nahi hai. Gemini API key set karein aur demo mode band karein. Aapki uploaded image ke badle sample result nahi dikhaya jayega."
+    },
+    "complete_fields_before_reminder": {
+        "hi": "रिमाइंडर से पहले दवा का नाम, खुराक, दिन में कितनी बार, और लेने का समय पर्चे से भरकर जांचें। जरूरत पड़ने पर ली जाने वाली दवा के लिए रिमाइंडर नहीं बनाया जा सकता।",
+        "en": "Before setting a reminder, verify the medicine name, dose, frequency, and timing against the prescription. As-needed instructions cannot be scheduled.",
+        "hinglish": "Reminder banane se pehle medicine name, dose, frequency aur timing prescription se check karke bharein. Zarurat padne par li jaane wali dawai schedule nahi ho sakti."
+    },
     "expander_install_pwa": {
         "hi": "📱 मोबाइल और कंप्यूटर पर ऐप इंस्टॉल करें (Install App PWA)",
         "en": "📱 Install App on Mobile & PC (PWA)",

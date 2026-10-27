@@ -219,26 +219,65 @@ class ProximityLocationService:
     """
 
     @classmethod
+    def resolve_nearest_locality_name(cls, lat: float, lon: float, max_distance_miles: float = 25.0) -> Optional[str]:
+        """
+        Finds the closest known locality hub within max_distance_miles of the given GPS coordinates.
+        """
+        best_name = None
+        best_dist = float("inf")
+        for key, (hub_lat, hub_lon) in LOCALITY_COORDINATES.items():
+            dist = haversine_distance_miles(lat, lon, hub_lat, hub_lon)
+            if dist < best_dist:
+                best_dist = dist
+                best_name = key.capitalize()
+        if best_name and best_dist <= max_distance_miles:
+            return f"Near {best_name} ({round(lat, 4)}, {round(lon, 4)})"
+        return None
+
+    @classmethod
     def resolve_user_coordinates(
         cls,
         locality: Optional[str] = None,
         custom_lat: Optional[float] = None,
         custom_lon: Optional[float] = None
-    ) -> Tuple[float, float, str]:
+    ) -> Tuple[Optional[float], Optional[float], str]:
         """
         Resolves (latitude, longitude, locality_name).
-        Resolves only supported demo localities. Unknown locations retain no coordinates.
+        Supports both automatic GPS coordinates (custom_lat, custom_lon) and manual locality or "lat, lon" input.
+        Unknown manual town names retain no coordinates so another town's clinics are never substituted.
         """
         if custom_lat is not None and custom_lon is not None:
-            return custom_lat, custom_lon, locality or "Custom Location"
+            if not (-90.0 <= float(custom_lat) <= 90.0 and -180.0 <= float(custom_lon) <= 180.0):
+                raise ValueError("Latitude must be between -90 and 90 and longitude between -180 and 180.")
+            lat_f, lon_f = float(custom_lat), float(custom_lon)
+            clean_label = (locality or "").strip()
+            if not clean_label or clean_label.lower() in {"current location", "gps", "auto"}:
+                nearest_hub = cls.resolve_nearest_locality_name(lat_f, lon_f)
+                clean_label = nearest_hub or f"Current Location ({round(lat_f, 4)}, {round(lon_f, 4)})"
+            return lat_f, lon_f, clean_label
 
-        loc_clean = (locality or "").strip().lower()
+        loc_raw = (locality or "").strip()
+        # Allow manual "lat, lon" coordinate string entry in the manual box
+        if "," in loc_raw:
+            parts = [p.strip() for p in loc_raw.split(",")]
+            if len(parts) == 2:
+                try:
+                    parsed_lat = float(parts[0])
+                    parsed_lon = float(parts[1])
+                    if -90.0 <= parsed_lat <= 90.0 and -180.0 <= parsed_lon <= 180.0:
+                        nearest_hub = cls.resolve_nearest_locality_name(parsed_lat, parsed_lon)
+                        label = nearest_hub or f"GPS ({round(parsed_lat, 4)}, {round(parsed_lon, 4)})"
+                        return parsed_lat, parsed_lon, label
+                except ValueError:
+                    pass
+
+        loc_clean = loc_raw.lower()
         for key, coords in LOCALITY_COORDINATES.items():
             if key in loc_clean:
                 return coords[0], coords[1], key.capitalize()
 
         # Unknown locations must never be mapped to a different town's facilities.
-        return None, None, locality.strip() if locality and locality.strip() else "Unknown location"
+        return None, None, loc_raw if loc_raw else "Unknown location"
 
     @classmethod
     def find_facilities_within_proximity(
@@ -288,20 +327,30 @@ class ProximityLocationService:
 
         nearest = results[0] if results else None
 
-        # Build fallback search query for any town/village in India
-        fallback_maps_query = cls.build_proximity_maps_query(resolved_name, max_radius_miles)
+        # Build fallback search query for any town/village or GPS coordinates in India
+        query_target = f"{round(user_lat, 4)},{round(user_lon, 4)}" if custom_lat is not None and custom_lon is not None else resolved_name
+        fallback_maps_query = cls.build_proximity_maps_query(query_target, max_radius_miles)
+        directory_status = "verified_cluster" if results else "outside_pilot_radius"
+        directory_notice = (
+            None
+            if results
+            else f"No verified pilot directory listings within {int(max_radius_miles)} miles of {resolved_name}. Use Google Maps live search for nearby care."
+        )
 
         return {
             "user_location": {
                 "latitude": user_lat,
                 "longitude": user_lon,
-                "locality": resolved_name
+                "locality": resolved_name,
+                "source": "gps" if (custom_lat is not None and custom_lon is not None) else "manual",
             },
             "max_radius_miles": max_radius_miles,
             "total_found": len(results),
             "nearest_facility": nearest,
             "facilities": results,
-            "fallback_maps_query": fallback_maps_query
+            "fallback_maps_query": fallback_maps_query,
+            "directory_status": directory_status,
+            "directory_notice": directory_notice,
         }
 
     @classmethod

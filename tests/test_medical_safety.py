@@ -51,8 +51,10 @@ def test_rule_3_unconfirmed_instruction_cannot_produce_reminders(temp_storage):
 
     unconfirmed_med = MedicineInstruction(
         raw_medicine_name="Tab Dolo 650",
+        candidate_medicine_name="Dolo 650",
         dose_instruction_raw="1 tablet",
         frequency_raw="TDS",
+        timing_raw="After food",
         user_confirmed=False  # Not confirmed by user!
     )
 
@@ -99,6 +101,10 @@ def test_rule_11_no_false_claims_of_medication_intake(temp_storage):
     service = ReminderService(storage_adapter=temp_storage)
     med = MedicineInstruction(
         raw_medicine_name="Cetirizine 10mg",
+        candidate_medicine_name="Cetirizine 10mg",
+        dose_instruction_raw="1 tablet",
+        frequency_raw="OD",
+        timing_raw="As prescribed",
         user_confirmed=True
     )
     reminders = service.create_reminders_from_instruction(med)

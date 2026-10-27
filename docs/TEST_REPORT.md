@@ -1,32 +1,23 @@
 # Automated QA & Medical Safety Test Report
 
-**Project:** Sehat Saathi (सेहत साथी)  
-**QA Lead:** Agent 8 (QA, Security & Integration)  
-**Test Suite:** Pytest 9.1.1, Python 3.13.7  
-**Execution Date:** 2026-10-26  
-**Status:** **57 / 57 TESTS PASSED (100% Pass Rate)**
+**Project:** Sehat Saathi (सेहत साथी)
+**Test Suite:** Pytest, Python 3.13
+**Execution Date:** 2026-10-27
+**Status:** **113 passed, 10 failed (123 total)**
 
 ---
 
-## 1. Test Execution Breakdown
+## 1. Current Test Execution
 
-| Test Module | Tests Run | Result | Coverage Area |
-| :--- | :--- | :--- | :--- |
-| **`tests/test_cross_platform_compatibility.py`** | 5 | **PASS** | PWA manifest, service worker caching, iOS Safari WebApp meta tags, safe-area-inset padding, and universal deep links across iOS, Android, and Desktop |
-| **`tests/test_complication_prediction.py`** | 6 | **PASS** | ML ensemble risk stratification, hypertensive crisis detection, hypoxia (<92%) trigger, diabetic DKA risk, polypharmacy factor attribution, and DL temporal sequence trajectory forecasting |
-| **`tests/test_discard_features.py`** | 5 | **PASS** | Discarding whole draft prescriptions, discarding individual unconfirmed medicines from review list, discarding inactive reminders, clearing all schedules, and discarding logged issues/vitals |
-| **`tests/test_vitals_and_mental_health.py`** | 5 | **PASS** | BP, SpO2, Sugar, Temp device vitals standardization & out-of-range clinical alerts, Mental health scoring & Tele-MANAS (14416) helpline referral |
-| **`tests/test_progress_tracker.py`** | 3 | **PASS** | Treatment recovery scoring (0-100%), doctor follow-up advice logic, 3-question observational questionnaire structure |
-| **`tests/test_health_issue_service.py`** | 3 | **PASS** | Side-effect & adverse symptom logging, automated severe reaction detection, doctor notification formatting & WhatsApp URL encoding |
-| **`tests/test_emergency_service.py`** | 2 | **PASS** | Official Indian emergency numbers (108, 112, 104, 102), `tel:` link creation for direct smartphone dialing |
-| **`tests/test_models.py`** | 4 | **PASS** | Non-empty raw names, `null` preservation for unwritten fields, Safety Invariant 3 gate on unconfirmed models, time validation |
-| **`tests/test_extraction.py`** | 4 | **PASS** | Mock clean extraction, ambiguous handwriting uncertainty flagging, failure handling, graceful handling of missing Gemini API key |
-| **`tests/test_medical_safety.py`** | 6 | **PASS** | Verification of Rules 1, 2, 3, 4, 5, 6, 11 (Never invent dosage, never guess ambiguous names, block unconfirmed reminders, preserve raw wording, isolate external Indian NLEM drug reference, require manual click for taken status) |
-| **`tests/test_conflicts_and_traceability.py`** | 3 | **PASS** | Traceability to source prescription ID/date, detection of dosage conflicts between old and new prescriptions, non-destructive schedule merging |
-| **`tests/test_prevention_and_facilities.py`** | 4 | **PASS** | Environmental disease prevention topics, turn-by-turn map directions for PHCs/Chemists, safe online ordering guidance verification |
-| **`tests/test_reminders.py`** | 2 | **PASS** | Reminder CRUD lifecycle (add, toggle, mark as taken, delete) and real-time `is_due_now` window calculation |
-| **`tests/test_chat_safety.py`** | 3 | **PASS** | Emergency triage tripwire (108/112 direct call advisory), symptom diagnosis refusal tripwire, grounded prescription fallback response |
-| **`tests/test_image_processing.py`** | 2 | **PASS** | Empty file rejection, EXIF normalization, brightness/contrast quality heuristics |
+| Scope | Result | Notes |
+| :--- | :--- | :--- |
+| Full test suite | **113 passed, 10 failed** | All failures are in Streamlit `AppTest` navigation tests under Streamlit 1.45.1. |
+| Prescription and reminder regression tests | **40 passed** | Covers extraction, medical safety, conflicts, reminders, and browser API behavior. |
+| JavaScript/Python syntax checks | **PASS** | `node --check webapp/static/app.js` and `python3 -m compileall -q app webapp models services storage`. |
+
+The 10 full-suite failures are test-harness compatibility issues: nine navigation tests hit a `ButtonGroup` value/type mismatch while serializing the `nav_ctrl` widget, and `test_segmented_control_tab_switching` uses an `AppTest.segmented_control` accessor that is unavailable. These failures leave the complete suite red and should be resolved before treating all UI tests as verified.
+
+---
 
 ---
 
@@ -45,7 +36,7 @@
 - [x] **Requirement 5 (Caregiver-Friendly):** 1-tap WhatsApp sharing string encoding and unauthenticated family workflow.
 - [x] **Requirement 6 (Trust & Transparency):** Tier separation of raw handwriting vs AI interpretation vs NLEM reference data.
 - [x] **Requirement 7 (Reminder Reliability):** Manual "Mark as Taken" requirement and explicit in-app notification limitation disclosure.
-- [x] **Requirement 8 (Scope Control):** Out-of-scope features (direct checkout, diagnosis) are safely deferred and disclaimed.
+- [x] **Requirement 8 (Scope Control):** Direct checkout is deferred; the chat can rank plausible symptom causes tentatively, distinguish them from clinician-confirmed diagnoses, and avoid personal prescription dose changes.
 - [x] **Requirement 9 (Synthetic Validation):** All tests use synthetic test fixtures with zero real patient data.
 - [x] **Requirement 10 (Prevention, Chemists & Map Locator):** Turn-by-turn map direction deep links for chemists and disease prevention guidance aligned with NHM/MoHFW.
 - [x] **Requirement 11 (Safe Online Ordering Guidance):** Educational guide and trusted platform deep links compliant with Indian Drugs and Cosmetics Act.

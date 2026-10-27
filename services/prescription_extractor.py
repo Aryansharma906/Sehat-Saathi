@@ -148,6 +148,16 @@ class GeminiMultimodalExtractor(BasePrescriptionExtractor):
             )
 
 
+def live_extractor_or_none(
+    api_key: Optional[str],
+    demo_mode: bool,
+) -> Optional[GeminiMultimodalExtractor]:
+    """Return a live extractor only when live scanning is explicitly configured."""
+    if demo_mode or not api_key or not api_key.strip():
+        return None
+    return GeminiMultimodalExtractor(api_key=api_key)
+
+
 class MockPrescriptionExtractor(BasePrescriptionExtractor):
     """
     Deterministic mock extractor for automated testing and offline demos.

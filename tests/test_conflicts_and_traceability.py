@@ -31,6 +31,7 @@ def test_prescription_traceability(temp_storage):
         candidate_medicine_name="Dolo 650",
         dose_instruction_raw="1 tablet",
         frequency_raw="OD",
+        timing_raw="After food",
         user_confirmed=True
     )
 
@@ -56,6 +57,7 @@ def test_conflict_detection_different_dosage(temp_storage):
         candidate_medicine_name="Dolo 650",
         dose_instruction_raw="1 tablet",
         frequency_raw="OD",
+        timing_raw="After food",
         user_confirmed=True
     )
     service.create_reminders_from_instruction(old_med)
@@ -66,6 +68,7 @@ def test_conflict_detection_different_dosage(temp_storage):
         candidate_medicine_name="Dolo 650",
         dose_instruction_raw="2 tablets",
         frequency_raw="BD",
+        timing_raw="After food",
         user_confirmed=True
     )
 
@@ -80,7 +83,10 @@ def test_non_destructive_schedule_merge(temp_storage):
     # First prescription
     med1 = MedicineInstruction(
         raw_medicine_name="Pan-D",
+        candidate_medicine_name="Pan-D",
+        dose_instruction_raw="1 capsule",
         frequency_raw="OD",
+        timing_raw="Before food",
         user_confirmed=True
     )
     service.create_reminders_from_instruction(med1)
@@ -89,7 +95,10 @@ def test_non_destructive_schedule_merge(temp_storage):
     # Second prescription
     med2 = MedicineInstruction(
         raw_medicine_name="Metformin 500mg",
+        candidate_medicine_name="Metformin 500mg",
+        dose_instruction_raw="1 tablet",
         frequency_raw="OD",
+        timing_raw="With food",
         user_confirmed=True
     )
     service.create_reminders_from_instruction(med2)

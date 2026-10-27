@@ -54,7 +54,7 @@ class ImageProcessingService:
 
             if mean_brightness < 40:
                 return False, "चेतावनी: तस्वीर बहुत अंधेरी है। कृपया अच्छी रोशनी में दोबारा फोटो लें।"
-            if mean_brightness > 240:
+            if mean_brightness > 250 or (mean_brightness > 240 and std_contrast < 15):
                 return False, "चेतावनी: तस्वीर बहुत चमकदार या धुंधली है।"
             if std_contrast < 15:
                 return False, "चेतावनी: तस्वीर में लिखावट का अंतर (contrast) बहुत कम है।"

@@ -34,9 +34,8 @@ load_dotenv()
 from models.prescription import Prescription, MedicineInstruction, ExtractionStatus
 from services.image_processing import ImageProcessingService
 from services.prescription_extractor import (
-    GeminiMultimodalExtractor,
     MockPrescriptionExtractor,
-    BasePrescriptionExtractor
+    live_extractor_or_none,
 )
 from services.language_service import SimpleHindiLanguageService
 from services.medicine_reference import MedicineReferenceService
@@ -1128,7 +1127,6 @@ with st.expander(t("emergency_drawer_title", lang), expanded=st.session_state.ge
                 f"{ag_icon} {label_text} ({ag_num})",
                 tel_link,
                 use_container_width=True,
-                key=f"emg_call_{ag_num}",
             )
 
 
@@ -1218,15 +1216,13 @@ if st.session_state.get("active_view") == "dashboard":
             st.link_button(
                 f"📞 {t('btn_call_support', lang)} ({dash_nearest['phone']})",
                 dash_nearest['tel_url'],
-                use_container_width=True,
-                key="dash_spotlight_call"
+                use_container_width=True
             )
         with col_d_dir:
             st.link_button(
                 f"🗺️ {t('btn_maps_directions', lang)}",
                 dash_nearest['directions_url'],
-                use_container_width=True,
-                key="dash_spotlight_dir"
+                use_container_width=True
             )
         with col_d_more:
             if st.button(f"🏥 {t('tab_facilities', lang)} →", key="dash_open_fac_btn", use_container_width=True):
@@ -1372,15 +1368,15 @@ if active_tab == 0 and not is_dashboard_active:
 
                 if st.button(t("extract_btn", lang), key="btn_extract"):
                     with st.spinner(t("spinner_analyzing", lang)):
-                        api_key = os.environ.get("GEMINI_API_KEY")
-                        if api_key and not st.session_state.demo_mode:
-                            extractor = GeminiMultimodalExtractor(api_key=api_key)
+                        extractor = live_extractor_or_none(
+                            os.environ.get("GEMINI_API_KEY"),
+                            st.session_state.demo_mode,
+                        )
+                        if extractor:
+                            st.session_state.prescription = extractor.extract_from_image(file_bytes)
+                            st.rerun()
                         else:
-                            is_ambig = hasattr(uploaded_file, "name") and uploaded_file.name and "ambiguous" in uploaded_file.name.lower()
-                            extractor = MockPrescriptionExtractor(scenario="ambiguous" if is_ambig else "clean")
-
-                        st.session_state.prescription = extractor.extract_from_image(file_bytes)
-                        st.rerun()
+                            st.warning(t("live_scan_unavailable", lang))
 
     # Step 2: Review & Confirmation Screen
     if st.session_state.prescription:
@@ -1430,25 +1426,18 @@ if active_tab == 0 and not is_dashboard_active:
                 with col_b:
                     med.dose_instruction_raw = st.text_input(
                         f"{t('lbl_dose_field', lang)} #{idx+1}",
-                        value=med.dose_instruction_raw or ("1 tablet" if lang == "en" else "1 गोली"),
+                        value=med.dose_instruction_raw or "",
                         key=f"med_dose_{idx}"
                     )
                     med.frequency_raw = st.text_input(
                         f"{t('lbl_frequency_field', lang)} #{idx+1}",
-                        value=med.frequency_raw or ("Twice daily (BD)" if lang == "en" else "दिन में 2 बार"),
+                        value=med.frequency_raw or "",
                         key=f"med_freq_{idx}"
                     )
 
-                timing_opts = [
-                    t("opt_timing_after_food", lang),
-                    t("opt_timing_before_food", lang),
-                    t("opt_timing_empty_stomach", lang),
-                    t("opt_timing_bedtime", lang)
-                ]
-                med.timing_raw = st.selectbox(
+                med.timing_raw = st.text_input(
                     f"{t('lbl_timing_field', lang)} #{idx+1}",
-                    options=timing_opts,
-                    index=0,
+                    value=med.timing_raw or "",
                     key=f"med_timing_{idx}"
                 )
 
@@ -1487,6 +1476,21 @@ if active_tab == 0 and not is_dashboard_active:
         # Step 3: Explanation & Reminder Setup (Syncs to Clinical Database)
         if confirmed_all and presc.medicines:
             st.success(t("msg_all_verified", lang))
+            schedule_ready = all(
+                med.candidate_medicine_name and med.candidate_medicine_name.strip()
+                and med.dose_instruction_raw and med.dose_instruction_raw.strip()
+                and med.frequency_raw and med.frequency_raw.strip()
+                and med.timing_raw and med.timing_raw.strip()
+                for med in presc.medicines
+            )
+            if schedule_ready:
+                try:
+                    for med in presc.medicines:
+                        ReminderService.schedule_for_frequency(med.frequency_raw)
+                except ValueError:
+                    schedule_ready = False
+            if not schedule_ready:
+                st.warning(t("complete_fields_before_reminder", lang))
 
             col_sum_head, col_sum_voice = st.columns([2, 1])
             with col_sum_head:
@@ -1524,7 +1528,7 @@ if active_tab == 0 and not is_dashboard_active:
                 for c in potential_conflicts:
                     st.caption(f"• **{c['medicine_name']}**: {c['reason']}")
 
-            if st.button(t("save_reminders_btn", lang), type="primary"):
+            if st.button(t("save_reminders_btn", lang), type="primary", disabled=not schedule_ready):
                 created_count = 0
                 verified_med_dicts = []
                 for med in presc.medicines:
@@ -1595,8 +1599,7 @@ elif active_tab == 1 and not is_dashboard_active:
         st.link_button(
             f"📲 {t('share_wa_btn', lang)}",
             f"https://api.whatsapp.com/send?text={encoded_text}",
-            use_container_width=True,
-            key="link_wa_share"
+            use_container_width=True
         )
 
         with st.expander(t("expander_clear_reminders", lang), expanded=False):
@@ -1927,8 +1930,7 @@ elif active_tab == 2 and not is_dashboard_active:
                 st.link_button(
                     f"📞 {t('tele_manas_call_btn', lang)} (14416)",
                     "tel:14416",
-                    use_container_width=True,
-                    key="link_tele_manas"
+                    use_container_width=True
                 )
 
 
@@ -1939,12 +1941,26 @@ elif active_tab == 3 and not is_dashboard_active:
     st.subheader(t("facilities_heading", lang))
     st.caption(t("facilities_sub", lang))
 
+    loc_mode_options = [
+        ("auto", "📍 " + ("Auto-Detect Current Location (GPS)" if lang == "en" else ("Auto-Detect Current Location (GPS)" if lang == "hinglish" else "स्वतः वर्तमान स्थान लें (Auto GPS)"))),
+        ("manual", "✍️ " + ("Enter Location Manually" if lang == "en" else ("Location Manually Daalein" if lang == "hinglish" else "स्थान मैन्युअल रूप से लिखें")))
+    ]
+    chosen_loc_mode_tuple = st.radio(
+        "Location Mode / स्थान मोड:" if lang != "en" else "Location Mode:",
+        loc_mode_options,
+        index=1 if st.session_state.get("loc_input_mode", "manual") == "manual" else 0,
+        format_func=lambda x: x[1],
+        horizontal=True,
+        key="loc_mode_radio"
+    )
+    st.session_state.loc_input_mode = chosen_loc_mode_tuple[0]
+
     col_loc1, col_loc2 = st.columns([2, 1])
     with col_loc1:
         user_locality = st.text_input(
             t("lbl_user_locality", lang),
             value=st.session_state.get("user_locality", "Neemrana"),
-            placeholder="e.g. Behror, Neemrana, Alwar" if lang == "en" else "उदा. बहरोड़, नीमराना, अलवर",
+            placeholder="e.g. Behror, Neemrana, Alwar or 27.9889, 76.3883" if lang == "en" else "उदा. बहरोड़, नीमराना, अलवर या 27.9889, 76.3883",
             key="inp_user_locality"
         )
         st.session_state.user_locality = user_locality
@@ -2011,15 +2027,13 @@ elif active_tab == 3 and not is_dashboard_active:
             st.link_button(
                 f"📞 {t('btn_call_support', lang)} ({nearest['phone']})",
                 nearest['tel_url'],
-                use_container_width=True,
-                key="btn_spotlight_call"
+                use_container_width=True
             )
         with col_spot_dir:
             st.link_button(
                 f"🗺️ {t('btn_maps_directions', lang)}",
                 nearest['directions_url'],
-                use_container_width=True,
-                key="btn_spotlight_dir"
+                use_container_width=True
             )
         st.markdown("---")
 
@@ -2042,15 +2056,13 @@ elif active_tab == 3 and not is_dashboard_active:
                     st.link_button(
                         f"📞 Call {f_item['phone']}",
                         f_item['tel_url'],
-                        use_container_width=True,
-                        key=f"fac_call_{f_item['id']}"
+                        use_container_width=True
                     )
                 with col_fc_dir:
                     st.link_button(
                         f"🗺️ Directions",
                         f_item['directions_url'],
-                        use_container_width=True,
-                        key=f"fac_dir_{f_item['id']}"
+                        use_container_width=True
                     )
     else:
         st.info(t("msg_no_facilities_found", lang))
@@ -2065,16 +2077,14 @@ elif active_tab == 3 and not is_dashboard_active:
         st.link_button(
             f"🏥 {t('maps_phc_btn', lang)}",
             phc_url,
-            use_container_width=True,
-            key="link_maps_phc"
+            use_container_width=True
         )
 
         chemist_url = PreventionAndFacilitiesService.build_maps_search_url("Medical Store Chemist Pharmacy", user_locality)
         st.link_button(
             f"💊 {t('maps_chemist_btn', lang)}",
             chemist_url,
-            use_container_width=True,
-            key="link_maps_chemist"
+            use_container_width=True
         )
 
     with col_map2:
@@ -2082,16 +2092,14 @@ elif active_tab == 3 and not is_dashboard_active:
         st.link_button(
             f"🏛️ {t('maps_jan_btn', lang)}",
             ja_url,
-            use_container_width=True,
-            key="link_maps_jan"
+            use_container_width=True
         )
 
         dr_url = PreventionAndFacilitiesService.build_maps_search_url("Doctor Clinic", user_locality)
         st.link_button(
             f"👨‍⚕️ {t('maps_doctor_btn', lang)}",
             dr_url,
-            use_container_width=True,
-            key="link_maps_dr"
+            use_container_width=True
         )
 
     st.markdown("---")
@@ -2154,7 +2162,9 @@ elif active_tab == 4 and not is_dashboard_active:
             st.warning(t("msg_enter_question", lang))
         else:
             with st.spinner(t("spinner_chat_answer", lang)):
-                answer = chat_service.ask_question(query_to_send, st.session_state.prescription)
+                answer = chat_service.ask_question(
+                    query_to_send, st.session_state.prescription, lang=lang
+                )
                 st.markdown(f"**{t('lbl_answer', lang)}**\n\n{answer}")
 
 

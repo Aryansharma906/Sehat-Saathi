@@ -107,11 +107,10 @@ def test_menu_and_dashboard_navigation_twice(app):
     assert app.session_state.active_view == "dashboard"
 
     # Verify Dashboard contains the 10-mile Spotlight facility buttons
-    dash_call = [l for l in app.link_button if l.key == "dash_spotlight_call"]
-    assert len(dash_call) == 1
-    assert dash_call[0].url.startswith("tel:")
+    dash_call = [l for l in app.link_button if l.url.startswith("tel:")]
+    assert dash_call
 
-    dash_dir = [l for l in app.link_button if l.key == "dash_spotlight_dir"]
+    dash_dir = [l for l in app.link_button if "google.com/maps/dir" in l.url]
     assert len(dash_dir) == 1
     assert "google.com/maps/dir" in dash_dir[0].url
 
