@@ -1,6 +1,9 @@
 """Browser-first Sehat Saathi web app backed by the existing safety services."""
 
 import asyncio
+import base64
+import binascii
+import hmac
 import json
 import os
 import re
@@ -44,7 +47,13 @@ from services.storage_config import get_data_dir  # noqa: E402
 
 APP_MODE = os.environ.get("SEHAT_ENV", "development").strip().lower()
 PUBLIC_DEMO = APP_MODE == "demo"
-DATA_DIR = Path(tempfile.gettempdir()) / "sehat-saathi-public-demo" if PUBLIC_DEMO else get_data_dir()
+PRIVATE_TEST = APP_MODE == "test"
+TEST_ACCESS_PASSWORD = os.environ.get("SEHAT_TEST_ACCESS_PASSWORD", "")
+DATA_DIR = (
+    Path(tempfile.gettempdir()) / ("sehat-saathi-private-test" if PRIVATE_TEST else "sehat-saathi-public-demo")
+    if PUBLIC_DEMO or PRIVATE_TEST
+    else get_data_dir()
+)
 
 
 @asynccontextmanager
@@ -54,6 +63,8 @@ async def lifespan(_: Starlette):
             "Production startup is disabled: this prototype has no approved identity, "
             "authorization, audit, resilient storage, or clinical deployment controls."
         )
+    if PRIVATE_TEST and not TEST_ACCESS_PASSWORD:
+        raise RuntimeError("SEHAT_TEST_ACCESS_PASSWORD is required for private test mode.")
     yield
 
 reminders = ReminderService(LocalStorageAdapter(DATA_DIR / "saved_schedules.json"))
@@ -136,13 +147,15 @@ async def overview(request: Request):
         "emergency": EmergencyService.get_emergency_numbers(),
         "demo_mode": not bool(os.environ.get("GEMINI_API_KEY")),
         "service_scope": {
-            "status": "public_demo" if PUBLIC_DEMO else "prototype",
+            "status": "public_demo" if PUBLIC_DEMO else "private_test" if PRIVATE_TEST else "prototype",
             "region": "Neemrana, Rajasthan, India demo cluster",
             "production_ready": False,
             "demo_read_only": PUBLIC_DEMO,
             "notice": (
                 "Public demo: synthetic examples only. Changes are not saved; do not enter personal or patient information."
                 if PUBLIC_DEMO else
+                "Private test deployment: use synthetic data only. Test records are temporary and may be visible to other people with test access; do not enter personal or patient information."
+                if PRIVATE_TEST else
                 "Prototype with local demo data. Not a government service or a clinical record system."
             ),
         },
@@ -450,7 +463,31 @@ routes = [
     Mount("/illustrations", app=StaticFiles(directory=ROOT / "static"), name="illustrations"),
 ]
 
-async def demo_access_guard(request: Request, call_next):
+async def deployment_access_guard(request: Request, call_next):
+    if PRIVATE_TEST:
+        authorization = request.headers.get("authorization", "")
+        scheme, _, encoded_credentials = authorization.partition(" ")
+        valid_credentials = False
+        if scheme.lower() == "basic" and encoded_credentials:
+            try:
+                decoded = base64.b64decode(encoded_credentials, validate=True).decode("utf-8")
+                username, separator, password = decoded.partition(":")
+                valid_credentials = (
+                    bool(separator)
+                    and hmac.compare_digest(username, "tester")
+                    and hmac.compare_digest(password, TEST_ACCESS_PASSWORD)
+                )
+            except (binascii.Error, UnicodeDecodeError, ValueError):
+                valid_credentials = False
+        if not valid_credentials:
+            return Response(
+                status_code=401,
+                headers={
+                    "WWW-Authenticate": 'Basic realm="Sehat Saathi private test", charset="UTF-8"',
+                    "Cache-Control": "no-store",
+                },
+            )
+
     if PUBLIC_DEMO:
         is_synthetic_example = request.url.path == "/api/prescriptions/demo" and request.method == "POST"
         if request.method not in {"GET", "HEAD", "OPTIONS"} and not is_synthetic_example:
@@ -460,7 +497,7 @@ async def demo_access_guard(request: Request, call_next):
                 headers={"Cache-Control": "no-store"},
             )
     response = await call_next(request)
-    if PUBLIC_DEMO:
+    if PUBLIC_DEMO or PRIVATE_TEST:
         response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -470,5 +507,5 @@ app = Starlette(
     routes=routes,
     exception_handlers={HTTPException: http_error},
     lifespan=lifespan,
-    middleware=[Middleware(BaseHTTPMiddleware, dispatch=demo_access_guard)],
+    middleware=[Middleware(BaseHTTPMiddleware, dispatch=deployment_access_guard)],
 )

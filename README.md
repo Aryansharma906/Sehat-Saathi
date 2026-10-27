@@ -139,6 +139,20 @@ The browser interface uses the project's existing Python services and local data
 
 **Privacy boundary:** This is a local research prototype without user accounts or per-user data separation. Do not enter real patient information. Nearby live searches share the entered city or selected GPS coordinates with OpenStreetMap's public Nominatim/Overpass services. Keep the server on loopback; do not expose it to a network.
 
+### Temporary, password-protected Vercel test
+
+The Vercel `test` mode enables write workflows behind HTTP Basic authentication. Set `SEHAT_ENV=test` and a strong `SEHAT_TEST_ACCESS_PASSWORD` as **Preview-only** Vercel environment variables before deploying. The username is `tester`. This is a shared-password test gate, not individual accounts: anyone with the password can access shared test records. Records use temporary function storage and can disappear at any time; use synthetic data only. Do not set this mode for a public or production deployment. Live prescription scanning also needs `GEMINI_API_KEY` in Vercel's encrypted environment variables; never commit or paste the key into source code.
+
+To keep access limited, configure the password variables for a single Preview Git branch and share the preview URL/password only with trusted testers. For example, with Vercel CLI already linked to the project:
+
+```bash
+vercel env add SEHAT_ENV --environment preview --git-branch feat/nearby-live-listings --value test --yes
+vercel env add SEHAT_TEST_ACCESS_PASSWORD --environment preview --git-branch feat/nearby-live-listings
+vercel deploy --environment preview
+```
+
+The second command prompts for the password; enter a generated password there rather than placing it in shell history. Configure `GEMINI_API_KEY` separately in Vercel's project settings if live OCR is needed. Vercel's free-tier limits, function duration, and Gemini API quotas apply. This temporary test mode is not safe for real patient data and does not provide durable reminders or user-specific records.
+
 For isolated local testing, set `SEHAT_DATA_DIR` to a disposable directory before starting the server. Otherwise, the app uses `data/` in the repository. For example, on macOS/Linux:
 
 ```bash

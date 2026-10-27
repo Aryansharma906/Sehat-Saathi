@@ -8,6 +8,8 @@ This repository is a local research prototype. It is **not approved for clinical
 
 ## Current boundaries
 
+- Vercel's default entrypoint remains read-only demo mode. A separate `SEHAT_ENV=test` mode enables writes only behind a required shared HTTP Basic password; this is for trusted synthetic-data testing, not real patient information or production.
+- Test-mode records are stored in temporary function storage, are shared by all holders of the password, and may disappear at any time. This is not durable or user-isolated storage.
 - The curated facility directory is a small Neemrana / Rajasthan / NCR demo cluster. Other Indian locations use best-effort public OpenStreetMap geocoding and facility data; unknown towns never inherit Neemrana's coordinates. OpenStreetMap listings are community-mapped, not verified or guaranteed complete.
 - Emergency numbers, public resources, medicine references, and languages are India-focused. There is no US public-service configuration or verified nationwide directory.
 - Live nearby searches send the selected city or GPS coordinates to OpenStreetMap services. A controlled deployment needs an approved provider, privacy/retention review, attribution, coverage/freshness monitoring, and rate-limit/error handling.

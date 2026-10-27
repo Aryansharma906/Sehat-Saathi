@@ -366,6 +366,40 @@ def test_public_demo_allows_only_synthetic_prescription_examples(monkeypatch):
         assert c.get("/api/health").headers["cache-control"] == "no-store"
 
 
+def test_private_test_mode_requires_basic_auth_and_allows_writes(monkeypatch):
+    import base64
+
+    monkeypatch.setattr(web, "PRIVATE_TEST", True)
+    monkeypatch.setattr(web, "PUBLIC_DEMO", False)
+    monkeypatch.setattr(web, "TEST_ACCESS_PASSWORD", "test-only-secret")
+    credentials = base64.b64encode(b"tester:test-only-secret").decode("ascii")
+    with client() as c:
+        unauthenticated = c.get("/api/health")
+        authenticated = c.get("/api/health", headers={"Authorization": f"Basic {credentials}"})
+        write_response = c.post(
+            "/api/vitals",
+            json={"device_type": "Monitor", "metric_name": "BP", "value": "120/80", "unit": "mmHg"},
+            headers={"Authorization": f"Basic {credentials}"},
+        )
+    assert unauthenticated.status_code == 401
+    assert "Basic" in unauthenticated.headers["www-authenticate"]
+    assert authenticated.status_code == 200
+    assert authenticated.headers["cache-control"] == "no-store"
+    assert write_response.status_code == 200
+
+
+def test_private_test_mode_refuses_startup_without_password(monkeypatch):
+    import pytest
+
+    monkeypatch.setattr(web, "PRIVATE_TEST", True)
+    monkeypatch.setattr(web, "APP_MODE", "test")
+    monkeypatch.setattr(web, "TEST_ACCESS_PASSWORD", "")
+    monkeypatch.setenv("SEHAT_ENV", "test")
+    with pytest.raises(RuntimeError, match="SEHAT_TEST_ACCESS_PASSWORD is required"):
+        with TestClient(web.app):
+            pass
+
+
 def test_facilities_and_overview_support_auto_gps_coordinates_and_manual_input():
     with client() as c:
         # 1. Auto GPS coordinates near Neemrana (27.989, 76.388)
